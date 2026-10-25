@@ -199,15 +199,7 @@ export default function AcademyNewsAndEvents({ onBookSlot }) {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-6 mt-4 border-t border-[#A9A49D]/20 flex items-center gap-3">
-                <button
-                  onClick={() => handleWhatsAppEnquiry(evt.whatsappMsg)}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer tap-bounce"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 fill-white text-white" />
-                  <span>Enquire via WhatsApp</span>
-                </button>
-
+              <div className="pt-6 mt-4 border-t border-[#A9A49D]/20 flex items-center">
                 <button
                   onClick={() => {
                     if (onBookSlot) onBookSlot(evt.title);
@@ -216,10 +208,10 @@ export default function AcademyNewsAndEvents({ onBookSlot }) {
                       if (el) el.scrollIntoView({ behavior: "smooth" });
                     }
                   }}
-                  className="py-2.5 px-4 rounded-xl bg-[#151515] hover:bg-[#252525] text-[#D4AF37] font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer tap-bounce border border-[#B99A63]/50"
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer tap-bounce border border-[#B99A63]/50"
                 >
-                  <span>Book Slot</span>
-                  <ArrowRight className="w-3 h-3 text-[#D4AF37]" />
+                  <span>Reserve Session Slot</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </AnimatedSection>

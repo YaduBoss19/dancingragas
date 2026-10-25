@@ -81,6 +81,54 @@ export const AcademyProvider = ({ children }) => {
     }
   });
 
+  // Supabase Auth State (Admin vs Student)
+  const [authUser, setAuthUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("dancingragas_auth_user_v1");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [userRole, setUserRole] = useState(() => {
+    try {
+      return localStorage.getItem("dancingragas_auth_role_v1") || "guest";
+    } catch {
+      return "guest";
+    }
+  });
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (authUser) {
+        localStorage.setItem("dancingragas_auth_user_v1", JSON.stringify(authUser));
+      } else {
+        localStorage.removeItem("dancingragas_auth_user_v1");
+      }
+      if (userRole) {
+        localStorage.setItem("dancingragas_auth_role_v1", userRole);
+      } else {
+        localStorage.removeItem("dancingragas_auth_role_v1");
+      }
+    } catch (e) {
+      console.error("Failed to sync auth state", e);
+    }
+  }, [authUser, userRole]);
+
+  const handleLogout = () => {
+    setAuthUser(null);
+    setUserRole("guest");
+    setIsAdminLoggedIn(false);
+    localStorage.removeItem(STORAGE_KEYS.AUTH);
+    localStorage.removeItem("dancingragas_auth_user_v1");
+    localStorage.removeItem("dancingragas_auth_role_v1");
+    showToast("You have been signed out successfully.", "info");
+    setCurrentPage("home");
+  };
+
   // Persist to localStorage
   useEffect(() => {
     try {
@@ -303,7 +351,14 @@ export const AcademyProvider = ({ children }) => {
         gallery,
         enquiries,
         academyInfo: ACADEMY_INFO,
-        isAdminLoggedIn,
+        isAdminLoggedIn: isAdminLoggedIn || userRole === "admin",
+        authUser,
+        setAuthUser,
+        userRole,
+        setUserRole,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
+        handleLogout,
         // Methods
         loginAdmin,
         logoutAdmin,

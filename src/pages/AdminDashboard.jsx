@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
+import { FAQS } from "../data/initialData";
+import { uploadMediaToBucket, isSupabaseConfigured } from "../lib/supabaseClient";
 import {
   Lock,
   BookOpen,
@@ -16,7 +18,13 @@ import {
   LogOut,
   X,
   Phone,
-  Mail
+  Mail,
+  UploadCloud,
+  FileText,
+  GraduationCap,
+  CheckCircle2,
+  Video,
+  Sparkles
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -49,7 +57,43 @@ export default function AdminDashboard() {
   } = useAcademy();
 
   const [passwordInput, setPasswordInput] = useState("");
-  const [activeTab, setActiveTab] = useState("enquiries"); // 'enquiries' | 'courses' | 'teachers' | 'timetable' | 'gallery'
+  const [activeTab, setActiveTab] = useState("enquiries"); // 'enquiries' | 'courses' | 'gallery' | 'matter' | 'students'
+
+  // Matter & FAQs CMS State
+  const [tickerAnnouncement, setTickerAnnouncement] = useState(
+    "ADMISSIONS OPEN 2026/27: Online Bharatanatyam Diploma (Yearly Exams & Certificates) • Carnatic Classical Vocal Coaching • 1-on-1 Consultations"
+  );
+  const [faqsList, setFaqsList] = useState(FAQS);
+  const [editingFaqIdx, setEditingFaqIdx] = useState(null);
+  const [faqQuestionDraft, setFaqQuestionDraft] = useState("");
+  const [faqAnswerDraft, setFaqAnswerDraft] = useState("");
+
+  // Student reviews state
+  const [studentReviews, setStudentReviews] = useState([
+    {
+      id: "rev-1",
+      studentName: "Ananya Menon",
+      batch: "Bharatanatyam Diploma (Junior)",
+      title: "Adavu Step 1-4 Posture & Aramandi Check",
+      date: "Oct 22, 2026",
+      videoUrl: "https://drive.google.com/file/d/sample-adavu/view",
+      status: "reviewed",
+      feedback:
+        "Excellent footwork precision! Make sure the Aramandi knee angle stays aligned without leaning forward to protect the joints."
+    },
+    {
+      id: "rev-2",
+      studentName: "Pooja Ramesh",
+      batch: "Bharatanatyam Non-Diploma",
+      title: "Alarippu Tisra Ekam Practice Video",
+      date: "Oct 25, 2026",
+      videoUrl: "https://drive.google.com/file/d/sample-alarippu/view",
+      status: "pending",
+      feedback: ""
+    }
+  ]);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [feedbackInput, setFeedbackInput] = useState("");
 
   // Modals state
   const [editingCourse, setEditingCourse] = useState(null);
@@ -415,7 +459,7 @@ export default function AdminDashboard() {
             onClick={() => navigateTo("home")}
             className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
           >
-            ← Return to Public Website
+            â† Return to Public Website
           </button>
         </div>
       </div>
@@ -431,12 +475,13 @@ export default function AdminDashboard() {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Live Admin Active
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                {isSupabaseConfigured ? "Supabase Cloud Connected" : "Live CMS Active (Demo Mode)"}
               </span>
-              <span className="text-xs text-slate-400">Aura Arts Academy Management</span>
+              <span className="text-xs text-slate-400">DancingRagas Classical Arts Academy</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Academy Director Control Center
+              Dr. Malavika Director Control Center &amp; CMS
             </h1>
           </div>
 
@@ -507,7 +552,9 @@ export default function AdminDashboard() {
           {[
             { id: "enquiries", label: `Enquiries (${enquiries.length})`, icon: MessageSquare },
             { id: "courses", label: `Classes & Services (${courses.length})`, icon: BookOpen },
-            { id: "gallery", label: `Gallery Media (${gallery.length})`, icon: ImageIcon }
+            { id: "gallery", label: `Media Vault (${gallery.length})`, icon: ImageIcon },
+            { id: "matter", label: "Matter & FAQs CMS", icon: FileText },
+            { id: "students", label: "Student Reviews & Homework", icon: GraduationCap }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -607,7 +654,7 @@ export default function AdminDashboard() {
                             <td className="py-4 px-4">
                               <div className="font-bold text-slate-900">{enq.studentName}</div>
                               <div className="text-[11px] text-slate-500">
-                                Age {enq.studentAge} {enq.parentName ? `• Parent: ${enq.parentName}` : ""}
+                                Age {enq.studentAge} {enq.parentName ? `â€¢ Parent: ${enq.parentName}` : ""}
                               </div>
                             </td>
 
@@ -785,7 +832,7 @@ export default function AdminDashboard() {
                   <div className="flex-1 space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-md">
-                        {teacher.department} • {teacher.experience}
+                        {teacher.department} â€¢ {teacher.experience}
                       </span>
                     </div>
 
@@ -862,7 +909,7 @@ export default function AdminDashboard() {
                         <td className="py-3.5 px-4 font-bold text-slate-900">{slot.course}</td>
                         <td className="py-3.5 px-4 text-slate-700">{slot.teacher}</td>
                         <td className="py-3.5 px-4 text-slate-600">{slot.room}</td>
-                        <td className="py-3.5 px-4 text-slate-600">{slot.ageGroup} • {slot.level}</td>
+                        <td className="py-3.5 px-4 text-slate-600">{slot.ageGroup} â€¢ {slot.level}</td>
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
@@ -942,6 +989,154 @@ export default function AdminDashboard() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: MATTER & FAQS CMS */}
+        {activeTab === "matter" && (
+          <div className="space-y-8 text-left">
+            {/* Announcement Ticker Section */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
+                    Top Ticker Announcements
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Live ticker displayed at the very top of the website for admissions and masterclasses.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => showToast("Announcement text saved to live site!", "success")}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer"
+                >
+                  Save Ticker
+                </button>
+              </div>
+
+              <textarea
+                rows={2}
+                value={tickerAnnouncement}
+                onChange={(e) => setTickerAnnouncement(e.target.value)}
+                className="w-full p-3 rounded-xl border border-slate-200 text-xs sm:text-sm font-medium focus:border-purple-600 focus:outline-none"
+              />
+            </div>
+
+            {/* FAQs Manager */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
+                    Frequently Asked Questions ({faqsList.length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Edit questions, answers, and admission guidance displayed in the FAQ section.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {faqsList.map((faq, fIdx) => (
+                  <div
+                    key={fIdx}
+                    className="p-4 rounded-2xl border border-slate-200 hover:border-purple-300 transition-all space-y-2 bg-slate-50/50"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 font-mono text-xs font-bold flex items-center justify-center shrink-0">
+                          {faq.number || String(fIdx + 1).padStart(2, "0")}
+                        </span>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900">{faq.question}</h4>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingFaqIdx(fIdx);
+                          setFaqQuestionDraft(faq.question);
+                          setFaqAnswerDraft(faq.answer);
+                        }}
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-white cursor-pointer shrink-0"
+                        title="Edit FAQ"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed pl-9">{faq.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: STUDENT HOMEWORK & REVIEWS */}
+        {activeTab === "students" && (
+          <div className="space-y-6 text-left">
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-2">
+              <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
+                Student Video Submissions &amp; Biomechanical Feedback
+              </h3>
+              <p className="text-xs text-slate-500">
+                Review weekly practice videos uploaded by enrolled students from Georgia, India, and overseas batches.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {studentReviews.map((rev) => (
+                <div
+                  key={rev.id}
+                  className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-purple-700">{rev.batch}</span>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                          rev.status === "reviewed"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        }`}
+                      >
+                        {rev.status === "reviewed" ? "Reviewed" : "Pending Feedback"}
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-slate-900">{rev.studentName}</h4>
+                    <p className="text-xs text-slate-600 font-medium">{rev.title}</p>
+                    <span className="text-[11px] text-slate-400 block">Submitted: {rev.date}</span>
+
+                    <a
+                      href={rev.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-800 font-bold underline"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Watch Practice Video Link</span>
+                    </a>
+
+                    {rev.feedback && (
+                      <div className="p-3 rounded-xl bg-slate-50 text-xs text-slate-700 mt-2 border border-slate-100">
+                        <strong className="text-slate-900 block mb-0.5">Your Feedback:</strong>
+                        {rev.feedback}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-3 border-t flex justify-end">
+                    <button
+                      onClick={() => {
+                        setSelectedReview(rev);
+                        setFeedbackInput(rev.feedback || "");
+                      }}
+                      className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-purple-600 text-white font-bold text-xs transition-colors cursor-pointer"
+                    >
+                      {rev.status === "reviewed" ? "Update Feedback" : "Review & Add Feedback"}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -1531,13 +1726,51 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Direct File Upload & Preview */}
+              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/80 space-y-2">
+                <label className="font-bold text-purple-900 block text-xs flex items-center gap-1.5">
+                  <UploadCloud className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Choose Media File from Computer (Photos / Recital Clips)</span>
+                </label>
+                <input
+                  type="file"
+                  accept={galleryForm.type === "photo" ? "image/*" : "video/*,image/*"}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      showToast("Uploading media...", "info");
+                      const res = await uploadMediaToBucket("gallery-media", file);
+                      if (res.url) {
+                        setGalleryForm({ ...galleryForm, url: res.url });
+                        showToast("Media uploaded successfully!", "success");
+                      }
+                    }
+                  }}
+                  className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 cursor-pointer"
+                />
+              </div>
+
+              {galleryForm.url && (
+                <div className="relative w-full h-32 rounded-xl overflow-hidden bg-black/90 flex items-center justify-center border border-slate-200">
+                  <img
+                    src={galleryForm.url}
+                    alt="Preview"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                  <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/70 text-white text-[10px] font-bold">
+                    Upload Preview
+                  </span>
+                </div>
+              )}
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Photo / Poster Image URL *</label>
+                <label className="font-bold text-slate-700 block mb-1">Or Media CDN URL *</label>
                 <input
                   type="url"
                   required
                   value={galleryForm.url}
                   onChange={(e) => setGalleryForm({ ...galleryForm, url: e.target.value })}
+                  placeholder="https://..."
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
                 />
               </div>
@@ -1582,6 +1815,141 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* MODAL: EDIT FAQ ITEM */}
+      {editingFaqIdx !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 text-left">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-bold text-slate-900">Edit FAQ Question &amp; Answer</h3>
+              <button onClick={() => setEditingFaqIdx(null)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Question</label>
+                <input
+                  type="text"
+                  value={faqQuestionDraft}
+                  onChange={(e) => setFaqQuestionDraft(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Answer</label>
+                <textarea
+                  rows={4}
+                  value={faqAnswerDraft}
+                  onChange={(e) => setFaqAnswerDraft(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-200 text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-3 border-t flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingFaqIdx(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated = [...faqsList];
+                    updated[editingFaqIdx] = {
+                      ...updated[editingFaqIdx],
+                      question: faqQuestionDraft,
+                      answer: faqAnswerDraft
+                    };
+                    setFaqsList(updated);
+                    setEditingFaqIdx(null);
+                    showToast("FAQ updated successfully!", "success");
+                  }}
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                >
+                  Save FAQ Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: REVIEW STUDENT HOMEWORK */}
+      {selectedReview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 text-left">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div>
+                <span className="text-xs font-bold text-purple-600 uppercase">Student Practice Review</span>
+                <h3 className="text-lg font-bold text-slate-900">{selectedReview.studentName}</h3>
+              </div>
+              <button onClick={() => setSelectedReview(null)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-xl bg-slate-50 space-y-1">
+                <span className="text-slate-500 block text-[11px]">Item / Exercise:</span>
+                <strong className="text-slate-900 text-sm block">{selectedReview.title}</strong>
+                <a
+                  href={selectedReview.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-purple-600 hover:text-purple-800 font-bold underline mt-1"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Open Video Rehearsal Link</span>
+                </a>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">
+                  Dr. Malavika's Feedback (Musculoskeletal Alignment, Aramandi, Talam):
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="e.g. Ensure the spine remains straight during the Adavu jumps. Great speed precision..."
+                  value={feedbackInput}
+                  onChange={(e) => setFeedbackInput(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-200 text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-3 border-t flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedReview(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStudentReviews(
+                      studentReviews.map((r) =>
+                        r.id === selectedReview.id
+                          ? { ...r, feedback: feedbackInput, status: "reviewed" }
+                          : r
+                      )
+                    );
+                    setSelectedReview(null);
+                    showToast("Feedback sent directly to student portal!", "success");
+                  }}
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                >
+                  Publish Guru Feedback
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -430,15 +430,6 @@ function CourseAccordionItem({
 
             <button
               type="button"
-              onClick={() => onWhatsAppClick(course)}
-              className="px-3.5 py-2 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
-            >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-              <span>WhatsApp</span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => onViewSyllabus(course)}
               className="text-[11px] font-bold text-slate-600 hover:text-[#151515] underline underline-offset-4 cursor-pointer py-1 ml-auto"
             >

@@ -562,15 +562,6 @@ export default function Home() {
                       </>
                     )}
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={openWhatsAppBooking}
-                    className="silk-zari-btn w-full sm:w-auto px-6 py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 tap-bounce cursor-pointer shadow-lg shadow-emerald-900/30"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>WhatsApp Directly</span>
-                  </button>
                 </div>
               </form>
             )}
@@ -637,17 +628,17 @@ export default function Home() {
                 &ldquo;Still have questions? Contact DancingRagas through our website or official social media page for enquiries about registrations, fees and batch availability.&rdquo;
               </p>
               <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-                <a
-                  href={`https://wa.me/${academyInfo?.whatsappNumber || "919074585672"}?text=${encodeURIComponent(
-                    "Hello Dr. Malavika! I have an enquiry regarding registrations, fees and batch availability."
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#25D366] text-white text-xs sm:text-sm font-semibold hover:bg-[#20ba59] transition-all shadow-xs"
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("book-trial");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="silk-zari-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer tap-bounce"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Enquire via WhatsApp</span>
-                </a>
+                  <Send className="w-4 h-4 text-[#D4AF37]" />
+                  <span>Send Admissions Enquiry</span>
+                </button>
                 <a
                   href={academyInfo?.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
                   target="_blank"

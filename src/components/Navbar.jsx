@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronRight, GraduationCap, Shield, User } from "lucide-react";
 
 export default function Navbar() {
-  const { currentPage, navigateTo } = useAcademy();
+  const { currentPage, navigateTo, authUser, userRole, setIsAuthModalOpen } = useAcademy();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -129,8 +129,39 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Desktop Primary CTA: Book a Trial */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* Desktop Primary CTA: Book a Trial & Portal */}
+          <div className="hidden lg:flex items-center gap-2.5">
+            <button
+              onClick={() => {
+                playGhungrooChime();
+                if (userRole === "admin") {
+                  navigateTo("admin");
+                } else if (userRole === "student") {
+                  navigateTo("student-portal");
+                } else {
+                  setIsAuthModalOpen(true);
+                }
+              }}
+              className="px-4 py-2 rounded-full bg-white/70 hover:bg-white text-slate-800 text-xs font-bold border border-[#B99A63]/30 transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
+            >
+              {userRole === "admin" ? (
+                <>
+                  <Shield className="w-3.5 h-3.5 text-[#B99A63]" />
+                  <span>Admin CMS</span>
+                </>
+              ) : userRole === "student" ? (
+                <>
+                  <GraduationCap className="w-3.5 h-3.5 text-purple-700" />
+                  <span>Student Sanctuary</span>
+                </>
+              ) : (
+                <>
+                  <User className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Portal Login</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={handleBookTrialClick}
               className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#B99A63] hover:bg-[#cca86d] text-[#151515] font-bold text-sm tracking-wide shadow-md shadow-[#B99A63]/20 hover:scale-[1.02] active:scale-95 transition-all duration-300 cursor-pointer tap-bounce flex items-center gap-2"
@@ -205,7 +236,39 @@ export default function Navbar() {
                   );
                 })}
 
-                <div className="pt-5 mt-2 border-t border-[#A9A49D]/20">
+                <div className="pt-4 mt-2 border-t border-[#A9A49D]/20 space-y-2">
+                  <button
+                    onClick={() => {
+                      playGhungrooChime();
+                      setMobileMenuOpen(false);
+                      if (userRole === "admin") {
+                        navigateTo("admin");
+                      } else if (userRole === "student") {
+                        navigateTo("student-portal");
+                      } else {
+                        setIsAuthModalOpen(true);
+                      }
+                    }}
+                    className="w-full py-3 rounded-2xl bg-white border border-[#B99A63]/30 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer tap-bounce shadow-xs"
+                  >
+                    {userRole === "admin" ? (
+                      <>
+                        <Shield className="w-4 h-4 text-[#B99A63]" />
+                        <span>Open Admin CMS</span>
+                      </>
+                    ) : userRole === "student" ? (
+                      <>
+                        <GraduationCap className="w-4 h-4 text-purple-700" />
+                        <span>Open Student Sanctuary</span>
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-4 h-4 text-slate-600" />
+                        <span>Student &amp; Admin Portal Login</span>
+                      </>
+                    )}
+                  </button>
+
                   <button
                     onClick={handleBookTrialClick}
                     className="silk-zari-btn w-full py-3.5 rounded-full bg-[#B99A63] text-[#151515] font-extrabold text-sm text-center shadow-md shadow-[#B99A63]/25 flex items-center justify-center gap-2 cursor-pointer tap-bounce"

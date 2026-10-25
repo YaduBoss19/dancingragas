@@ -445,19 +445,10 @@ export default function CuratorMasterProfile() {
                 <button
                   type="button"
                   onClick={scrollToTrial}
-                  className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] text-xs font-bold transition-all flex items-center gap-2 cursor-pointer tap-bounce shadow-xs hover:shadow-md"
+                  className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] text-xs font-bold transition-all flex items-center gap-2 cursor-pointer tap-bounce shadow-xs hover:shadow-md"
                 >
                   <span>Book Private Consultation</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={openWhatsApp}
-                  className="px-4 py-2.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
-                >
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Chat on WhatsApp</span>
                 </button>
               </div>
             </div>

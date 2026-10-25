@@ -14,13 +14,15 @@ import Gallery from "./pages/Gallery";
 import BookTrial from "./pages/BookTrial";
 import ContactUs from "./pages/ContactUs";
 import AdminDashboard from "./pages/AdminDashboard";
+import StudentPortal from "./pages/StudentPortal";
 
 import CustomCursor from "./components/CustomCursor";
-import { MessageCircle } from "lucide-react";
+import FloatingConciergePill from "./components/FloatingConciergePill";
+import AuthModal from "./components/AuthModal";
 import "./App.css";
 
 function AppContent() {
-  const { currentPage, academyInfo } = useAcademy();
+  const { currentPage, academyInfo, isAuthModalOpen, setIsAuthModalOpen } = useAcademy();
 
   const openWhatsApp = () => {
     const url = `https://wa.me/${academyInfo.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
@@ -47,6 +49,8 @@ function AppContent() {
         return <ContactUs />;
       case "admin":
         return <AdminDashboard />;
+      case "student-portal":
+        return <StudentPortal onOpenAuth={() => setIsAuthModalOpen(true)} />;
       default:
         return <Home />;
     }
@@ -65,25 +69,17 @@ function AppContent() {
         {renderPage()}
       </main>
 
-      {/* Floating Action Buttons */}
-      {currentPage !== "admin" && (
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end">
-            {/* Quick WhatsApp Floating Button (Consistent on all devices) */}
-            <button
-              onClick={openWhatsApp}
-              className="w-12 h-12 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white flex items-center justify-center shadow-xl shadow-black/30 hover:scale-110 border border-white/20 transition-all cursor-pointer group tap-bounce"
-              title="Chat directly with Dr. Malavika on WhatsApp"
-              aria-label="Chat on WhatsApp"
-            >
-              <MessageCircle className="w-6 h-6 fill-white text-white" />
-            </button>
-          </div>
-      )}
+      {/* Luxury Floating Concierge Pill (WhatsApp) */}
+      <FloatingConciergePill />
 
       {/* Footer */}
       <Footer />
 
       {/* Global Modals & Notifications */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
       <CourseDetailsModal />
       <LightboxModal />
       <Toast />
