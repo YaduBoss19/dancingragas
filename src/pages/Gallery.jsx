@@ -154,17 +154,14 @@ export default function Gallery() {
     <div className="space-y-12 sm:space-y-16 pb-20 overflow-x-clip bg-[#F5F0E8] text-[#151515]">
       {/* Header */}
       <section className="relative pt-10 sm:pt-16 pb-12 sm:pb-16 bg-[#151515] text-[#F5F0E8] text-center border-b border-[#B99A63]/30">
-        <AnimatedSection animation="fade-up" className="max-w-4xl mx-auto px-4 sm:px-8 space-y-4">
+        <AnimatedSection animation="fade-up" className="max-w-4xl mx-auto px-4 sm:px-8 space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#3B0B14] border border-[#B99A63]/40 text-[#D4AF37] text-xs font-bold tracking-widest uppercase shadow-md">
             <Sparkles className="w-3.5 h-3.5 text-[#B99A63]" />
-            <span>Moments of Grace & Melody</span>
+            <span>Moments of Grace &amp; Melody</span>
           </div>
           <h1 className="text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight font-serif-luxury text-[#F5F0E8]">
-            Performance, Recitals & <span className="text-[#D4AF37] italic">Artistry</span>
+            Performance &amp; <span className="text-[#D4AF37] italic">Gallery</span>
           </h1>
-          <p className="text-sm sm:text-base lg:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto">
-            Glimpses into our stage productions in Georgia, classical vocal concerts, masterclass workshops, and personal mentorship under Dr. Malavika M. Sunil.
-          </p>
         </AnimatedSection>
       </section>
 

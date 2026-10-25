@@ -735,10 +735,13 @@ function InfiniteStreamCard({ item, onSelectVideo, onPhotoClick }) {
         </span>
       </div>
 
-      <div className="p-3 sm:p-4 text-left bg-[#181616]">
+      <div className="p-3 sm:p-4 space-y-1 text-left bg-[#181616]">
         <h4 className="text-xs sm:text-sm font-bold font-serif-luxury text-[#F5F0E8] group-hover:text-[#D4AF37] transition-colors truncate">
           {item.title}
         </h4>
+        <p className="text-[10px] sm:text-xs text-slate-400 truncate font-normal">
+          {item.subtitle}
+        </p>
       </div>
     </div>
   );
@@ -1218,7 +1221,7 @@ export default function CinematicReelsShowcase({
         ═══════════════════════════════════════════════════════════════ */}
         <AnimatedSection animation="fade-up" className="text-center max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#F5F0E8] font-serif-luxury">
-            Performance <span className="italic text-[#D4AF37]">Gallery</span>
+            Performance &amp; <span className="italic text-[#D4AF37]">Gallery</span>
           </h2>
         </AnimatedSection>
 
@@ -1452,6 +1455,9 @@ export default function CinematicReelsShowcase({
                       <h3 className="text-xs sm:text-xl font-bold font-serif-luxury text-[#F5F0E8] drop-shadow-md truncate">
                         {selectedVideo.title}
                       </h3>
+                      <p className="text-[9px] sm:text-xs text-slate-300 truncate font-normal">
+                        {selectedVideo.subtitle}
+                      </p>
                     </div>
                   </div>
                 )}
