@@ -22,7 +22,7 @@ import AuthModal from "./components/AuthModal";
 import "./App.css";
 
 function AppContent() {
-  const { currentPage, academyInfo, isAuthModalOpen, setIsAuthModalOpen } = useAcademy();
+  const { currentPage, academyInfo, isAuthModalOpen, setIsAuthModalOpen, isAdminLoggedIn, navigateTo } = useAcademy();
 
   const openWhatsApp = () => {
     const url = `https://wa.me/${academyInfo.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
@@ -64,6 +64,21 @@ function AppContent() {
       <CustomCursor />
 
       {/* Sticky Navigation (Hidden inside portals) */}
+      {!isPortal && isAdminLoggedIn && (
+        <div className="bg-[#1E050B] text-[#D4AF37] border-b border-[#B99A63]/40 px-4 py-2 text-xs flex items-center justify-between z-50 sticky top-0 font-sans shadow-md">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="font-bold tracking-wide">Director Live CMS Active</span>
+            <span className="hidden sm:inline text-stone-300">• Viewing Public Academy Website</span>
+          </div>
+          <button
+            onClick={() => navigateTo("admin")}
+            className="px-3.5 py-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] font-bold text-[11px] shadow-sm hover:brightness-105 transition-all cursor-pointer"
+          >
+            Return to Director Suite &rarr;
+          </button>
+        </div>
+      )}
       {!isPortal && <Navbar />}
 
       {/* Main View Area */}

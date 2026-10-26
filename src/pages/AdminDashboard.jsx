@@ -90,9 +90,9 @@ export default function AdminDashboard() {
   ];
 
   const admissionsTabs = [
-    { id: "enquiries", label: "Admissions CRM & Leads", count: (enquiries || []).length, icon: MessageSquare, desc: "Inquiries pipeline & WhatsApp" },
-    { id: "courses", label: "Courses & Tuition Catalog", count: (courses || []).length, icon: BookOpen, desc: "Public course offerings & fees" },
-    { id: "matter", label: "Site Announcements & CMS", count: null, icon: FileText, desc: "Ticker, FAQs & contact details" }
+    { id: "site_cms", label: "Master Website & Media Studio", count: null, icon: Sparkles, desc: "Edit all text, photos & media across the entire website" },
+    { id: "courses", label: "Courses & Tuition Catalog", count: (courses || []).length, icon: BookOpen, desc: "Create courses & upload photo slides" },
+    { id: "enquiries", label: "Admissions CRM & Leads", count: (enquiries || []).length, icon: MessageSquare, desc: "Inquiries pipeline & WhatsApp outreach" }
   ];
 
     // Selected Course Area for Unlisted Video Management
@@ -120,6 +120,7 @@ export default function AdminDashboard() {
 
   // Add Student Modal State
   const [isAddingStudentModal, setIsAddingStudentModal] = useState(false);
+  const [editingStudentCourses, setEditingStudentCourses] = useState(null);
   const [newStudentForm, setNewStudentForm] = useState({
     name: "",
     email: "",
@@ -463,7 +464,7 @@ export default function AdminDashboard() {
   // IF NOT LOGGED IN: Render Luxury Director Login Screen
   if (!isAdminLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-[#151515] via-[#2A080E] to-[#151515] relative overflow-hidden font-sans">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-[#1E050B] via-[#3D0B16] to-[#1E050B] relative overflow-hidden font-sans">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.08)_0,transparent_70%)] pointer-events-none" />
 
         <div className="relative w-full max-w-md rounded-3xl bg-[#1A1A1A] border border-[#B99A63]/40 shadow-2xl p-8 sm:p-10 text-center space-y-6 backdrop-blur-md">
@@ -529,7 +530,7 @@ export default function AdminDashboard() {
       {/* ═══════════════════════════════════════════════════════════════
           DEDICATED TUTOR PORTAL APP TOP NAVIGATION (NO MARKETING HEADER)
       ═══════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-40 bg-[#151515] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
+      <header className="sticky top-0 z-40 bg-[#1E050B] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
@@ -554,7 +555,7 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               onClick={() => navigateTo("student-portal")}
-              className="px-3.5 py-1.5 rounded-xl bg-[#3B0B14] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-xl bg-[#3D0B16] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
             >
               <GraduationCap className="w-3.5 h-3.5" />
               <span>Switch to Student View</span>
@@ -588,7 +589,7 @@ export default function AdminDashboard() {
       </header>
 
       {/* High Level Executive Metrics */}
-      <section className="bg-gradient-to-r from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] py-8 px-4 sm:px-8 border-b border-[#B99A63]/30">
+      <section className="bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] py-8 px-4 sm:px-8 border-b border-[#B99A63]/30">
         <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
             <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Enrolled Students</span>
@@ -624,7 +625,7 @@ export default function AdminDashboard() {
       {/* Main Executive Workspaces Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 space-y-6">
         {/* Executive Mode Switcher: Academic Studio (Tutor) vs Admissions CRM (Admin) */}
-        <div className="p-3 sm:p-4 rounded-3xl bg-[#151515] border border-[#B99A63]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-3 sm:p-4 rounded-3xl bg-[#1E050B] border border-[#B99A63]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-black/40 border border-white/10 w-full md:w-auto">
             <button
               type="button"
@@ -692,7 +693,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   isActive
-                    ? "bg-[#3B0B14] text-[#D4AF37] border border-[#B99A63]/50 shadow-sm"
+                    ? "bg-[#3D0B16] text-[#D4AF37] border border-[#B99A63]/50 shadow-sm"
                     : "text-stone-700 hover:text-stone-900 hover:bg-[#F0EBE1]"
                 }`}
               >
@@ -700,7 +701,7 @@ export default function AdminDashboard() {
                 <span>{tab.label}</span>
                 {tab.count !== null && (
                   <span className={`px-2 py-0.2 rounded-full text-[10px] font-mono ${
-                    isActive ? "bg-[#151515] text-[#D4AF37]" : "bg-stone-200 text-stone-700"
+                    isActive ? "bg-[#1E050B] text-[#D4AF37]" : "bg-stone-200 text-stone-700"
                   }`}>
                     {tab.count}
                   </span>
@@ -741,7 +742,7 @@ export default function AdminDashboard() {
                   });
                   setIsAddingVideoModal(true);
                 }}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#151515] hover:bg-[#3B0B14] text-white hover:text-[#D4AF37] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white hover:text-[#D4AF37] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
               >
                 <Plus className="w-4 h-4 text-[#D4AF37]" />
                 <span>Add Unlisted Video to {selectedCourseArea}</span>
@@ -761,12 +762,12 @@ export default function AdminDashboard() {
                     onClick={() => setSelectedCourseArea(cName)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
                       isSelected
-                        ? "bg-[#151515] text-[#D4AF37] shadow-sm"
+                        ? "bg-[#1E050B] text-[#D4AF37] shadow-sm"
                         : "bg-white text-stone-600 border border-stone-200 hover:bg-stone-50"
                     }`}
                   >
                     <span>{cName}</span>
-                    <span className={`px-2 py-0.2 rounded-full text-[10px] ${isSelected ? "bg-[#3B0B14] text-white" : "bg-stone-100 text-stone-600"}`}>
+                    <span className={`px-2 py-0.2 rounded-full text-[10px] ${isSelected ? "bg-[#3D0B16] text-white" : "bg-stone-100 text-stone-600"}`}>
                       {count} videos
                     </span>
                   </button>
@@ -904,7 +905,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => setIsAddingStudentModal(true)}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#151515] hover:bg-[#3B0B14] text-white hover:text-[#D4AF37] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white hover:text-[#D4AF37] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
               >
                 <Plus className="w-4 h-4 text-[#D4AF37]" />
                 <span>Enroll New Student</span>
@@ -939,7 +940,7 @@ export default function AdminDashboard() {
                             {stu.enrolledCourses?.map((cName) => (
                               <span
                                 key={cName}
-                                className="px-2.5 py-0.5 rounded-full bg-[#3B0B14]/10 text-[#3B0B14] font-bold text-[11px] border border-[#3B0B14]/20"
+                                className="px-2.5 py-0.5 rounded-full bg-[#3D0B16]/10 text-[#3B0B14] font-bold text-[11px] border border-[#3B0B14]/20"
                               >
                                 {cName}
                               </span>
@@ -982,7 +983,7 @@ export default function AdminDashboard() {
                                 setActiveStudentId(stu.id);
                                 navigateTo("student-portal");
                               }}
-                              className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#151515] hover:text-white text-stone-800 font-bold text-xs transition-colors"
+                              className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#1E050B] hover:text-white text-stone-800 font-bold text-xs transition-colors"
                               title="Preview Portal as this student"
                             >
                               View As Student
@@ -1045,7 +1046,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={handleExportCSV}
-                className="px-4 py-2.5 rounded-xl bg-[#151515] hover:bg-stone-800 text-white text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer w-full md:w-auto justify-center"
+                className="px-4 py-2.5 rounded-xl bg-[#1E050B] hover:bg-stone-800 text-white text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer w-full md:w-auto justify-center"
               >
                 <Download className="w-4 h-4" />
                 <span>Export Enquiries to CSV</span>
@@ -1258,7 +1259,7 @@ export default function AdminDashboard() {
                           });
                         }
                       }}
-                      className="silk-zari-btn px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                      className="silk-zari-btn px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
                     >
                       <GraduationCap className="w-3.5 h-3.5 text-[#D4AF37]" />
                       <span>{ass.status === "Evaluated" ? "Update Assessment & Rubric" : "Grade with 4-Point Rubric"}</span>
@@ -1283,7 +1284,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={openAddCourse}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-[#D4AF37]" />
                 <span>Add New Course</span>
@@ -1301,7 +1302,7 @@ export default function AdminDashboard() {
                     <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-white/95 text-stone-900 text-xs font-bold">
                       {course.category}
                     </div>
-                    <div className="absolute top-3 right-3 px-3 py-1 rounded-xl bg-[#3B0B14] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold shadow-md">
+                    <div className="absolute top-3 right-3 px-3 py-1 rounded-xl bg-[#3D0B16] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold shadow-md">
                       {course.fee}
                     </div>
                   </div>
@@ -1458,7 +1459,7 @@ export default function AdminDashboard() {
                 <div className="md:col-span-2 pt-2 flex justify-end">
                   <button
                     type="submit"
-                    className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#151515] hover:bg-[#3B0B14] text-white hover:text-[#D4AF37] font-bold text-xs shadow-md cursor-pointer"
+                    className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white hover:text-[#D4AF37] font-bold text-xs shadow-md cursor-pointer"
                   >
                     Save Live Classroom Broadcast
                   </button>
@@ -1471,6 +1472,288 @@ export default function AdminDashboard() {
         {/* ═══════════════════════════════════════════════════════════════
             TAB 7: SITE ANNOUNCEMENTS & TICKER
         ═══════════════════════════════════════════════════════════════ */}
+        
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB: MASTER WEBSITE CONTENT & MEDIA CMS (ZERO-CODE CLIENT STUDIO)
+        ═══════════════════════════════════════════════════════════════ */}
+        {activeTab === "site_cms" && (
+          <div className="space-y-8 text-left">
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-white border border-[#B99A63]/50 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37] text-[#1E050B] text-[10px] font-bold uppercase tracking-wider">
+                    Turnkey Client Studio
+                  </span>
+                  <span className="text-xs text-stone-300">Header to Footer Zero-Code Live Editor</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-white">
+                  Master Website Content &amp; Media Studio
+                </h3>
+                <p className="text-xs text-stone-300 max-w-xl">
+                  Update any headline, photo, bio, announcement ticker, or contact detail across the live website. Click &ldquo;Publish Website Changes&rdquo; below to update the live academy instantly.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigateTo("home")}
+                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Preview Live Site</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Grid of Sections to Edit */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* SECTION 1: HEADER & ACADEMY BRANDING */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">1</div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Header &amp; Brand Identity</h4>
+                    <p className="text-[11px] text-stone-500">Website navbar titles and logo presentation</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Artist / Academy Brand Name</label>
+                    <input
+                      type="text"
+                      value={infoForm.brandName || academyInfo.name || "Dr. Malavika M Sunil"}
+                      onChange={(e) => setInfoForm({ ...infoForm, brandName: e.target.value })}
+                      placeholder="e.g., Dr. Malavika M Sunil"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Brand Subtitle / Tag</label>
+                    <input
+                      type="text"
+                      value={infoForm.brandTitle || academyInfo.brandTitle || "Classical Dance & Music"}
+                      onChange={(e) => setInfoForm({ ...infoForm, brandTitle: e.target.value })}
+                      placeholder="e.g., Classical Dance & Music"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Hero / Studio Tagline</label>
+                    <input
+                      type="text"
+                      value={infoForm.tagline || academyInfo.tagline || "Your Passion. Your Pace. Your Personal Coach."}
+                      onChange={(e) => setInfoForm({ ...infoForm, tagline: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: CINEMATIC HERO & VIDEO */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">2</div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Cinematic Hero Background</h4>
+                    <p className="text-[11px] text-stone-500">Video background and headline pitch</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Hero Main Pitch</label>
+                    <input
+                      type="text"
+                      value={infoForm.heroHeadline || "Your Passion. Your Pace. Your Personal Coach."}
+                      onChange={(e) => setInfoForm({ ...infoForm, heroHeadline: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Ambient Video URL (MP4 / Web)</label>
+                    <input
+                      type="text"
+                      value={infoForm.heroVideoUrl || "/videos/performance.mp4"}
+                      onChange={(e) => setInfoForm({ ...infoForm, heroVideoUrl: e.target.value })}
+                      placeholder="/videos/performance.mp4 or https://..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-900 text-[11px] flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>The full-bleed background video runs seamlessly muted on loop with stage gold particles.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: ANNOUNCEMENT TICKER & FAQS */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">3</div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Announcements Ticker &amp; FAQs</h4>
+                    <p className="text-[11px] text-stone-500">Live scrolling ticker and student inquiries accordion</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Scrolling Announcement Ticker Bar</label>
+                    <textarea
+                      rows="2"
+                      value={tickerAnnouncement}
+                      onChange={(e) => setTickerAnnouncement(e.target.value)}
+                      placeholder="ADMISSIONS OPEN 2026/27..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none resize-none"
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-stone-700 block">Frequently Asked Questions ({faqsList.length})</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const q = window.prompt("Enter new FAQ Question:");
+                          if (!q) return;
+                          const a = window.prompt("Enter FAQ Answer:");
+                          if (!a) return;
+                          const updated = [...faqsList, { question: q, answer: a }];
+                          setFaqsList(updated);
+                          updateFaqs(updated);
+                          showToast("New FAQ added!", "success");
+                        }}
+                        className="text-[11px] font-bold text-[#3D0B16] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3 text-[#B99A63]" />
+                        <span>Add FAQ</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                      {faqsList.map((faq, idx) => (
+                        <div key={idx} className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-start justify-between gap-2">
+                          <div className="space-y-1">
+                            <p className="font-bold text-stone-900">{faq.question}</p>
+                            <p className="text-stone-500 text-[11px] line-clamp-1">{faq.answer}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = faqsList.filter((_, i) => i !== idx);
+                              setFaqsList(updated);
+                              updateFaqs(updated);
+                              showToast("FAQ removed", "info");
+                            }}
+                            className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
+                            title="Delete FAQ"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 4: CONTACT, WHATSAPP & SOCIALS */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">4</div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Direct Contact &amp; Social Links</h4>
+                    <p className="text-[11px] text-stone-500">WhatsApp hotline, phone, email &amp; Instagram handle</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">WhatsApp Direct Number (With Country Code)</label>
+                    <input
+                      type="text"
+                      value={infoForm.whatsappNumber}
+                      onChange={(e) => setInfoForm({ ...infoForm, whatsappNumber: e.target.value })}
+                      placeholder="+919074585672"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Display Direct Phone</label>
+                    <input
+                      type="text"
+                      value={infoForm.directPhone}
+                      onChange={(e) => setInfoForm({ ...infoForm, directPhone: e.target.value })}
+                      placeholder="+91 90745 85672"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Official Academy Email</label>
+                    <input
+                      type="email"
+                      value={infoForm.email}
+                      onChange={(e) => setInfoForm({ ...infoForm, email: e.target.value })}
+                      placeholder="info@malavikasunil.com"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Instagram URL</label>
+                      <input
+                        type="text"
+                        value={infoForm.instagramUrl}
+                        onChange={(e) => setInfoForm({ ...infoForm, instagramUrl: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Instagram Handle</label>
+                      <input
+                        type="text"
+                        value={infoForm.instagramHandle}
+                        onChange={(e) => setInfoForm({ ...infoForm, instagramHandle: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Master Save Bar */}
+            <div className="p-5 rounded-3xl bg-white border border-[#B99A63]/50 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="font-bold text-stone-900 block text-sm">Publish Website Content</span>
+                <span className="text-xs text-stone-500">Updates live website texts, FAQs and contact numbers immediately with zero reload.</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  updateAcademyInfo(infoForm);
+                  updateFaqs(faqsList);
+                  showToast("Website content published live! All changes active.", "success");
+                }}
+                className="silk-zari-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] font-bold text-xs sm:text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
+              >
+                <Sparkles className="w-4 h-4 text-[#1E050B]" />
+                <span>Save &amp; Publish Website Changes</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {activeTab === "matter" && (
           <div className="space-y-6 text-left">
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
@@ -1519,7 +1802,7 @@ export default function AdminDashboard() {
                     updateAcademyInfo(infoForm);
                     showToast("Announcement and contact info saved!", "success");
                   }}
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
                 >
                   Save Announcement &amp; Info
                 </button>
@@ -1702,7 +1985,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
                 >
                   Publish to Student Portal
                 </button>
@@ -1828,7 +2111,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
                 >
                   Confirm Enrolment
                 </button>
@@ -2080,7 +2363,7 @@ export default function AdminDashboard() {
                   </button>
                   <button
                     type="submit"
-                    className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs shadow-md cursor-pointer"
+                    className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs shadow-md cursor-pointer"
                   >
                     Publish Assessment to Student Portal
                   </button>
@@ -2158,7 +2441,7 @@ export default function AdminDashboard() {
                   <div className="w-16 h-16 rounded-xl bg-stone-900 overflow-hidden shrink-0 border border-stone-200 relative">
                     <img src={courseForm.image} alt="Preview" className="w-full h-full object-cover" />
                   </div>
-                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs cursor-pointer shadow-sm">
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs cursor-pointer shadow-sm">
                     <UploadCloud className="w-4 h-4 text-[#D4AF37]" />
                     <span>Upload Photo from Phone / PC</span>
                     <input
@@ -2194,7 +2477,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
                 >
                   Save Course
                 </button>

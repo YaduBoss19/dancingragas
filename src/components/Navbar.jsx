@@ -138,25 +138,25 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Right Action: Clean Portal Access Pill (No loud 'Book a Trial' button) */}
+          {/* Right Action: Clean Portal Access Pill (iPhone Deep Burgundy & Gold) */}
           <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={handlePortalClick}
-              className="group px-4 py-2 rounded-full border border-[#B99A63]/50 bg-white/80 hover:bg-[#151515] text-[#151515] hover:text-[#D4AF37] text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-2xs hover:shadow-md flex items-center gap-2 cursor-pointer tap-bounce"
+              className="group px-4 py-2 rounded-full border border-[#B99A63]/60 bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] hover:text-white text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-md shadow-[#1E050B]/20 flex items-center gap-2 cursor-pointer tap-bounce"
             >
               {userRole === "admin" ? (
                 <>
-                  <Shield className="w-3.5 h-3.5 text-[#B99A63] group-hover:text-[#D4AF37]" />
+                  <Shield className="w-3.5 h-3.5 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                   <span>Director Suite</span>
                 </>
               ) : userRole === "student" ? (
                 <>
-                  <GraduationCap className="w-3.5 h-3.5 text-purple-700 group-hover:text-[#D4AF37]" />
+                  <GraduationCap className="w-3.5 h-3.5 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                   <span>Student Sanctuary</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-3.5 h-3.5 text-[#B99A63] group-hover:text-[#D4AF37]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] group-hover:scale-110 transition-transform" />
                   <span>Portal Access</span>
                 </>
               )}

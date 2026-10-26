@@ -238,7 +238,7 @@ export default function StudentPortal({ onOpenAuth }) {
       {/* ═══════════════════════════════════════════════════════════════
           DEDICATED PORTAL APP TOP NAVIGATION (NO MARKETING HEADER)
       ═══════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-40 bg-[#151515] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#1E050B] via-[#2D0A14] to-[#1E050B] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
@@ -313,7 +313,7 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         <AnimatedSection
           animation="fade-up"
-          className="rounded-3xl bg-gradient-to-br from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] border border-[#B99A63]/40 shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left"
+          className="rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] border border-[#B99A63]/40 shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left"
         >
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.12)_0,transparent_70%)] pointer-events-none" />
 
@@ -619,7 +619,7 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "live_studio" && (
           <div className="space-y-8 text-left">
-            <div className="rounded-3xl bg-gradient-to-br from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] border border-[#B99A63]/50 shadow-2xl p-6 sm:p-10 relative overflow-hidden space-y-6">
+            <div className="rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] border border-[#B99A63]/50 shadow-2xl p-6 sm:p-10 relative overflow-hidden space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -636,16 +636,21 @@ export default function StudentPortal({ onOpenAuth }) {
                   </p>
                 </div>
 
-                <a
-                  href={liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="silk-zari-btn px-8 py-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-xl shadow-[#D4AF37]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
-                >
-                  <Video className="w-5 h-5" />
-                  <span>Launch Live Classroom</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                <div className="flex flex-col gap-2 shrink-0">
+                  <a
+                    href={`${liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live"}?authuser=${encodeURIComponent(currentStudent.email || "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="silk-zari-btn px-8 py-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-xl shadow-[#D4AF37]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0 tap-bounce"
+                  >
+                    <Video className="w-5 h-5" />
+                    <span>Join Google Meet ({currentStudent.name.split(" ")[0]})</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                  <div className="text-[10px] text-stone-300 text-center flex items-center justify-center gap-1">
+                    <span>Passcode: <strong className="text-[#D4AF37] font-mono">{liveClassConfig?.passcode || "RAGAS2026"}</strong></span>
+                  </div>
+                </div>
               </div>
 
               {/* Countdown Timer */}
