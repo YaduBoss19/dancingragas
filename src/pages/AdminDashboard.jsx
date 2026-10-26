@@ -60,7 +60,13 @@ export default function AdminDashboard() {
     academyInfo,
     updateAcademyInfo,
     testimonials,
-    updateTestimonials
+    updateTestimonials,
+    recordings,
+    addRecording,
+    updateRecordings,
+    deleteRecording,
+    liveClassConfig,
+    updateLiveClassConfig
   } = useAcademy();
 
   const [passwordInput, setPasswordInput] = useState("");
@@ -101,6 +107,28 @@ export default function AdminDashboard() {
   ]);
   const [selectedReview, setSelectedReview] = useState(null);
   const [feedbackInput, setFeedbackInput] = useState("");
+
+  // Live Broadcast & Recordings Vault State
+  const [liveForm, setLiveForm] = useState({
+    title: liveClassConfig?.title || "Bharatanatyam Diploma Masterclass: Aramandi & Tala Sync",
+    platform: liveClassConfig?.platform || "Google Meet",
+    joinUrl: liveClassConfig?.joinUrl || "https://meet.google.com/dnc-ragas-live",
+    scheduledTime: liveClassConfig?.scheduledTime || "Sunday, 5:00 PM IST / 7:30 AM EST",
+    status: liveClassConfig?.status || "Live Now",
+    instructor: liveClassConfig?.instructor || "Dr. Malavika Sunil",
+    targetBatch: liveClassConfig?.targetBatch || "Bharatanatyam Diploma & Non-Diploma"
+  });
+
+  const [isAddingRecModal, setIsAddingRecModal] = useState(false);
+  const [recForm, setRecForm] = useState({
+    title: "",
+    category: "Bharatanatyam Diploma",
+    duration: "60 mins",
+    date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    embedUrl: "",
+    description: "",
+    syllabusText: ""
+  });
 
   // Modals state
   const [editingCourse, setEditingCourse] = useState(null);
@@ -194,6 +222,62 @@ export default function AdminDashboard() {
   };
 
   // Export Enquiries to CSV
+  const handleSaveLiveConfig = (e) => {
+    e.preventDefault();
+    updateLiveClassConfig(liveForm);
+    showToast("Live classroom broadcast settings updated! Live in Student Portal.", "success");
+  };
+
+  const formatEmbedUrl = (raw) => {
+    if (!raw) return "";
+    const trimmed = raw.trim();
+    // YouTube watch URL
+    const ytMatch = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch && ytMatch[1]) {
+      return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
+    }
+    // Vimeo
+    const vimeoMatch = trimmed.match(/(?:vimeo\.com\/)(\d+)/);
+    if (vimeoMatch && vimeoMatch[1]) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+    return trimmed;
+  };
+
+  const handleAddRecordingSubmit = (e) => {
+    e.preventDefault();
+    if (!recForm.title.trim()) {
+      showToast("Masterclass title is required.", "error");
+      return;
+    }
+    const finalEmbed = formatEmbedUrl(recForm.embedUrl);
+    if (!finalEmbed) {
+      showToast("Please enter a valid YouTube or Vimeo recording link.", "error");
+      return;
+    }
+    const newRec = {
+      title: recForm.title.trim(),
+      category: recForm.category,
+      duration: recForm.duration.trim() || "60 mins",
+      date: recForm.date.trim() || "Current Term",
+      embedUrl: finalEmbed,
+      description: recForm.description.trim() || "Live lecture and practical adavu drill recording.",
+      syllabus: recForm.syllabusText.split("\n").map((s) => s.trim()).filter(Boolean)
+    };
+    addRecording(newRec);
+    setIsAddingRecModal(false);
+    setRecForm({
+      title: "",
+      category: "Bharatanatyam Diploma",
+      duration: "60 mins",
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      embedUrl: "",
+      description: "",
+      syllabusText: ""
+    });
+    showToast("Masterclass recording published to Student Vault!", "success");
+  };
+
   const handleExportCSV = () => {
     if (!enquiries.length) {
       showToast("No enquiries available to export.", "info");
@@ -221,7 +305,7 @@ export default function AdminDashboard() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `aura_academy_enquiries_${new Date().toISOString().split("T")[0]}.csv`);
+    link.setAttribute("download", `dancingragas_enquiries_${new Date().toISOString().split("T")[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -477,55 +561,63 @@ export default function AdminDashboard() {
     return true;
   });
 
-  // IF NOT LOGGED IN: Render Login Screen
+  // IF NOT LOGGED IN: Render Luxury Director Login Screen
   if (!isAdminLoggedIn) {
     return (
-      <div className="min-h-[75vh] flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200 shadow-2xl max-w-md w-full text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 mx-auto flex items-center justify-center shadow-md">
-            <Lock className="w-8 h-8" />
+      <div className="min-h-[82vh] flex items-center justify-center p-4 bg-gradient-to-b from-[#151515] via-[#2A080E] to-[#151515] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.08)_0,transparent_70%)] pointer-events-none" />
+
+        <div className="relative w-full max-w-md rounded-3xl bg-[#1A1A1A] border border-[#B99A63]/40 shadow-2xl p-8 sm:p-10 text-center space-y-6 backdrop-blur-md">
+          {/* Gold Crest */}
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] mx-auto flex items-center justify-center shadow-lg shadow-[#D4AF37]/10">
+            <Lock className="w-7 h-7" />
           </div>
 
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-              Academy Director Portal
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#D4AF37]">
+              Director Control Center
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif-luxury text-white">
+              DancingRagas <span className="text-[#D4AF37]">CMS</span>
             </h2>
-            <p className="text-xs text-slate-500">
-              Administrative access to manage leads, courses, fees, faculty, and weekly schedules.
+            <p className="text-xs text-stone-300 leading-relaxed pt-1">
+              Protected administrative suite for Dr. Malavika to manage admissions, courses, media, live classes & recordings.
             </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 text-left">
-            <strong>Demo Access Hint:</strong> Password is <code className="bg-white px-2 py-0.5 rounded font-bold text-purple-700">admin123</code>
-          </div>
-
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
-            <div className="space-y-1 text-left">
-              <label className="text-xs font-bold text-slate-700">Director Passcode</label>
-              <input
-                type="password"
-                required
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                placeholder="Enter admin passcode"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-purple-600"
-              />
+          <form onSubmit={handleLoginSubmit} className="space-y-4 pt-2">
+            <div className="space-y-1.5 text-left">
+              <label className="text-xs font-bold text-stone-200">Director Passcode</label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-[#B99A63] absolute left-3.5 top-3.5" />
+                <input
+                  type="password"
+                  required
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="Enter authorized passcode"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#B99A63]/30 bg-[#121212] text-white text-sm placeholder:text-stone-500 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-rose-500 via-purple-600 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-purple-500/25 hover:brightness-110 transition-all cursor-pointer"
+              className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
             >
-              Unlock Dashboard
+              <span>Authenticate &amp; Enter Studio CMS</span>
+              <Sparkles className="w-4 h-4" />
             </button>
           </form>
 
-          <button
-            onClick={() => navigateTo("home")}
-            className="text-xs text-slate-500 hover:text-slate-800 transition-colors"
-          >
-            â† Return to Public Website
-          </button>
+          <div className="pt-2 border-t border-white/10">
+            <button
+              onClick={() => navigateTo("home")}
+              className="text-xs text-stone-400 hover:text-[#D4AF37] transition-colors cursor-pointer"
+            >
+              &larr; Return to Public Website
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -535,43 +627,55 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8 pb-24 text-left">
       {/* Top Header Bar */}
-      <section className="bg-slate-900 text-white pt-8 pb-12 px-4 sm:px-8 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
+      <section className="bg-gradient-to-r from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] pt-8 pb-12 px-4 sm:px-8 border-b border-[#B99A63]/30 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.08)_0,transparent_60%)] pointer-events-none" />
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6 relative">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                {isSupabaseConfigured ? "Supabase Cloud Connected" : "Live CMS Active (Demo Mode)"}
+              <span className="px-3 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+                {isSupabaseConfigured ? "Supabase Cloud Active" : "Studio CMS Online"}
               </span>
-              <span className="text-xs text-slate-400">DancingRagas Classical Arts Academy</span>
+              <span className="text-xs text-stone-300">DancingRagas Classical Arts Academy</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Dr. Malavika Director Control Center &amp; CMS
+            <h1 className="text-2xl sm:text-3xl font-bold font-serif-luxury text-white tracking-wide">
+              Director Studio Management &amp; CMS
             </h1>
+            <p className="text-xs text-stone-300">
+              Welcome Dr. Malavika • Live updates publish instantly to students &amp; public visitors worldwide.
+            </p>
           </div>
 
           {/* Quick Operations */}
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => navigateTo("home")}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors flex items-center gap-1.5 border border-white/10 cursor-pointer"
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>View Public Site</span>
             </button>
 
             <button
+              onClick={() => navigateTo("student-portal")}
+              className="px-4 py-2 rounded-xl bg-[#3B0B14] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Student Portal Preview</span>
+            </button>
+
+            <button
               onClick={resetToDefaults}
-              className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-stone-300 border border-white/10 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
               title="Reset all courses, timetable and teachers to default factory preset"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Restore Factory Demo Data</span>
+              <RotateCcw className="w-3.5 h-3.5 text-stone-400" />
+              <span>Restore Presets</span>
             </button>
 
             <button
               onClick={logoutAdmin}
-              className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-rose-900/80 hover:bg-rose-800 text-rose-100 border border-rose-700/50 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out</span>
@@ -580,32 +684,32 @@ export default function AdminDashboard() {
         </div>
 
         {/* High Level Stats Strip */}
-        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3 mt-8">
-          <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase">Trial Enquiries</span>
-            <p className="text-2xl font-black text-white mt-1">{enquiries.length}</p>
+        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3 mt-8 relative">
+          <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
+            <span className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Trial Enquiries</span>
+            <p className="text-2xl font-bold font-serif-luxury text-white mt-1">{enquiries.length}</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60">
-            <span className="text-[11px] font-semibold text-rose-400 uppercase">New Leads</span>
-            <p className="text-2xl font-black text-rose-400 mt-1">
+          <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
+            <span className="text-[11px] font-semibold text-rose-300 uppercase tracking-wider">New Leads</span>
+            <p className="text-2xl font-bold font-serif-luxury text-rose-400 mt-1">
               {enquiries.filter((e) => e.status === "New").length}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60">
-            <span className="text-[11px] font-semibold text-purple-400 uppercase">Classes & Services</span>
-            <p className="text-2xl font-black text-purple-400 mt-1">{courses.length}</p>
+          <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
+            <span className="text-[11px] font-semibold text-[#D4AF37] uppercase tracking-wider">Classes &amp; Services</span>
+            <p className="text-2xl font-bold font-serif-luxury text-[#D4AF37] mt-1">{courses.length}</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60">
-            <span className="text-[11px] font-semibold text-amber-400 uppercase">Principal Guru</span>
-            <p className="text-base sm:text-lg font-black text-amber-300 mt-1 truncate">Dr. Malavika</p>
+          <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
+            <span className="text-[11px] font-semibold text-amber-300 uppercase tracking-wider">Vault Recordings</span>
+            <p className="text-2xl font-bold font-serif-luxury text-amber-300 mt-1">{(recordings || []).length}</p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60">
-            <span className="text-[11px] font-semibold text-indigo-400 uppercase">Gallery Items</span>
-            <p className="text-2xl font-black text-indigo-400 mt-1">{gallery.length}</p>
+          <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
+            <span className="text-[11px] font-semibold text-stone-300 uppercase tracking-wider">Principal Mentor</span>
+            <p className="text-base sm:text-lg font-bold font-serif-luxury text-white mt-1 truncate">Dr. Malavika</p>
           </div>
         </div>
       </section>
@@ -613,12 +717,13 @@ export default function AdminDashboard() {
       {/* Main Tabbed Layout Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-slate-200 shadow-xs overflow-x-auto max-w-full">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-[#FAF7F2] border border-[#B99A63]/30 shadow-xs overflow-x-auto max-w-full">
           {[
             { id: "enquiries", label: `Enquiries (${enquiries.length})`, icon: MessageSquare },
             { id: "courses", label: `Classes & Services (${courses.length})`, icon: BookOpen },
+            { id: "live_classroom", label: `Live Class & Vault (${(recordings || []).length})`, icon: Video },
             { id: "gallery", label: `Media Vault (${gallery.length})`, icon: ImageIcon },
-            { id: "matter", label: "Matter & FAQs CMS", icon: FileText },
+            { id: "matter", label: "Announcement & FAQs CMS", icon: FileText },
             { id: "students", label: "Student Reviews & Homework", icon: GraduationCap }
           ].map((tab) => {
             const Icon = tab.icon;
@@ -629,8 +734,8 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap tap-bounce shrink-0 ${
                   isActive
-                    ? "bg-purple-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                    ? "bg-[#3B0B14] text-[#D4AF37] border border-[#B99A63]/50 shadow-sm"
+                    : "text-stone-700 hover:text-stone-900 hover:bg-[#F0EBE1]"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -653,7 +758,7 @@ export default function AdminDashboard() {
                     value={enquirySearch}
                     onChange={(e) => setEnquirySearch(e.target.value)}
                     placeholder="Search by student, course, phone..."
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-purple-600"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-[#B99A63]"
                   />
                 </div>
 
@@ -729,13 +834,13 @@ export default function AdminDashboard() {
                                 <span>{enq.phone}</span>
                               </div>
                               <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
-                                <Mail className="w-3 h-3 text-purple-600 shrink-0" />
+                                <Mail className="w-3 h-3 text-[#B99A63] shrink-0" />
                                 <span>{enq.email}</span>
                               </div>
                             </td>
 
                             <td className="py-4 px-4">
-                              <div className="font-bold text-purple-700">{enq.course}</div>
+                              <div className="font-bold text-[#3B0B14]">{enq.course}</div>
                               <div className="text-[11px] text-slate-500">{enq.preferredTime}</div>
                             </td>
 
@@ -764,7 +869,7 @@ export default function AdminDashboard() {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    const text = `Hello ${enq.parentName || enq.studentName}! This is Aura Arts Academy regarding your trial enquiry for ${enq.course}.`;
+                                    const text = `Hello ${enq.parentName || enq.studentName}! This is DancingRagas Classical Arts Academy regarding your trial enquiry for ${enq.course}.`;
                                     window.open(`https://wa.me/${enq.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(text)}`, "_blank");
                                   }}
                                   className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50"
@@ -822,7 +927,7 @@ export default function AdminDashboard() {
                     const updated = [...(testimonials || []), newTestimonial];
                     updateTestimonials(updated);
                   }}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Story</span>
@@ -846,7 +951,7 @@ export default function AdminDashboard() {
                               updated[tIdx] = { ...updated[tIdx], name: e.target.value };
                               updateTestimonials(updated);
                             }}
-                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#B99A63] focus:outline-none"
                           />
                           <input
                             type="text"
@@ -857,13 +962,13 @@ export default function AdminDashboard() {
                               updateTestimonials(updated);
                             }}
                             placeholder="Location"
-                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#B99A63] focus:outline-none"
                           />
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 text-purple-700 cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
+                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-[#FAF7F2] text-[#3B0B14] cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
                           <UploadCloud className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">Photo</span>
                           <input
@@ -913,7 +1018,7 @@ export default function AdminDashboard() {
                         updated[tIdx] = { ...updated[tIdx], quote: e.target.value };
                         updateTestimonials(updated);
                       }}
-                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-purple-600 font-serif-luxury"
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-[#B99A63] font-serif-luxury"
                     />
                   </div>
                 ))}
@@ -933,7 +1038,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={openAddCourse}
-                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add New Course</span>
@@ -959,7 +1064,7 @@ export default function AdminDashboard() {
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
                     <div>
                       <h4 className="text-lg font-bold text-slate-900">{course.title}</h4>
-                      <p className="text-xs text-purple-700 font-semibold mt-0.5">{course.ageGroup}</p>
+                      <p className="text-xs text-[#3B0B14] font-semibold mt-0.5">{course.ageGroup}</p>
                       <p className="text-xs text-slate-600 line-clamp-2 mt-2 leading-relaxed">{course.description}</p>
                     </div>
 
@@ -1002,7 +1107,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={openAddTeacher}
-                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Teacher Profile</span>
@@ -1028,7 +1133,7 @@ export default function AdminDashboard() {
                     </div>
 
                     <h4 className="text-lg font-bold text-slate-900">{teacher.name}</h4>
-                    <p className="text-xs font-semibold text-purple-700">{teacher.role}</p>
+                    <p className="text-xs font-semibold text-[#3B0B14]">{teacher.role}</p>
                     <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">{teacher.bio}</p>
 
                     <div className="pt-3 flex items-center gap-2">
@@ -1070,7 +1175,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={openAddTimetable}
-                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Class Slot</span>
@@ -1094,7 +1199,7 @@ export default function AdminDashboard() {
                     {timetable.map((slot) => (
                       <tr key={slot.id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-4">
-                          <span className="font-extrabold text-purple-700">{slot.day}</span>
+                          <span className="font-extrabold text-[#3B0B14]">{slot.day}</span>
                           <div className="text-slate-500 text-[11px]">{slot.time}</div>
                         </td>
                         <td className="py-3.5 px-4 font-bold text-slate-900">{slot.course}</td>
@@ -1156,7 +1261,7 @@ export default function AdminDashboard() {
                     const updated = [...(testimonials || []), newTestimonial];
                     updateTestimonials(updated);
                   }}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Story</span>
@@ -1180,7 +1285,7 @@ export default function AdminDashboard() {
                               updated[tIdx] = { ...updated[tIdx], name: e.target.value };
                               updateTestimonials(updated);
                             }}
-                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#B99A63] focus:outline-none"
                           />
                           <input
                             type="text"
@@ -1191,13 +1296,13 @@ export default function AdminDashboard() {
                               updateTestimonials(updated);
                             }}
                             placeholder="Location"
-                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#B99A63] focus:outline-none"
                           />
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 text-purple-700 cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
+                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-[#FAF7F2] text-[#3B0B14] cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
                           <UploadCloud className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">Photo</span>
                           <input
@@ -1247,7 +1352,7 @@ export default function AdminDashboard() {
                         updated[tIdx] = { ...updated[tIdx], quote: e.target.value };
                         updateTestimonials(updated);
                       }}
-                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-purple-600 font-serif-luxury"
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-[#B99A63] font-serif-luxury"
                     />
                   </div>
                 ))}
@@ -1267,7 +1372,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={() => setIsAddingGallery(true)}
-                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Gallery Item</span>
@@ -1330,7 +1435,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => showToast("Announcement text saved to live site!", "success")}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs cursor-pointer"
                 >
                   Save Ticker
                 </button>
@@ -1340,7 +1445,7 @@ export default function AdminDashboard() {
                 rows={2}
                 value={tickerAnnouncement}
                 onChange={(e) => setTickerAnnouncement(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-200 text-xs sm:text-sm font-medium focus:border-purple-600 focus:outline-none"
+                className="w-full p-3 rounded-xl border border-slate-200 text-xs sm:text-sm font-medium focus:border-[#B99A63] focus:outline-none"
               />
             </div>
 
@@ -1363,7 +1468,7 @@ export default function AdminDashboard() {
                       ...infoForm
                     });
                   }}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs cursor-pointer shadow-sm"
                 >
                   Save Contact Details
                 </button>
@@ -1434,7 +1539,7 @@ export default function AdminDashboard() {
                     const updated = [...(faqs || []), newFaq];
                     updateFaqs(updated);
                   }}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add FAQ</span>
@@ -1449,7 +1554,7 @@ export default function AdminDashboard() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 font-mono text-xs font-bold flex items-center justify-center shrink-0">
+                        <span className="w-7 h-7 rounded-lg bg-purple-100 text-[#3B0B14] font-mono text-xs font-bold flex items-center justify-center shrink-0">
                           {faq.number || String(fIdx + 1).padStart(2, "0")}
                         </span>
                         <h4 className="text-xs sm:text-sm font-bold text-slate-900">{faq.question}</h4>
@@ -1460,7 +1565,7 @@ export default function AdminDashboard() {
                           setFaqQuestionDraft(faq.question);
                           setFaqAnswerDraft(faq.answer);
                         }}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-purple-600 hover:bg-white cursor-pointer shrink-0"
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-[#B99A63] hover:bg-white cursor-pointer shrink-0"
                         title="Edit FAQ"
                       >
                         <Edit className="w-3.5 h-3.5" />
@@ -1500,7 +1605,7 @@ export default function AdminDashboard() {
                     const updated = [...(testimonials || []), newTestimonial];
                     updateTestimonials(updated);
                   }}
-                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Story</span>
@@ -1524,7 +1629,7 @@ export default function AdminDashboard() {
                               updated[tIdx] = { ...updated[tIdx], name: e.target.value };
                               updateTestimonials(updated);
                             }}
-                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#B99A63] focus:outline-none"
                           />
                           <input
                             type="text"
@@ -1535,13 +1640,13 @@ export default function AdminDashboard() {
                               updateTestimonials(updated);
                             }}
                             placeholder="Location"
-                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#B99A63] focus:outline-none"
                           />
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 text-purple-700 cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
+                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-[#FAF7F2] text-[#3B0B14] cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
                           <UploadCloud className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">Photo</span>
                           <input
@@ -1591,7 +1696,7 @@ export default function AdminDashboard() {
                         updated[tIdx] = { ...updated[tIdx], quote: e.target.value };
                         updateTestimonials(updated);
                       }}
-                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-purple-600 font-serif-luxury"
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-[#B99A63] font-serif-luxury"
                     />
                   </div>
                 ))}
@@ -1620,7 +1725,7 @@ export default function AdminDashboard() {
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-purple-700">{rev.batch}</span>
+                      <span className="text-xs font-bold text-[#3B0B14]">{rev.batch}</span>
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                           rev.status === "reviewed"
@@ -1640,7 +1745,7 @@ export default function AdminDashboard() {
                       href={rev.videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-800 font-bold underline"
+                      className="inline-flex items-center gap-1.5 text-xs text-[#B99A63] hover:text-purple-800 font-bold underline"
                     >
                       <Video className="w-3.5 h-3.5" />
                       <span>Watch Practice Video Link</span>
@@ -1672,13 +1777,132 @@ export default function AdminDashboard() {
         )}
       </div>
 
+            {/* Add New Recording Modal (Option A2) */}
+      {isAddingRecModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="w-full max-w-lg rounded-3xl bg-white border border-[#B99A63]/50 shadow-2xl overflow-hidden p-6 sm:p-7 space-y-5 text-left">
+            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#B99A63]">Option A2 Vault</span>
+                <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                  Add Masterclass Recording
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddingRecModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddRecordingSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Session Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={recForm.title}
+                  onChange={(e) => setRecForm({ ...recForm, title: e.target.value })}
+                  placeholder="e.g. Session 12: Natyarambham & Asamyuta Mudras"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-[#B99A63]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Course Discipline</label>
+                  <select
+                    value={recForm.category}
+                    onChange={(e) => setRecForm({ ...recForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none"
+                  >
+                    <option value="Bharatanatyam Diploma">Bharatanatyam Diploma</option>
+                    <option value="Bharatanatyam Non-Diploma">Bharatanatyam Non-Diploma</option>
+                    <option value="Carnatic Music">Carnatic Music</option>
+                    <option value="Bollywood & Semi-Classical">Bollywood & Semi-Classical</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Duration &amp; Date</label>
+                  <input
+                    type="text"
+                    value={recForm.duration}
+                    onChange={(e) => setRecForm({ ...recForm, duration: e.target.value })}
+                    placeholder="e.g. 60 mins"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">
+                  YouTube Unlisted or Vimeo Link *
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={recForm.embedUrl}
+                  onChange={(e) => setRecForm({ ...recForm, embedUrl: e.target.value })}
+                  placeholder="https://youtu.be/... or https://www.youtube.com/watch?v=... or Vimeo"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none font-mono"
+                />
+                <span className="text-[11px] text-stone-500 mt-1 block">
+                  Paste standard YouTube or unlisted link &mdash; we automatically format it into a distraction-free player.
+                </span>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Session Summary / Description</label>
+                <textarea
+                  rows={2}
+                  value={recForm.description}
+                  onChange={(e) => setRecForm({ ...recForm, description: e.target.value })}
+                  placeholder="Overview of this week's drills and corrections..."
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Covered Topics / Mudras (One per line)</label>
+                <textarea
+                  rows={3}
+                  value={recForm.syllabusText}
+                  onChange={(e) => setRecForm({ ...recForm, syllabusText: e.target.value })}
+                  placeholder="Tatta Adavu 1-8\nPataka & Tripataka Mudras\nAramandi posture corrections"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none font-mono"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingRecModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#3B0B14] hover:bg-[#4E0E1B] text-[#D4AF37] text-xs font-bold shadow-md cursor-pointer"
+                >
+                  Publish to Student Vault
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: VIEW ENQUIRY DETAILS */}
       {viewingEnquiry && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 text-left">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
-                <span className="text-xs font-mono font-bold text-purple-600">{viewingEnquiry.id}</span>
+                <span className="text-xs font-mono font-bold text-[#B99A63]">{viewingEnquiry.id}</span>
                 <h3 className="text-lg font-bold text-slate-900">Enquiry & Lead Details</h3>
               </div>
               <button onClick={() => setViewingEnquiry(null)} className="p-1 text-slate-400 hover:text-slate-600">
@@ -1719,7 +1943,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <span className="text-slate-500 block text-[11px]">Selected Class</span>
-                  <strong className="text-purple-700">{viewingEnquiry.course}</strong>
+                  <strong className="text-[#3B0B14]">{viewingEnquiry.course}</strong>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">Preferred Timing</span>
@@ -1733,7 +1957,7 @@ export default function AdminDashboard() {
               </div>
 
               {viewingEnquiry.notes && (
-                <div className="p-3 rounded-xl bg-purple-50 text-purple-950 text-xs">
+                <div className="p-3 rounded-xl bg-[#FAF7F2] text-purple-950 text-xs">
                   <span className="font-bold block mb-1">Notes / Special Requests:</span>
                   <p>{viewingEnquiry.notes}</p>
                 </div>
@@ -1780,7 +2004,7 @@ export default function AdminDashboard() {
                   value={courseForm.title}
                   onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
                   placeholder="e.g. Jazz & Broadway Dance"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-purple-600"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-[#B99A63]"
                 />
               </div>
 
@@ -1892,7 +2116,7 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   {isUploadingCourseMedia && (
-                    <span className="text-xs text-purple-700 font-semibold animate-pulse">
+                    <span className="text-xs text-[#3B0B14] font-semibold animate-pulse">
                       {uploadProgressText || "Processing..."}
                     </span>
                   )}
@@ -1908,7 +2132,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="flex-1 space-y-2">
-                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer shadow-sm transition-all tap-bounce">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs cursor-pointer shadow-sm transition-all tap-bounce">
                       <UploadCloud className="w-4 h-4" />
                       <span>Upload Photo from Phone / PC</span>
                       <input
@@ -2013,7 +2237,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold"
                 >
                   Save Course
                 </button>
@@ -2159,7 +2383,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold"
                 >
                   Save Profile
                 </button>
@@ -2303,7 +2527,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold"
                 >
                   Save Timetable Slot
                 </button>
@@ -2367,9 +2591,9 @@ export default function AdminDashboard() {
               </div>
 
               {/* Direct File Upload & Preview */}
-              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/80 space-y-2">
+              <div className="p-3.5 rounded-2xl bg-[#FAF7F2]/70 border border-[#B99A63]/30/80 space-y-2">
                 <label className="font-bold text-purple-900 block text-xs flex items-center gap-1.5">
-                  <UploadCloud className="w-3.5 h-3.5 text-purple-600" />
+                  <UploadCloud className="w-3.5 h-3.5 text-[#B99A63]" />
                   <span>Choose Media File from Computer (Photos / Recital Clips)</span>
                 </label>
                 <input
@@ -2449,7 +2673,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold"
                 >
                   Publish to Gallery
                 </button>
@@ -2510,7 +2734,7 @@ export default function AdminDashboard() {
                     updateFaqs(updated);
                     setEditingFaqIdx(null);
                   }}
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold"
                 >
                   Save FAQ Changes
                 </button>
@@ -2526,7 +2750,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 text-left">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
-                <span className="text-xs font-bold text-purple-600 uppercase">Student Practice Review</span>
+                <span className="text-xs font-bold text-[#B99A63] uppercase">Student Practice Review</span>
                 <h3 className="text-lg font-bold text-slate-900">{selectedReview.studentName}</h3>
               </div>
               <button onClick={() => setSelectedReview(null)} className="p-1 text-slate-400 hover:text-slate-600">
@@ -2542,7 +2766,7 @@ export default function AdminDashboard() {
                   href={selectedReview.videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-purple-600 hover:text-purple-800 font-bold underline mt-1"
+                  className="inline-flex items-center gap-1.5 text-[#B99A63] hover:text-purple-800 font-bold underline mt-1"
                 >
                   <Video className="w-3.5 h-3.5" />
                   <span>Open Video Rehearsal Link</span>
@@ -2583,7 +2807,7 @@ export default function AdminDashboard() {
                     setSelectedReview(null);
                     showToast("Feedback sent directly to student portal!", "success");
                   }}
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold"
                 >
                   Publish Guru Feedback
                 </button>

@@ -7,7 +7,9 @@ import {
   INITIAL_ENQUIRIES,
   ACADEMY_INFO,
   FAQS,
-  TESTIMONIALS
+  TESTIMONIALS,
+  INITIAL_RECORDINGS,
+  INITIAL_LIVE_CLASS
 } from "../data/initialData";
 
 const AcademyContext = createContext();
@@ -21,7 +23,9 @@ const STORAGE_KEYS = {
   AUTH: "dancingragas_academy_admin_auth_v2",
   FAQS: "dancingragas_academy_faqs_v2",
   TESTIMONIALS: "dancingragas_academy_testimonials_v2",
-  INFO: "dancingragas_academy_info_v2"
+  INFO: "dancingragas_academy_info_v2",
+  RECORDINGS: "dancingragas_academy_recordings_v1",
+  LIVE_CLASS: "dancingragas_academy_live_class_v1"
 };
 
 export const AcademyProvider = ({ children }) => {
@@ -115,6 +119,24 @@ export const AcademyProvider = ({ children }) => {
       return saved ? JSON.parse(saved) : TESTIMONIALS;
     } catch {
       return TESTIMONIALS;
+    }
+  });
+
+  const [recordings, setRecordings] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.RECORDINGS);
+      return saved ? JSON.parse(saved) : INITIAL_RECORDINGS;
+    } catch {
+      return INITIAL_RECORDINGS;
+    }
+  });
+
+  const [liveClassConfig, setLiveClassConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.LIVE_CLASS);
+      return saved ? JSON.parse(saved) : INITIAL_LIVE_CLASS;
+    } catch {
+      return INITIAL_LIVE_CLASS;
     }
   });
 
@@ -240,6 +262,22 @@ export const AcademyProvider = ({ children }) => {
   }, [testimonials]);
 
   useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.RECORDINGS, JSON.stringify(recordings));
+    } catch (e) {
+      console.error("Failed to save recordings to localStorage", e);
+    }
+  }, [recordings]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LIVE_CLASS, JSON.stringify(liveClassConfig));
+    } catch (e) {
+      console.error("Failed to save liveClassConfig to localStorage", e);
+    }
+  }, [liveClassConfig]);
+
+  useEffect(() => {
     const handlePopState = () => {
       setCurrentPage(getInitialPage());
     };
@@ -288,6 +326,27 @@ export const AcademyProvider = ({ children }) => {
   const updateTestimonials = (newTestimonials) => {
     setTestimonials(newTestimonials);
     showToast("Student stories and reviews saved!", "success");
+  };
+
+  const updateRecordings = (newRecordings) => {
+    setRecordings(newRecordings);
+    showToast("Class recordings vault updated!", "success");
+  };
+
+  const addRecording = (recData) => {
+    const newRec = { ...recData, id: "rec-" + Date.now() };
+    setRecordings((prev) => [newRec, ...prev]);
+    showToast("New recorded class published to student vault!", "success");
+  };
+
+  const deleteRecording = (id) => {
+    setRecordings((prev) => prev.filter((r) => r.id !== id));
+    showToast("Recording removed from vault.", "info");
+  };
+
+  const updateLiveClassConfig = (newConfig) => {
+    setLiveClassConfig(newConfig);
+    showToast("Live classroom schedule and link saved!", "success");
   };
 
   // Auth
@@ -454,6 +513,12 @@ export const AcademyProvider = ({ children }) => {
         updateFaqs,
         updateAcademyInfo,
         updateTestimonials,
+        recordings,
+        updateRecordings,
+        addRecording,
+        deleteRecording,
+        liveClassConfig,
+        updateLiveClassConfig,
         isAdminLoggedIn: isAdminLoggedIn || userRole === "admin",
         authUser,
         setAuthUser,

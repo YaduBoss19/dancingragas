@@ -472,7 +472,7 @@ export default function BookTrial() {
                 </button>
 
                 <p className="text-center text-xs text-slate-400">
-                  By booking, you agree to receive a confirmation WhatsApp/SMS from Aura Academy. We never share your data.
+                  By booking, you agree to receive a confirmation WhatsApp/SMS from DancingRagas. We never share your data.
                 </p>
               </form>
             </AnimatedSection>

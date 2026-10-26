@@ -1223,3 +1223,64 @@ export const PERFORMANCE_REELS = [
   }
 ];
 
+
+
+export const INITIAL_RECORDINGS = [
+  {
+    id: "rec-1",
+    title: "Bharatanatyam Diploma: Tatta & Natta Adavu Speed Drills",
+    batch: "Online Bharatanatyam Diploma Course",
+    category: "Bharatanatyam",
+    date: "Oct 24, 2026",
+    duration: "58 mins",
+    videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+    videoType: "youtube",
+    topics: ["Aramandi alignment biomechanics", "Tatta Adavu 1-8 in 3 speeds", "Talam precision check"],
+    thumbnail: "/images/courses/Courses/bharatanatyam_diploma/main.jpg"
+  },
+  {
+    id: "rec-2",
+    title: "Alarippu (Tisra Ekam) Step-by-Step Repertoire & Sollukattu",
+    batch: "Online Bharatanatyam Diploma Course",
+    category: "Bharatanatyam",
+    date: "Oct 20, 2026",
+    duration: "62 mins",
+    videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+    videoType: "youtube",
+    topics: ["Eye and neck coordination (Drishti & Greeva Bheda)", "Full Alarippu rehearsal with cymbals"],
+    thumbnail: "/images/courses/Courses/bharatanatyam_diploma/slide_01.jpg"
+  },
+  {
+    id: "rec-3",
+    title: "Carnatic Music: Mayamalavagowla Geetham & Shruti Alignment",
+    batch: "Online Carnatic Music Classes",
+    category: "Carnatic Music",
+    date: "Oct 22, 2026",
+    duration: "55 mins",
+    videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+    videoType: "youtube",
+    topics: ["Voice culture in Madhyama Sthayi", "Sri Gananatha Geetham breakdown", "Tala tracking"],
+    thumbnail: "/images/courses/Courses/carnatic_music/main.jpg"
+  },
+  {
+    id: "rec-4",
+    title: "Semi-Classical Bollywood: Graceful Mudras & Lyrical Choreography",
+    batch: "Online Semi-Classical Bollywood Dance Classes",
+    category: "Bollywood & Semi-Classical",
+    date: "Oct 18, 2026",
+    duration: "50 mins",
+    videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+    videoType: "youtube",
+    topics: ["Spins and lyrical arm flow", "Facial expressions (Navarasa)", "Stage presentation"],
+    thumbnail: "/images/courses/Courses/bollywood_dance/main.jpg"
+  }
+];
+
+export const INITIAL_LIVE_CLASS = {
+  activeBatch: "Online Bharatanatyam Diploma Course",
+  sessionTitle: "Bharatanatyam Diploma: Margam & Adavu Precision",
+  scheduledDayTime: "Monday & Friday • 05:30 PM - 06:30 PM",
+  meetUrl: "https://meet.google.com/new",
+  status: "Studio Ready",
+  notice: "Interactive live masterclass conducted directly by Dr. Malavika. Ensure ghungroos and practice attire are ready."
+};

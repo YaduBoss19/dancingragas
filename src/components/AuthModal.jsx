@@ -76,18 +76,6 @@ export default function AuthModal({ isOpen, onClose }) {
     }
   };
 
-  const handleQuickDemoAdmin = () => {
-    setEmail("malavika@malavikasunil.com");
-    setPassword("admin123");
-    setAuthRole("admin");
-  };
-
-  const handleQuickDemoStudent = () => {
-    setEmail("student@dancingragas.com");
-    setPassword("student123");
-    setAuthRole("student");
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-md rounded-3xl bg-[#FAF7F2] border border-[#B99A63]/50 shadow-2xl overflow-hidden text-left">
@@ -268,25 +256,20 @@ export default function AuthModal({ isOpen, onClose }) {
             </div>
           )}
 
-          {/* Quick Demo Pre-fill helpers for instant testing */}
-          <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 text-[11px] text-slate-700 space-y-2">
-            <span className="font-bold text-amber-950 block">Instant Testing Access:</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleQuickDemoAdmin}
-                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-slate-900 font-semibold hover:bg-amber-100 transition-colors cursor-pointer"
-              >
-                Test as Admin (Dr. Malavika)
-              </button>
-              <button
-                type="button"
-                onClick={handleQuickDemoStudent}
-                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-slate-900 font-semibold hover:bg-amber-100 transition-colors cursor-pointer"
-              >
-                Test as Student
-              </button>
+          {/* Enrolment Support */}
+          <div className="p-3.5 rounded-2xl bg-[#F5F0E8] border border-[#B99A63]/30 text-[11px] text-[#3B0B14] flex items-center justify-between gap-3">
+            <div>
+              <span className="font-bold block">Need Enrolment or Login Help?</span>
+              <span className="text-stone-600">Contact Dr. Malavika at +91 90745 85672</span>
             </div>
+            <a
+              href="https://wa.me/919074585672?text=Hello%20Dr.%20Malavika%2C%20I%20need%20assistance%20logging%20into%20the%20DancingRagas%20Portal."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-xl bg-[#25D366] text-white font-bold text-xs shrink-0 hover:brightness-105 transition-all shadow-xs"
+            >
+              WhatsApp
+            </a>
           </div>
         </div>
       </div>

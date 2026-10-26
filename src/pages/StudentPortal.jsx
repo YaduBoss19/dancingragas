@@ -10,26 +10,51 @@ import {
   Upload,
   Play,
   Volume2,
-  CheckCircle,
+  CheckCircle2,
   FileText,
   User,
   LogOut,
   ExternalLink,
   Sparkles,
-  ShieldAlert,
-  ArrowRight
+  ShieldCheck,
+  Film,
+  Search,
+  ChevronRight,
+  Filter,
+  Award
 } from "lucide-react";
 
 export default function StudentPortal({ onOpenAuth }) {
-  const { authUser, userRole, handleLogout, showToast } = useAcademy();
+  const {
+    authUser,
+    userRole,
+    handleLogout,
+    showToast,
+    recordings,
+    liveClassConfig
+  } = useAcademy();
 
   // Local Timezone calculation
   const [userTimezone, setUserTimezone] = useState("");
-  const [activeTab, setActiveTab] = useState("schedule"); // 'schedule' | 'resources' | 'practice'
+  const [activeTab, setActiveTab] = useState("schedule"); // 'schedule' | 'recordings' | 'resources' | 'practice'
 
-  // Mock student batch data (connected to Supabase/state)
-  const studentName = authUser?.user_metadata?.full_name || authUser?.email?.split("@")[0] || "Student Artist";
-  const batchName = authUser?.user_metadata?.batch_name || "Online Bharatanatyam Diploma (Batch A)";
+  // Selected recording for theater mode
+  const activeRecordings = recordings || [];
+  const [selectedRecording, setSelectedRecording] = useState(
+    activeRecordings[0] || null
+  );
+  const [recordingSearch, setRecordingSearch] = useState("");
+  const [recordingFilter, setRecordingFilter] = useState("All");
+
+  // Student batch and identity
+  const studentName =
+    authUser?.user_metadata?.full_name ||
+    authUser?.email?.split("@")[0] ||
+    "Student Artist";
+  const batchName =
+    authUser?.user_metadata?.batch_name ||
+    liveClassConfig?.activeBatch ||
+    "Online Bharatanatyam Diploma Course";
 
   useEffect(() => {
     try {
@@ -50,19 +75,20 @@ export default function StudentPortal({ onOpenAuth }) {
     {
       id: "sub-1",
       title: "Adavu Step 1-4 Posture & Aramandi Check",
-      date: "Oct 22, 2026",
+      date: "Oct 24, 2026",
       status: "reviewed",
       feedback:
-        "Excellent footwork precision! Make sure the Aramandi knee angle stays aligned without leaning forward to protect the joints.",
+        "Excellent footwork precision! Keep your torso lengthened and ensure the Aramandi knee angle stays open without leaning forward to protect the patella.",
       mentor: "Dr. Malavika M. Sunil (MBBS)"
     },
     {
       id: "sub-2",
       title: "Alarippu Talam Precision (Tisra Ekam)",
-      date: "Oct 25, 2026",
+      date: "Oct 22, 2026",
       status: "pending",
-      feedback: "Reviewing in progress. Feedback will be posted before Saturday masterclass.",
-      mentor: "Pending"
+      feedback:
+        "Submission received. Dr. Malavika is evaluating your rhythmic cadence and eye coordination.",
+      mentor: "Under Review"
     }
   ]);
 
@@ -80,8 +106,9 @@ export default function StudentPortal({ onOpenAuth }) {
           title: submissionTitle,
           date: "Just now",
           status: "pending",
-          feedback: "Submission received. Dr. Malavika will review your biomechanics & rhythm shortly.",
-          mentor: "Dr. Malavika M. Sunil"
+          feedback:
+            "Submission received. Dr. Malavika will evaluate your biomechanics & rhythm shortly.",
+          mentor: "Dr. Malavika M. Sunil (MBBS)"
         },
         ...submissions
       ]);
@@ -93,21 +120,40 @@ export default function StudentPortal({ onOpenAuth }) {
     }, 600);
   };
 
+  // Filter recordings
+  const filteredRecordings = activeRecordings.filter((rec) => {
+    const matchCat =
+      recordingFilter === "All" || rec.category === recordingFilter;
+    const matchSearch =
+      !recordingSearch.trim() ||
+      rec.title.toLowerCase().includes(recordingSearch.toLowerCase()) ||
+      (rec.topics &&
+        rec.topics.some((t) =>
+          t.toLowerCase().includes(recordingSearch.toLowerCase())
+        ));
+    return matchCat && matchSearch;
+  });
+
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#151515] py-10 sm:py-16 px-4 sm:px-8">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#151515] py-8 sm:py-14 px-4 sm:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Top Header Card */}
-        <div className="rounded-3xl bg-gradient-to-r from-[#151515] via-[#25060C] to-[#151515] text-[#F5F0E8] p-6 sm:p-10 border border-[#B99A63]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        <AnimatedSection
+          animation="fade-up"
+          className="rounded-3xl bg-gradient-to-r from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] p-6 sm:p-10 border border-[#B99A63]/40 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden text-left"
+        >
+          <div className="absolute top-0 right-1/4 w-[350px] h-[350px] bg-[#B99A63]/10 rounded-full blur-[100px] pointer-events-none" />
+
           <div className="relative z-10 space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B99A63]/20 border border-[#B99A63]/40 text-[#D4AF37] text-xs font-semibold">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#B99A63]/20 border border-[#B99A63]/40 text-[#D4AF37] text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>DancingRagas Student Sanctuary</span>
+              <span>DancingRagas Ragas Vidyalaya • Student Sanctuary</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-bold font-serif-luxury tracking-tight">
               Namaskaram, <span className="text-[#D4AF37]">{studentName}</span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-              Enrolled in: <strong className="text-white">{batchName}</strong> • Mentored by Dr. Malavika M. Sunil
+              Enrolled in: <strong className="text-white">{batchName}</strong> • Mentored by Dr. Malavika M. Sunil (MBBS)
             </p>
           </div>
 
@@ -120,97 +166,95 @@ export default function StudentPortal({ onOpenAuth }) {
               <span>Sign Out</span>
             </button>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Local Timezone Banner */}
-        <div className="p-4 rounded-2xl bg-white border border-[#B99A63]/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm">
+        <div className="p-4 rounded-2xl bg-white border border-[#B99A63]/30 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm text-left">
           <div className="flex items-center gap-2 text-slate-700">
-            <Clock className="w-4 h-4 text-[#B99A63]" />
+            <Clock className="w-4 h-4 text-[#B99A63] shrink-0" />
             <span>
-              Detected Timezone: <strong className="text-[#151515]">{userTimezone}</strong> (All class times are synced to your device clock)
+              Detected Timezone: <strong className="text-[#151515]">{userTimezone}</strong> (All class times are synced to your local clock)
             </span>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
-            ● Batch Status: Active
+          <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+            Batch Status: Enrolled &amp; Active
           </span>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab("schedule")}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "schedule"
-                ? "bg-[#151515] text-[#D4AF37] shadow-sm"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Classroom &amp; Schedule</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("resources")}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "resources"
-                ? "bg-[#151515] text-[#D4AF37] shadow-sm"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Learning Vault (PDF &amp; Audio)</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("practice")}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
-              activeTab === "practice"
-                ? "bg-[#151515] text-[#D4AF37] shadow-sm"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-            }`}
-          >
-            <Upload className="w-4 h-4" />
-            <span>Practice Submissions &amp; Reviews</span>
-          </button>
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto text-left">
+          {[
+            { id: "schedule", label: "Live Classroom & Schedule", icon: Calendar },
+            { id: "recordings", label: `Class Recordings Vault (${activeRecordings.length})`, icon: Film },
+            { id: "resources", label: "Learning Vault (PDF & Audio)", icon: BookOpen },
+            { id: "practice", label: `Practice Homework (${submissions.length})`, icon: Upload }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap tap-bounce shrink-0 ${
+                  isActive
+                    ? "bg-[#151515] text-[#D4AF37] shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* TAB 1: SCHEDULE & LIVE CLASSROOM */}
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB 1: SCHEDULE & LIVE CLASSROOM
+        ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "schedule" && (
-          <div className="space-y-6">
+          <div className="space-y-6 text-left">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Live Classroom Join Card */}
               <div className="md:col-span-2 rounded-3xl bg-white border border-[#B99A63]/30 p-6 sm:p-8 shadow-sm space-y-6 flex flex-col justify-between text-left">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#B99A63]">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#B99A63] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
                       Next Live Online Session
                     </span>
                     <span className="animate-pulse flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">
                       <span className="w-2 h-2 rounded-full bg-rose-600" />
-                      Studio Room Ready
+                      {liveClassConfig?.status || "Studio Room Ready"}
                     </span>
                   </div>
+
                   <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-[#151515]">
-                    Bharatanatyam Diploma: Adavu Rhythmic Precision &amp; Theory
+                    {liveClassConfig?.sessionTitle || "Bharatanatyam Diploma: Margam & Adavu Precision"}
                   </h3>
+
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Interactive live instruction conducted directly by Dr. Malavika. Please ensure you have comfortable practice saree/salwar, your ghungroos, and space for Aramandi footing.
+                    {liveClassConfig?.notice ||
+                      "Interactive live instruction conducted directly by Dr. Malavika. Please ensure you have comfortable practice saree/salwar, your ghungroos, and space for Aramandi footing."}
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
+                <div className="p-5 rounded-2xl bg-gradient-to-r from-[#FAF5EC] to-white border border-[#B99A63]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <span className="text-slate-500 block text-xs">Scheduled Slot</span>
-                    <strong className="text-slate-900 font-bold">
-                      Monday &amp; Friday • 05:30 PM - 06:30 PM (Your Local Time)
+                    <span className="text-slate-500 block text-xs">Scheduled Batch Slot</span>
+                    <strong className="text-slate-900 font-bold text-sm sm:text-base">
+                      {liveClassConfig?.scheduledDayTime || "Monday & Friday • 05:30 PM - 06:30 PM"}
                     </strong>
                   </div>
+
                   <a
-                    href="https://meet.google.com/"
+                    href={liveClassConfig?.meetUrl || "https://meet.google.com/new"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="silk-zari-btn inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] text-xs font-bold transition-all shadow-md cursor-pointer shrink-0"
+                    className="silk-zari-btn inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] text-xs sm:text-sm font-bold transition-all shadow-md cursor-pointer shrink-0 tap-bounce"
                   >
                     <Video className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Join Google Meet Classroom</span>
+                    <span>Join Live Studio Session</span>
                     <ExternalLink className="w-3.5 h-3.5 opacity-70" />
                   </a>
                 </div>
@@ -218,35 +262,185 @@ export default function StudentPortal({ onOpenAuth }) {
 
               {/* Attendance & Batch Summary */}
               <div className="rounded-3xl bg-white border border-slate-200 p-6 space-y-4 shadow-sm text-left">
-                <h4 className="font-bold text-sm text-[#151515] font-serif-luxury">
-                  Your Learning Progress
+                <h4 className="font-bold text-sm text-[#151515] font-serif-luxury flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-[#B99A63]" />
+                  <span>Curriculum Milestones</span>
                 </h4>
+
                 <div className="space-y-3 text-xs">
                   <div className="p-3 rounded-xl bg-slate-50 flex items-center justify-between">
                     <span className="text-slate-600">Attendance Rate</span>
-                    <strong className="text-emerald-700 font-bold">96% (12/12 Sessions)</strong>
+                    <strong className="text-emerald-700 font-bold">100% (All Live Classes Attended)</strong>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 flex items-center justify-between">
-                    <span className="text-slate-600">Prescribed Exam Year</span>
-                    <strong className="text-slate-900 font-bold">Diploma Level 1 (2026/27)</strong>
+                    <span className="text-slate-600">Prescribed Evaluation</span>
+                    <strong className="text-slate-900 font-bold">Yearly Diploma Examination</strong>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 flex items-center justify-between">
                     <span className="text-slate-600">Theory Completion</span>
-                    <strong className="text-[#B99A63] font-bold">8 / 10 Modules</strong>
+                    <strong className="text-[#B99A63] font-bold">Module 4 of 6 Completed</strong>
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <span className="text-[11px] text-slate-500 leading-normal block">
-                    Have questions about rescheduling a session? Contact academy support via the floating concierge.
-                  </span>
+                <div className="pt-2 border-t border-slate-100">
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Have questions regarding your batch schedule or timing adjustments? Contact academy support via official WhatsApp.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 2: LEARNING VAULT (PDFs, Theory & Tanpura) */}
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB 2: CLASS RECORDINGS VAULT (OPTION A2 - EMBEDDED PLAYER)
+        ═══════════════════════════════════════════════════════════════ */}
+        {activeTab === "recordings" && (
+          <div className="space-y-6 text-left">
+            {/* Featured Recording Player */}
+            {selectedRecording && (
+              <div className="rounded-3xl bg-[#151515] border border-[#B99A63]/40 shadow-xl overflow-hidden text-white">
+                <div className="relative aspect-video w-full bg-black">
+                  <iframe
+                    src={selectedRecording.videoUrl}
+                    title={selectedRecording.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
+
+                <div className="p-6 sm:p-8 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#B99A63]/20 border border-[#B99A63]/40 text-[#D4AF37]">
+                        {selectedRecording.batch}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        Recorded on: {selectedRecording.date} • {selectedRecording.duration}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-[#D4AF37]">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>HD Masterclass Recording</span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-[#F5F0E8]">
+                    {selectedRecording.title}
+                  </h3>
+
+                  {selectedRecording.topics && selectedRecording.topics.length > 0 && (
+                    <div className="pt-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">
+                        Topics &amp; Practice Focus:
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedRecording.topics.map((t, idx) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-300"
+                          >
+                            ✓ {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Filter and Search Bar */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+                {["All", "Bharatanatyam", "Carnatic Music", "Bollywood & Semi-Classical"].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setRecordingFilter(cat)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      recordingFilter === cat
+                        ? "bg-[#151515] text-[#D4AF37]"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-64">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  value={recordingSearch}
+                  onChange={(e) => setRecordingSearch(e.target.value)}
+                  placeholder="Search recording topic..."
+                  className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-[#B99A63]"
+                />
+              </div>
+            </div>
+
+            {/* Recordings Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredRecordings.map((rec) => {
+                const isSelected = selectedRecording?.id === rec.id;
+                return (
+                  <div
+                    key={rec.id}
+                    onClick={() => {
+                      setSelectedRecording(rec);
+                      window.scrollTo({ top: 300, behavior: "smooth" });
+                    }}
+                    className={`rounded-2xl overflow-hidden border transition-all cursor-pointer bg-white flex flex-col justify-between tap-bounce ${
+                      isSelected
+                        ? "border-[#B99A63] ring-2 ring-[#B99A63]/30 shadow-md"
+                        : "border-slate-200 hover:border-[#B99A63]/50 shadow-xs"
+                    }`}
+                  >
+                    <div className="relative aspect-video bg-slate-900 overflow-hidden">
+                      <img
+                        src={rec.thumbnail || "/images/courses/Courses/bharatanatyam_diploma/main.jpg"}
+                        alt={rec.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-white/90 text-[#151515] flex items-center justify-center shadow-lg">
+                          <Play className="w-4 h-4 fill-current translate-x-0.5" />
+                        </div>
+                      </div>
+                      <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-[10px] text-white font-bold">
+                        {rec.duration}
+                      </span>
+                    </div>
+
+                    <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] text-slate-500">
+                          <span>{rec.category}</span>
+                          <span>{rec.date}</span>
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2">
+                          {rec.title}
+                        </h4>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-[#B99A63]">
+                        <span>{isSelected ? "● Currently Playing" : "Watch Class"}</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB 3: LEARNING VAULT (PDFs, Theory & Tanpura)
+        ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "resources" && (
           <div className="space-y-6 text-left">
             {/* Tanpura Ambience Practice Player */}
@@ -271,7 +465,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     <button
                       key={pIdx}
                       onClick={() => showToast(`Streaming Tanpura in ${pitch}`, "info")}
-                      className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-[#B99A63] hover:text-[#151515] border border-white/20 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-[#B99A63] hover:text-[#151515] border border-white/20 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 tap-bounce"
                     >
                       <Play className="w-3 h-3 fill-current" />
                       <span>{pitch}</span>
@@ -301,7 +495,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 },
                 {
                   title: "Dancer Musculoskeletal Posture & Injury Prevention Guide",
-                  type: "Clinical Clinical Biomechanics",
+                  type: "Clinical Biomechanics",
                   category: "Medical Dance Science by Dr. Malavika"
                 }
               ].map((item, idx) => (
@@ -318,7 +512,7 @@ export default function StudentPortal({ onOpenAuth }) {
                   </div>
                   <button
                     onClick={() => showToast(`Downloading: ${item.title}`, "success")}
-                    className="p-2.5 rounded-xl bg-slate-100 hover:bg-[#151515] hover:text-[#D4AF37] text-slate-700 transition-colors cursor-pointer shrink-0"
+                    className="p-2.5 rounded-xl bg-slate-100 hover:bg-[#151515] hover:text-[#D4AF37] text-slate-700 transition-colors cursor-pointer shrink-0 tap-bounce"
                     title="Download Material"
                   >
                     <Download className="w-4 h-4" />
@@ -329,7 +523,9 @@ export default function StudentPortal({ onOpenAuth }) {
           </div>
         )}
 
-        {/* TAB 3: PRACTICE SUBMISSIONS & GURU FEEDBACK */}
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB 4: PRACTICE SUBMISSIONS & GURU FEEDBACK
+        ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "practice" && (
           <div className="space-y-8 text-left">
             {/* Submit Homework Form */}
@@ -350,20 +546,21 @@ export default function StudentPortal({ onOpenAuth }) {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Tatta Adavu 1-8 Speed II &amp; III"
+                      placeholder="e.g. Tatta Adavu Speed 2 & 3"
                       value={submissionTitle}
                       onChange={(e) => setSubmissionTitle(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:border-[#B99A63] focus:outline-none"
                     />
                   </div>
+
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Video Link (Drive / YouTube / Vimeo) *
+                      Video Link (YouTube Unlisted / Google Drive / Cloud) *
                     </label>
                     <input
                       type="url"
                       required
-                      placeholder="https://drive.google.com/..."
+                      placeholder="https://drive.google.com/file/... or YouTube link"
                       value={submissionLink}
                       onChange={(e) => setSubmissionLink(e.target.value)}
                       className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:border-[#B99A63] focus:outline-none"
@@ -373,58 +570,71 @@ export default function StudentPortal({ onOpenAuth }) {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Notes or Questions for Dr. Malavika
+                    Student Notes / Questions for Dr. Malavika (Optional)
                   </label>
                   <textarea
                     rows={2}
-                    placeholder="e.g. Having difficulty keeping balance in the 4th step during fast tempo..."
+                    placeholder="e.g. Need feedback on knee position in Aramandi during the 3rd speed transition."
                     value={submissionNotes}
                     onChange={(e) => setSubmissionNotes(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:border-[#B99A63] focus:outline-none resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:border-[#B99A63] focus:outline-none"
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="silk-zari-btn px-6 py-3 rounded-full bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
-                >
-                  <Upload className="w-4 h-4 text-[#D4AF37]" />
-                  <span>{isSubmitting ? "Submitting..." : "Submit for Guru Feedback"}</span>
-                </button>
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#151515] hover:bg-[#B99A63] text-[#F5F0E8] hover:text-[#151515] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer tap-bounce"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>{isSubmitting ? "Submitting..." : "Submit for Evaluation"}</span>
+                  </button>
+                </div>
               </form>
             </div>
 
-            {/* Past Submissions & Feedback History */}
+            {/* Submissions & Mentor Feedback History */}
             <div className="space-y-4">
-              <h4 className="text-base font-bold text-slate-900 font-serif-luxury">
-                Submission &amp; Review History
+              <h4 className="text-base font-bold font-serif-luxury text-slate-900">
+                Evaluation History &amp; Biomechanical Feedback
               </h4>
+
               <div className="space-y-3">
                 {submissions.map((sub) => (
                   <div
                     key={sub.id}
-                    className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3"
+                    className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900">{sub.title}</span>
-                        <span className="text-[11px] text-slate-400">• {sub.date}</span>
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full ${
+                            sub.status === "reviewed" ? "bg-emerald-500" : "bg-amber-500"
+                          }`}
+                        />
+                        <h5 className="text-sm font-bold text-slate-900">{sub.title}</h5>
                       </div>
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                          sub.status === "reviewed"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-amber-50 text-amber-700 border border-amber-200"
-                        }`}
-                      >
-                        {sub.status === "reviewed" ? "✓ Reviewed by Dr. Malavika" : "● In Review"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">{sub.date}</span>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                            sub.status === "reviewed"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : "bg-amber-50 text-amber-700 border border-amber-200"
+                          }`}
+                        >
+                          {sub.status === "reviewed" ? "Feedback Ready" : "Under Review"}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 leading-relaxed">
-                      <strong className="text-[#B99A63] block mb-1">Guru Feedback:</strong>
-                      {sub.feedback}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 space-y-1">
+                      <strong className="text-slate-900 block flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#B99A63]" />
+                        Mentor Feedback ({sub.mentor}):
+                      </strong>
+                      <p className="leading-relaxed">{sub.feedback}</p>
                     </div>
                   </div>
                 ))}
