@@ -13,7 +13,9 @@ import {
   INITIAL_STUDENT_PROFILE,
   CURRICULUM_MODULES,
   INITIAL_STUDENT_ASSESSMENTS,
-  INITIAL_STUDY_MATERIALS
+  INITIAL_STUDY_MATERIALS,
+  INITIAL_STUDENTS,
+  COURSE_AREAS
 } from "../data/initialData";
 
 const AcademyContext = createContext();
@@ -32,7 +34,8 @@ const STORAGE_KEYS = {
   LIVE_CLASS: "dancingragas_academy_live_class_v1",
   MODULES: "dancingragas_academy_modules_v2",
   ASSESSMENTS: "dancingragas_academy_assessments_v2",
-  STUDENT_PROFILE: "dancingragas_academy_student_profile_v2"
+  STUDENT_PROFILE: "dancingragas_academy_student_profile_v2",
+  STUDENTS: "dancingragas_academy_students_v3"
 };
 
 export const AcademyProvider = ({ children }) => {
@@ -173,6 +176,17 @@ export const AcademyProvider = ({ children }) => {
       return INITIAL_STUDENT_PROFILE;
     }
   });
+
+  const [studentsList, setStudentsList] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.STUDENTS);
+      return saved ? JSON.parse(saved) : INITIAL_STUDENTS;
+    } catch {
+      return INITIAL_STUDENTS;
+    }
+  });
+
+  const [activeStudentId, setActiveStudentId] = useState("stu-1");
 
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     try {
@@ -334,6 +348,14 @@ export const AcademyProvider = ({ children }) => {
       console.error("Failed to save studentProfile to localStorage", e);
     }
   }, [studentProfile]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(studentsList));
+    } catch (e) {
+      console.error("Failed to save studentsList to localStorage", e);
+    }
+  }, [studentsList]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -647,6 +669,13 @@ export const AcademyProvider = ({ children }) => {
         gradeAssessment,
         studentProfile,
         setStudentProfile,
+        studentsList,
+        setStudentsList,
+        activeStudentId,
+        setActiveStudentId,
+        addStudent,
+        updateStudent,
+        deleteStudent,
         isAdminLoggedIn: isAdminLoggedIn || userRole === "admin",
         authUser,
         setAuthUser,

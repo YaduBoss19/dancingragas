@@ -25,12 +25,12 @@ import {
   Copy,
   Printer,
   ChevronDown,
-  ChevronUp,
-  AlertCircle,
-  HelpCircle,
   Check,
   Activity,
-  Layers
+  Layers,
+  ArrowLeft,
+  Lock,
+  UserCheck
 } from "lucide-react";
 
 export default function StudentPortal({ onOpenAuth }) {
@@ -39,14 +39,40 @@ export default function StudentPortal({ onOpenAuth }) {
     userRole,
     handleLogout,
     showToast,
+    navigateTo,
     recordings,
     liveClassConfig,
     curriculumModules,
     toggleLessonCompletion,
     studentAssessments,
     submitStudentAssessment,
-    studentProfile
+    studentProfile,
+    studentsList,
+    activeStudentId,
+    setActiveStudentId
   } = useAcademy();
+
+  // Active student identity (from studentsList or authUser)
+  const currentStudent =
+    (studentsList || []).find((s) => s.id === activeStudentId) ||
+    (studentsList || [])[0] || {
+      id: "stu-1",
+      name: authUser?.user_metadata?.full_name || studentProfile?.studentName || "Ananya Menon",
+      registrationNo: studentProfile?.registrationNo || "DR-DIP-2026-084",
+      enrolledCourses: ["Bharatanatyam Diploma"],
+      attendance: 94
+    };
+
+  // Selected course area if student is enrolled in multiple
+  const [selectedCourseArea, setSelectedCourseArea] = useState(
+    currentStudent.enrolledCourses?.[0] || "Bharatanatyam Diploma"
+  );
+
+  useEffect(() => {
+    if (currentStudent.enrolledCourses && !currentStudent.enrolledCourses.includes(selectedCourseArea)) {
+      setSelectedCourseArea(currentStudent.enrolledCourses[0] || "Bharatanatyam Diploma");
+    }
+  }, [currentStudent]);
 
   // Navigation tabs
   const [activeTab, setActiveTab] = useState("curriculum"); // 'curriculum' | 'live_studio' | 'evaluations' | 'documents'
@@ -56,10 +82,7 @@ export default function StudentPortal({ onOpenAuth }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   // Selected lesson for theater player
-  const [activeModuleId, setActiveModuleId] = useState(curriculumModules[0]?.id || "mod-1");
-  const [selectedLesson, setSelectedLesson] = useState(
-    curriculumModules[0]?.lessons[0] || recordings[0] || null
-  );
+  const [selectedLesson, setSelectedLesson] = useState(null);
 
   // Submission Modal State
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -70,16 +93,43 @@ export default function StudentPortal({ onOpenAuth }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Printable evaluation slip state
-  const [printingAssessment, setPrintingAssessment] = useState(null);
-
   // Search in curriculum
   const [lessonSearch, setLessonSearch] = useState("");
 
-  // Student Identity
-  const displayName = authUser?.user_metadata?.full_name || studentProfile?.studentName || "Ananya Menon";
-  const regNumber = studentProfile?.registrationNo || "DR-DIP-2026-084";
-  const programName = authUser?.user_metadata?.batch_name || studentProfile?.enrolledProgram || "Online Bharatanatyam Diploma Course";
+  // Filter recordings strictly for current student and selected course area
+  const authorizedRecordings = (recordings || []).filter((rec) => {
+    // 1. Must match course category
+    const recCategory = rec.courseCategory || rec.category;
+    const matchesCourse =
+      recCategory === selectedCourseArea ||
+      (selectedCourseArea === "Bharatanatyam Diploma" && recCategory?.toLowerCase().includes("bharatanatyam")) ||
+      (selectedCourseArea === "Carnatic Music" && recCategory?.toLowerCase().includes("carnatic")) ||
+      (selectedCourseArea === "Bollywood & Semi-Classical" && recCategory?.toLowerCase().includes("bollywood"));
+
+    if (!matchesCourse) return false;
+
+    // 2. Access Scope check (selected students only vs all enrolled students)
+    if (rec.accessScope === "selected_students") {
+      const allowed = rec.allowedStudentIds || [];
+      return allowed.includes(currentStudent.id) || allowed.includes(currentStudent.email);
+    }
+
+    // Default: visible to any student enrolled in this course
+    return true;
+  });
+
+  // Set default selected lesson
+  useEffect(() => {
+    if (!selectedLesson && authorizedRecordings.length > 0) {
+      setSelectedLesson(authorizedRecordings[0]);
+    } else if (
+      selectedLesson &&
+      authorizedRecordings.length > 0 &&
+      !authorizedRecordings.some((r) => r.id === selectedLesson.id)
+    ) {
+      setSelectedLesson(authorizedRecordings[0]);
+    }
+  }, [selectedCourseArea, authorizedRecordings]);
 
   // Compute overall progress
   const allLessons = (curriculumModules || []).flatMap((m) => m.lessons || []);
@@ -117,7 +167,6 @@ export default function StudentPortal({ onOpenAuth }) {
     return () => clearInterval(interval);
   }, [liveClassConfig?.targetTimestamp]);
 
-  // Calendar generators
   const handleAddToGoogleCalendar = () => {
     const title = encodeURIComponent(`DancingRagas Live: ${liveClassConfig?.sessionTitle || "Bharatanatyam Masterclass"}`);
     const details = encodeURIComponent(
@@ -170,9 +219,9 @@ export default function StudentPortal({ onOpenAuth }) {
     setIsSubmitting(true);
     setTimeout(() => {
       submitStudentAssessment({
-        studentName: displayName,
-        registrationNo: regNumber,
-        batch: programName,
+        studentName: currentStudent.name,
+        registrationNo: currentStudent.registrationNo,
+        batch: selectedCourseArea,
         title: submitForm.title.trim(),
         videoUrl: submitForm.videoUrl.trim(),
         notes: submitForm.notes.trim()
@@ -185,60 +234,135 @@ export default function StudentPortal({ onOpenAuth }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F5] text-[#151515] py-8 sm:py-12 px-4 sm:px-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#FBF9F5] text-[#151515] font-sans">
+      {/* ═══════════════════════════════════════════════════════════════
+          DEDICATED PORTAL APP TOP NAVIGATION (NO MARKETING HEADER)
+      ═══════════════════════════════════════════════════════════════ */}
+      <header className="sticky top-0 z-40 bg-[#151515] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
+              DR
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-white tracking-wide font-serif-luxury">
+                  DancingRagas <span className="text-[#D4AF37]">Conservatory</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-bold uppercase tracking-wider">
+                  Student Portal
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-300">
+                Dr. Malavika Classical Arts Academy &bull; Authorized Student Workspace
+              </p>
+            </div>
+          </div>
+
+          {/* Student Profile Switcher & Actions */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Student Switcher (Testing & Verification) */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 border border-white/15 text-xs text-stone-200">
+              <UserCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="text-[11px] text-stone-400">Student:</span>
+              <select
+                value={currentStudent.id}
+                onChange={(e) => setActiveStudentId(e.target.value)}
+                className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer"
+              >
+                {(studentsList || []).map((s) => (
+                  <option key={s.id} value={s.id} className="text-[#151515] bg-white">
+                    {s.name} ({s.enrolledCourses?.join(", ")})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={() => navigateTo("admin")}
+              className="px-3.5 py-1.5 rounded-xl bg-[#3B0B14] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              title="Open Tutor / Director Portal"
+            >
+              Tutor Portal
+            </button>
+
+            <button
+              onClick={() => navigateTo("home")}
+              className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 border border-white/10 text-xs font-medium transition-all cursor-pointer"
+            >
+              Exit to Website
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 rounded-xl bg-rose-900/60 hover:bg-rose-800 text-rose-100 border border-rose-700/50 text-xs font-bold transition-all cursor-pointer"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MAIN CONSERVATORY DASHBOARD CONTENT
+      ═══════════════════════════════════════════════════════════════ */}
+      <div className="max-w-6xl mx-auto py-8 sm:py-10 px-4 sm:px-8 space-y-8">
 
         {/* ═══════════════════════════════════════════════════════════════
-            HEADER: OFFICIAL DIGITAL STUDENT ID & CONSERVATORY CARD
+            OFFICIAL DIGITAL STUDENT CREDENTIAL CARD
         ═══════════════════════════════════════════════════════════════ */}
         <AnimatedSection
           animation="fade-up"
           className="rounded-3xl bg-gradient-to-br from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] border border-[#B99A63]/40 shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left"
         >
-          {/* Subtle gold ornamentation */}
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.12)_0,transparent_70%)] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/10 pb-6">
             <div className="flex items-start sm:items-center gap-4">
-              {/* Student Monogram Avatar */}
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border-2 border-[#D4AF37]/60 text-[#D4AF37] flex items-center justify-center font-serif-luxury text-2xl font-bold shadow-lg shadow-[#D4AF37]/15 shrink-0">
-                {displayName.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                {currentStudent.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
               </div>
 
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-3 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
                     <ShieldCheck className="w-3 h-3 text-[#D4AF37]" />
-                    <span>Official Conservatory Enrolment</span>
+                    <span>Verified Student Member</span>
                   </span>
                   <span className="text-[11px] font-mono text-stone-300">
-                    Reg: <strong className="text-white">{regNumber}</strong>
+                    Reg: <strong className="text-white">{currentStudent.registrationNo}</strong>
                   </span>
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-bold font-serif-luxury tracking-tight text-white">
-                  {displayName}
+                  {currentStudent.name}
                 </h1>
                 <p className="text-xs sm:text-sm text-stone-300">
-                  {programName} &bull; <span className="text-[#D4AF37]">Year 1 - Foundational Margam</span>
+                  Enrolled in: <strong className="text-white">{currentStudent.enrolledCourses?.join(" & ")}</strong> &bull; Location: {currentStudent.location || "Online"}
                 </p>
               </div>
             </div>
 
-            {/* Quick Actions & Logout */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-stone-300 flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Timezone: <strong className="text-white">{userTimezone}</strong></span>
+            {/* Course Area Switcher */}
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+                Active Course Area:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {currentStudent.enrolledCourses?.map((courseName) => (
+                  <button
+                    key={courseName}
+                    onClick={() => setSelectedCourseArea(courseName)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      selectedCourseArea === courseName
+                        ? "bg-[#D4AF37] text-[#151515] shadow-md"
+                        : "bg-white/10 text-stone-300 hover:bg-white/20"
+                    }`}
+                  >
+                    {courseName}
+                  </button>
+                ))}
               </div>
-
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-rose-900/60 hover:border-rose-500/50 text-white text-xs font-bold border border-white/15 transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Sign Out</span>
-              </button>
             </div>
           </div>
 
@@ -246,10 +370,10 @@ export default function StudentPortal({ onOpenAuth }) {
           <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                Academic Term
+                Course Discipline
               </span>
-              <p className="text-sm font-bold text-white">Autumn 2026/27</p>
-              <span className="text-[10px] text-emerald-400 font-semibold block">Active Semester</span>
+              <p className="text-sm font-bold text-white truncate">{selectedCourseArea}</p>
+              <span className="text-[10px] text-emerald-400 font-semibold block">Access Authorized</span>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
@@ -270,10 +394,10 @@ export default function StudentPortal({ onOpenAuth }) {
 
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                Live Attendance Record
+                Attendance Record
               </span>
-              <p className="text-sm font-bold text-white">{studentProfile?.attendancePercent || 94}%</p>
-              <span className="text-[10px] text-emerald-400 font-semibold block">Annual Exam Qualified</span>
+              <p className="text-sm font-bold text-white">{currentStudent.attendance || 94}%</p>
+              <span className="text-[10px] text-emerald-400 font-semibold block">Exam Qualified</span>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
@@ -291,10 +415,10 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         <div className="flex items-center gap-2 border-b border-stone-200 pb-2 overflow-x-auto text-left">
           {[
-            { id: "curriculum", label: "Academic Curriculum & Modules", icon: BookOpen },
+            { id: "curriculum", label: `Course Area & Unlisted Vault (${authorizedRecordings.length})`, icon: BookOpen },
             { id: "live_studio", label: "Live Classroom & Countdown", icon: Calendar },
             { id: "evaluations", label: `Performance Evaluations (${studentAssessments.length})`, icon: Award },
-            { id: "documents", label: "Study Materials & Syllabus Notes", icon: FileText }
+            { id: "documents", label: "Study Materials & Notes", icon: FileText }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -316,18 +440,18 @@ export default function StudentPortal({ onOpenAuth }) {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════
-            TAB 1: ACADEMIC CURRICULUM & MODULE PROGRESSION TREE
+            TAB 1: COURSE AREA & UNLISTED MASTERCLASS VAULT
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "curriculum" && (
           <div className="space-y-8 text-left">
 
-            {/* Option A2 Theater Player Card */}
-            {selectedLesson && (
+            {/* Active Theater Player */}
+            {selectedLesson ? (
               <div className="rounded-3xl bg-[#151515] text-[#F5F0E8] border border-[#B99A63]/40 shadow-xl overflow-hidden">
                 <div className="p-4 sm:p-5 bg-gradient-to-r from-[#2A080E] to-[#151515] border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-0.5">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">
-                      Option A2 &bull; High-Definition Masterclass Player
+                      {selectedCourseArea} &bull; Unlisted Masterclass Player
                     </span>
                     <h3 className="text-base sm:text-lg font-bold font-serif-luxury text-white">
                       {selectedLesson.title}
@@ -336,7 +460,7 @@ export default function StudentPortal({ onOpenAuth }) {
 
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => toggleLessonCompletion(activeModuleId, selectedLesson.id)}
+                      onClick={() => toggleLessonCompletion("mod-1", selectedLesson.id)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                         selectedLesson.completed
                           ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
@@ -344,7 +468,7 @@ export default function StudentPortal({ onOpenAuth }) {
                       }`}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{selectedLesson.completed ? "Marked as Completed" : "Mark Unit Completed"}</span>
+                      <span>{selectedLesson.completed ? "Marked Completed" : "Mark Unit Completed"}</span>
                     </button>
                   </div>
                 </div>
@@ -364,10 +488,10 @@ export default function StudentPortal({ onOpenAuth }) {
                 <div className="p-5 sm:p-6 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-300 border-b border-white/10 pb-3">
                     <span className="text-[#D4AF37] font-semibold">
-                      Duration: {selectedLesson.duration} &bull; Recorded Lecture &bull; {selectedLesson.date}
+                      Duration: {selectedLesson.duration} &bull; Recorded Class &bull; {selectedLesson.date}
                     </span>
                     <span className="text-stone-400">
-                      Discipline: {selectedLesson.category || "Bharatanatyam Diploma"}
+                      Module: {selectedLesson.module || "General Repertoire"}
                     </span>
                   </div>
 
@@ -390,17 +514,27 @@ export default function StudentPortal({ onOpenAuth }) {
                   )}
                 </div>
               </div>
+            ) : (
+              <div className="p-8 rounded-3xl bg-white border border-stone-200 text-center space-y-3">
+                <Lock className="w-8 h-8 text-[#B99A63] mx-auto" />
+                <h4 className="text-base font-bold text-stone-900">
+                  No Unlisted Videos Assigned Yet
+                </h4>
+                <p className="text-xs text-stone-500 max-w-md mx-auto">
+                  Dr. Malavika hasn&apos;t added any recorded masterclasses to this course area yet, or access is restricted. Check back after your next live session.
+                </p>
+              </div>
             )}
 
-            {/* Curriculum Module Tree */}
+            {/* List of Available Unlisted Videos for this Student */}
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
                 <div>
                   <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
-                    Academic Year 1 Curriculum Tree
+                    {selectedCourseArea} &bull; Authorized Class Recordings ({authorizedRecordings.length})
                   </h3>
                   <p className="text-xs text-stone-500">
-                    Follow the sequential modules curated by Dr. Malavika. Click any masterclass lesson to open in the theater viewer.
+                    Only students officially enrolled in {selectedCourseArea} have access to these unlisted masterclass recordings.
                   </p>
                 </div>
 
@@ -410,142 +544,71 @@ export default function StudentPortal({ onOpenAuth }) {
                     type="text"
                     value={lessonSearch}
                     onChange={(e) => setLessonSearch(e.target.value)}
-                    placeholder="Search adavu, mudra or topic..."
+                    placeholder="Search recording topic..."
                     className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs bg-white focus:outline-none focus:border-[#B99A63]"
                   />
                 </div>
               </div>
 
-              {/* Module Accordions */}
-              <div className="space-y-4">
-                {(curriculumModules || []).map((mod) => {
-                  const filteredLessons = (mod.lessons || []).filter(
-                    (l) =>
+              {/* Videos Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {authorizedRecordings
+                  .filter(
+                    (rec) =>
                       !lessonSearch.trim() ||
-                      l.title.toLowerCase().includes(lessonSearch.toLowerCase()) ||
-                      (l.topics && l.topics.some((t) => t.toLowerCase().includes(lessonSearch.toLowerCase())))
-                  );
-
-                  if (lessonSearch.trim() && filteredLessons.length === 0) return null;
-
-                  return (
-                    <div
-                      key={mod.id}
-                      className="rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-xs space-y-0"
-                    >
-                      {/* Module Banner */}
-                      <div className="p-4 sm:p-5 bg-gradient-to-r from-stone-50 via-white to-stone-50 border-b border-stone-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-0.5 rounded bg-[#151515] text-[#D4AF37] text-[10px] font-bold uppercase tracking-wider">
-                              {mod.moduleNumber}
-                            </span>
-                            <span
-                              className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                                mod.status === "Completed"
-                                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                                  : mod.status === "In Progress"
-                                  ? "bg-amber-50 text-amber-800 border border-amber-200"
-                                  : "bg-stone-100 text-stone-600"
-                              }`}
-                            >
-                              {mod.status} &bull; {mod.progressPercent}%
-                            </span>
-                          </div>
-                          <h4 className="text-base font-bold text-stone-900 font-serif-luxury">
-                            {mod.title}
-                          </h4>
-                          <p className="text-xs text-stone-500 max-w-2xl">
-                            {mod.description}
-                          </p>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="w-full md:w-48 shrink-0 space-y-1">
-                          <div className="flex justify-between text-[11px] text-stone-500 font-semibold">
-                            <span>Unit Progress</span>
-                            <span>{mod.progressPercent}%</span>
-                          </div>
-                          <div className="w-full h-2 rounded-full bg-stone-100 overflow-hidden border border-stone-200">
-                            <div
-                              className="h-full bg-[#B99A63] transition-all duration-500"
-                              style={{ width: `${mod.progressPercent}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Lessons List in Module */}
-                      <div className="divide-y divide-stone-100">
-                        {filteredLessons.map((lesson) => {
-                          const isCurrent = selectedLesson?.id === lesson.id;
-                          return (
-                            <div
-                              key={lesson.id}
-                              onClick={() => {
-                                setActiveModuleId(mod.id);
-                                setSelectedLesson(lesson);
-                                window.scrollTo({ top: 320, behavior: "smooth" });
-                              }}
-                              className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-colors ${
-                                isCurrent
-                                  ? "bg-[#FAF7F2] border-l-4 border-[#B99A63]"
-                                  : "hover:bg-stone-50"
-                              }`}
-                            >
-                              <div className="flex items-start sm:items-center gap-3">
-                                <div
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleLessonCompletion(mod.id, lesson.id);
-                                  }}
-                                  className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 cursor-pointer transition-colors mt-0.5 sm:mt-0 ${
-                                    lesson.completed
-                                      ? "bg-emerald-600 border-emerald-600 text-white"
-                                      : "border-stone-300 hover:border-[#B99A63] bg-white"
-                                  }`}
-                                  title={lesson.completed ? "Mark incomplete" : "Mark completed"}
-                                >
-                                  {lesson.completed && <Check className="w-3.5 h-3.5" />}
-                                </div>
-
-                                <div className="space-y-0.5">
-                                  <div className="flex items-center gap-2">
-                                    <h5 className="text-xs sm:text-sm font-bold text-stone-900">
-                                      {lesson.title}
-                                    </h5>
-                                    {isCurrent && (
-                                      <span className="px-2 py-0.5 rounded bg-[#151515] text-[#D4AF37] text-[10px] font-bold">
-                                        Playing
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="text-[11px] text-stone-500 block">
-                                    {lesson.duration} &bull; {lesson.date} &bull; {lesson.category}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-                                <button
-                                  type="button"
-                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                                    isCurrent
-                                      ? "bg-[#151515] text-[#D4AF37]"
-                                      : "bg-stone-100 hover:bg-[#151515] hover:text-white text-stone-700"
-                                  }`}
-                                >
-                                  <Play className="w-3 h-3 fill-current" />
-                                  <span>{isCurrent ? "Active In Theater" : "Watch Lesson"}</span>
-                                </button>
-                              </div>
+                      rec.title.toLowerCase().includes(lessonSearch.toLowerCase()) ||
+                      (rec.topics && rec.topics.some((t) => t.toLowerCase().includes(lessonSearch.toLowerCase())))
+                  )
+                  .map((rec) => {
+                    const isSelected = selectedLesson?.id === rec.id;
+                    return (
+                      <div
+                        key={rec.id}
+                        onClick={() => {
+                          setSelectedLesson(rec);
+                          window.scrollTo({ top: 320, behavior: "smooth" });
+                        }}
+                        className={`rounded-2xl overflow-hidden border transition-all cursor-pointer bg-white flex flex-col justify-between ${
+                          isSelected
+                            ? "border-[#B99A63] ring-2 ring-[#B99A63]/30 shadow-md"
+                            : "border-stone-200 hover:border-[#B99A63]/50 shadow-xs"
+                        }`}
+                      >
+                        <div className="relative aspect-video bg-stone-900 overflow-hidden">
+                          <img
+                            src={rec.thumbnail || "/images/courses/Courses/bharatanatyam_diploma/main.jpg"}
+                            alt={rec.title}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-white/90 text-[#151515] flex items-center justify-center shadow-lg">
+                              <Play className="w-4 h-4 fill-current translate-x-0.5" />
                             </div>
-                          );
-                        })}
+                          </div>
+                          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-[10px] text-white font-bold">
+                            {rec.duration}
+                          </span>
+                        </div>
+
+                        <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-[11px] text-stone-500">
+                              <span className="font-bold text-[#3B0B14]">{rec.module || rec.courseCategory}</span>
+                              <span>{rec.date}</span>
+                            </div>
+                            <h4 className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2">
+                              {rec.title}
+                            </h4>
+                          </div>
+
+                          <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-semibold text-[#B99A63]">
+                            <span>{isSelected ? "● Currently In Player" : "Watch Masterclass"}</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </div>
           </div>
@@ -556,7 +619,6 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "live_studio" && (
           <div className="space-y-8 text-left">
-            {/* Live Masterclass Studio Card */}
             <div className="rounded-3xl bg-gradient-to-br from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] border border-[#B99A63]/50 shadow-2xl p-6 sm:p-10 relative overflow-hidden space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                 <div>
@@ -574,7 +636,6 @@ export default function StudentPortal({ onOpenAuth }) {
                   </p>
                 </div>
 
-                {/* 1-Click Join Button */}
                 <a
                   href={liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live"}
                   target="_blank"
@@ -587,7 +648,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 </a>
               </div>
 
-              {/* Countdown Timer Strip */}
+              {/* Countdown Timer */}
               <div className="space-y-3">
                 <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] block">
                   Time Remaining Until Next Masterclass:
@@ -614,7 +675,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 </div>
               </div>
 
-              {/* Classroom Access Credentials & Calendar Sync */}
+              {/* Credentials & Calendar Sync */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2 text-xs">
                   <span className="font-bold text-stone-300 block uppercase tracking-wider text-[10px]">
@@ -651,10 +712,10 @@ export default function StudentPortal({ onOpenAuth }) {
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3 text-xs flex flex-col justify-between">
                   <div>
                     <span className="font-bold text-stone-300 block uppercase tracking-wider text-[10px] mb-1">
-                      Calendar Sync (Never Miss A Class)
+                      Calendar Sync
                     </span>
                     <p className="text-stone-300 text-[11px]">
-                      Add the recurring masterclass schedule to your personal Google Calendar, Apple Calendar, or Microsoft Outlook.
+                      Add the live class to your personal Google Calendar, Apple Calendar, or Outlook.
                     </p>
                   </div>
 
@@ -680,38 +741,11 @@ export default function StudentPortal({ onOpenAuth }) {
                 </div>
               </div>
             </div>
-
-            {/* Pre-Class Technical & Attire Checklist */}
-            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-xs space-y-4">
-              <h4 className="text-base font-bold font-serif-luxury text-stone-900">
-                Pre-Class Masterclass Checklist (Prescribed by Dr. Malavika)
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-stone-600">
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1">
-                  <strong className="text-stone-900 block text-xs">1. Full-Body Camera Angle</strong>
-                  <p className="leading-relaxed">
-                    Position your laptop/tablet 7–9 feet away at hip level so Dr. Malavika can inspect your Aramandi knee turnout and foot strikes clearly.
-                  </p>
-                </div>
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1">
-                  <strong className="text-stone-900 block text-xs">2. Practice Saree / Attire &amp; Ghungroo</strong>
-                  <p className="leading-relaxed">
-                    Traditional practice dance attire or comfortable leggings with ankle bells (Ghungroos) tied securely.
-                  </p>
-                </div>
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1">
-                  <strong className="text-stone-900 block text-xs">3. Hydration &amp; Warm-up</strong>
-                  <p className="leading-relaxed">
-                    Complete 5 minutes of gentle hamstring, Achilles tendon and pelvic flexor stretches prior to joining the live session.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
         {/* ═══════════════════════════════════════════════════════════════
-            TAB 3: FORMAL FACULTY EVALUATION & RUBRIC DESK
+            TAB 3: FORMAL FACULTY EVALUATIONS DESK
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "evaluations" && (
           <div className="space-y-6 text-left">
@@ -721,13 +755,13 @@ export default function StudentPortal({ onOpenAuth }) {
                   <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#3B0B14] text-[10px] font-bold uppercase tracking-wider">
                     Medical &amp; Artistic Evaluation
                   </span>
-                  <span className="text-xs text-stone-500">Curated by Dr. Malavika M. Sunil (MBBS)</span>
+                  <span className="text-xs text-stone-500">Evaluated by Dr. Malavika M. Sunil (MBBS)</span>
                 </div>
                 <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
                   Academic Performance &amp; Biomechanics Assessments
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Submit monthly video recordings of your prescribed adavu drills to receive clinical alignment scores and artistic critique.
+                  Submit monthly video recordings of your prescribed drills to receive clinical alignment scores and artistic critique.
                 </p>
               </div>
 
@@ -777,20 +811,17 @@ export default function StudentPortal({ onOpenAuth }) {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={ass.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                      >
-                        <Video className="w-3.5 h-3.5 text-[#B99A63]" />
-                        <span>View Submission Video</span>
-                      </a>
-                    </div>
+                    <a
+                      href={ass.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+                    >
+                      <Video className="w-3.5 h-3.5 text-[#B99A63]" />
+                      <span>View Submission Video</span>
+                    </a>
                   </div>
 
-                  {/* 4-Point Official Rubric Breakdown */}
                   {ass.rubric ? (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -821,11 +852,10 @@ export default function StudentPortal({ onOpenAuth }) {
                         ))}
                       </div>
 
-                      {/* Doctor's Clinical & Artistic Verdict */}
                       {ass.clinicalNote && (
                         <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#B99A63]/30 space-y-1 text-xs">
                           <strong className="text-[#3B0B14] font-bold block text-xs">
-                            Dr. Malavika's Biomechanical &amp; Performance Summary:
+                            Dr. Malavika&apos;s Biomechanical &amp; Performance Summary:
                           </strong>
                           <p className="text-stone-700 leading-relaxed italic font-serif-luxury text-sm">
                             &ldquo;{ass.clinicalNote}&rdquo;
@@ -846,7 +876,7 @@ export default function StudentPortal({ onOpenAuth }) {
         )}
 
         {/* ═══════════════════════════════════════════════════════════════
-            TAB 4: STUDY MATERIALS & OFFICIAL SYLLABUS NOTES (PDF)
+            TAB 4: STUDY MATERIALS & NOTES (PDF)
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "documents" && (
           <div className="space-y-6 text-left">

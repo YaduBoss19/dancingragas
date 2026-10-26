@@ -56,24 +56,26 @@ function AppContent() {
     }
   };
 
+  const isPortal = currentPage === "admin" || currentPage === "student-portal";
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F0E8] text-[#151515] font-sans selection:bg-[#B99A63]/30 selection:text-[#151515]">
       {/* Luxury Magnetic Follower Cursor (Desktop) */}
       <CustomCursor />
 
-      {/* Sticky Navigation */}
-      <Navbar />
+      {/* Sticky Navigation (Hidden inside portals) */}
+      {!isPortal && <Navbar />}
 
       {/* Main View Area */}
       <main className="flex-1 w-full">
         {renderPage()}
       </main>
 
-      {/* Luxury Floating Concierge Pill (WhatsApp) */}
-      <FloatingConciergePill />
+      {/* Luxury Floating Concierge Pill (WhatsApp) (Hidden inside portals) */}
+      {!isPortal && <FloatingConciergePill />}
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer (Hidden inside portals) */}
+      {!isPortal && <Footer />}
 
       {/* Global Modals & Notifications */}
       <AuthModal

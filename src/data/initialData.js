@@ -1550,3 +1550,93 @@ export const INITIAL_STUDY_MATERIALS = [
     verifiedBy: "Dr. Malavika M. Sunil (MBBS)"
   }
 ];
+
+export const COURSE_AREAS = [
+  {
+    id: "course-bdip",
+    name: "Bharatanatyam Diploma",
+    title: "Online Bharatanatyam Diploma Course",
+    category: "Bharatanatyam Diploma",
+    frequency: "1–2 sessions per week",
+    duration: "1 hour per session",
+    mentor: "Dr. Malavika M. Sunil (MBBS)"
+  },
+  {
+    id: "course-bnon",
+    name: "Bharatanatyam Non-Diploma",
+    title: "Online Bharatanatyam Non-Diploma Classes",
+    category: "Bharatanatyam Non-Diploma",
+    frequency: "Weekly once",
+    duration: "1 hour per session",
+    mentor: "Dr. Malavika M. Sunil (MBBS)"
+  },
+  {
+    id: "course-carnatic",
+    name: "Carnatic Music",
+    title: "Online Carnatic Music Classes",
+    category: "Carnatic Music",
+    frequency: "Weekly once",
+    duration: "1 hour per session",
+    mentor: "Dr. Malavika M. Sunil (MBBS)"
+  },
+  {
+    id: "course-bollywood",
+    name: "Bollywood & Semi-Classical",
+    title: "Online Semi-Classical Bollywood Dance Classes",
+    category: "Bollywood & Semi-Classical",
+    frequency: "1–2 sessions per week",
+    duration: "1 hour per session",
+    mentor: "Dr. Malavika M. Sunil (MBBS)"
+  }
+];
+
+export const INITIAL_STUDENTS = [
+  {
+    id: "stu-1",
+    registrationNo: "DR-DIP-2026-084",
+    name: "Ananya Menon",
+    email: "ananya.menon@example.com",
+    phone: "+91 98470 12345",
+    location: "Kochi, Kerala",
+    enrolledCourses: ["Bharatanatyam Diploma"],
+    enrolledDate: "Aug 15, 2026",
+    status: "Active",
+    attendance: 94
+  },
+  {
+    id: "stu-2",
+    registrationNo: "DR-VOC-2026-022",
+    name: "Pooja Ramesh",
+    email: "pooja.ramesh@example.com",
+    phone: "+91 97451 54321",
+    location: "Bengaluru, Karnataka",
+    enrolledCourses: ["Carnatic Music"],
+    enrolledDate: "Sep 01, 2026",
+    status: "Active",
+    attendance: 88
+  },
+  {
+    id: "stu-3",
+    registrationNo: "DR-BOL-2026-015",
+    name: "Praveshika",
+    email: "praveshika@example.com",
+    phone: "+91 94471 98765",
+    location: "Andhra Pradesh / Georgia",
+    enrolledCourses: ["Bollywood & Semi-Classical"],
+    enrolledDate: "Jul 10, 2026",
+    status: "Active",
+    attendance: 96
+  },
+  {
+    id: "stu-4",
+    registrationNo: "DR-NDIP-2026-031",
+    name: "Jyothirmai",
+    email: "jyothirmai@example.com",
+    phone: "+91 99460 24680",
+    location: "Tamil Nadu",
+    enrolledCourses: ["Bharatanatyam Non-Diploma"],
+    enrolledDate: "Oct 05, 2026",
+    status: "Active",
+    attendance: 90
+  }
+];
