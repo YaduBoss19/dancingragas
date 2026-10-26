@@ -414,14 +414,64 @@ export const AcademyProvider = ({ children }) => {
   };
 
   const addRecording = (recData) => {
-    const newRec = { ...recData, id: "rec-" + Date.now() };
+    const newRec = {
+      id: "rec-" + Date.now(),
+      title: recData.title,
+      courseCategory: recData.courseCategory || recData.category || "Bharatanatyam Diploma",
+      category: recData.courseCategory || recData.category || "Bharatanatyam Diploma",
+      module: recData.module || "Module 01: Foundational Adavu Biomechanics",
+      duration: recData.duration || "60 mins",
+      date: recData.date || new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      embedUrl: recData.embedUrl,
+      videoUrl: recData.embedUrl,
+      videoType: "youtube",
+      accessScope: recData.accessScope || "course_enrolled",
+      allowedStudentIds: recData.allowedStudentIds || [],
+      description: recData.description || "",
+      topics: recData.topics || (recData.syllabusText ? recData.syllabusText.split("\n").filter(Boolean) : ["Practical drills"]),
+      thumbnail: recData.thumbnail || "/images/courses/Courses/bharatanatyam_diploma/main.jpg"
+    };
     setRecordings((prev) => [newRec, ...prev]);
-    showToast("New recorded class published to student vault!", "success");
+    showToast(`Unlisted video published to "${newRec.courseCategory}"! Reflected in Student Portal.`, "success");
   };
 
   const deleteRecording = (id) => {
     setRecordings((prev) => prev.filter((r) => r.id !== id));
     showToast("Recording removed from vault.", "info");
+  };
+
+  const addStudent = (studentData) => {
+    const prefix = (studentData.enrolledCourses?.[0] || "ART").substring(0, 3).toUpperCase();
+    const newStudent = {
+      id: "stu-" + Date.now(),
+      registrationNo: `DR-${prefix}-2026-${Math.floor(100 + Math.random() * 900)}`,
+      name: studentData.name.trim(),
+      email: studentData.email.trim(),
+      phone: studentData.phone?.trim() || "",
+      location: studentData.location?.trim() || "Online Global Batch",
+      enrolledCourses: studentData.enrolledCourses && studentData.enrolledCourses.length > 0
+        ? studentData.enrolledCourses
+        : ["Bharatanatyam Diploma"],
+      enrolledDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      status: "Active",
+      attendance: 100
+    };
+    setStudentsList((prev) => [newStudent, ...prev]);
+    showToast(`Student "${newStudent.name}" enrolled in ${newStudent.enrolledCourses.join(", ")}!`, "success");
+    return newStudent;
+  };
+
+  const updateStudent = (id, updatedData) => {
+    setStudentsList((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updatedData } : s))
+    );
+    showToast("Student profile and course enrolment updated!", "success");
+  };
+
+  const deleteStudent = (id) => {
+    const student = studentsList.find((s) => s.id === id);
+    setStudentsList((prev) => prev.filter((s) => s.id !== id));
+    showToast(`Enrolment for "${student ? student.name : ""}" removed.`, "info");
   };
 
   const updateLiveClassConfig = (newConfig) => {
