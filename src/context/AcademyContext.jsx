@@ -9,7 +9,11 @@ import {
   FAQS,
   TESTIMONIALS,
   INITIAL_RECORDINGS,
-  INITIAL_LIVE_CLASS
+  INITIAL_LIVE_CLASS,
+  INITIAL_STUDENT_PROFILE,
+  CURRICULUM_MODULES,
+  INITIAL_STUDENT_ASSESSMENTS,
+  INITIAL_STUDY_MATERIALS
 } from "../data/initialData";
 
 const AcademyContext = createContext();
@@ -25,7 +29,10 @@ const STORAGE_KEYS = {
   TESTIMONIALS: "dancingragas_academy_testimonials_v2",
   INFO: "dancingragas_academy_info_v2",
   RECORDINGS: "dancingragas_academy_recordings_v1",
-  LIVE_CLASS: "dancingragas_academy_live_class_v1"
+  LIVE_CLASS: "dancingragas_academy_live_class_v1",
+  MODULES: "dancingragas_academy_modules_v2",
+  ASSESSMENTS: "dancingragas_academy_assessments_v2",
+  STUDENT_PROFILE: "dancingragas_academy_student_profile_v2"
 };
 
 export const AcademyProvider = ({ children }) => {
@@ -137,6 +144,33 @@ export const AcademyProvider = ({ children }) => {
       return saved ? JSON.parse(saved) : INITIAL_LIVE_CLASS;
     } catch {
       return INITIAL_LIVE_CLASS;
+    }
+  });
+
+  const [curriculumModules, setCurriculumModules] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.MODULES);
+      return saved ? JSON.parse(saved) : CURRICULUM_MODULES;
+    } catch {
+      return CURRICULUM_MODULES;
+    }
+  });
+
+  const [studentAssessments, setStudentAssessments] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.ASSESSMENTS);
+      return saved ? JSON.parse(saved) : INITIAL_STUDENT_ASSESSMENTS;
+    } catch {
+      return INITIAL_STUDENT_ASSESSMENTS;
+    }
+  });
+
+  const [studentProfile, setStudentProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.STUDENT_PROFILE);
+      return saved ? JSON.parse(saved) : INITIAL_STUDENT_PROFILE;
+    } catch {
+      return INITIAL_STUDENT_PROFILE;
     }
   });
 
@@ -278,6 +312,30 @@ export const AcademyProvider = ({ children }) => {
   }, [liveClassConfig]);
 
   useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.MODULES, JSON.stringify(curriculumModules));
+    } catch (e) {
+      console.error("Failed to save curriculumModules to localStorage", e);
+    }
+  }, [curriculumModules]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ASSESSMENTS, JSON.stringify(studentAssessments));
+    } catch (e) {
+      console.error("Failed to save studentAssessments to localStorage", e);
+    }
+  }, [studentAssessments]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.STUDENT_PROFILE, JSON.stringify(studentProfile));
+    } catch (e) {
+      console.error("Failed to save studentProfile to localStorage", e);
+    }
+  }, [studentProfile]);
+
+  useEffect(() => {
     const handlePopState = () => {
       setCurrentPage(getInitialPage());
     };
@@ -346,7 +404,68 @@ export const AcademyProvider = ({ children }) => {
 
   const updateLiveClassConfig = (newConfig) => {
     setLiveClassConfig(newConfig);
-    showToast("Live classroom schedule and link saved!", "success");
+    showToast("Live class configuration updated successfully!", "success");
+  };
+
+  const submitStudentAssessment = (submissionData) => {
+    const newEntry = {
+      id: "ass-" + Date.now(),
+      studentName: submissionData.studentName || studentProfile.studentName,
+      registrationNo: submissionData.registrationNo || studentProfile.registrationNo,
+      batch: submissionData.batch || studentProfile.enrolledProgram,
+      title: submissionData.title,
+      submissionDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      videoUrl: submissionData.videoUrl,
+      notes: submissionData.notes || "",
+      status: "Under Faculty Evaluation",
+      evaluationDate: "Pending",
+      facultyMentor: "Dr. Malavika M. Sunil (MBBS)",
+      rubric: null,
+      totalScore: null,
+      grade: "Under Review",
+      clinicalNote: "Submission received. Dr. Malavika is evaluating biomechanics, rhythm & execution."
+    };
+    setStudentAssessments((prev) => [newEntry, ...prev]);
+    showToast("Masterclass performance submitted for Dr. Malavika's evaluation!", "success");
+    return newEntry;
+  };
+
+  const gradeAssessment = (id, rubricData, clinicalNote, grade, totalScore) => {
+    setStudentAssessments((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status: "Evaluated",
+              evaluationDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              rubric: rubricData,
+              clinicalNote,
+              grade,
+              totalScore
+            }
+          : item
+      )
+    );
+    showToast("Academic & biomechanical assessment published to student portal!", "success");
+  };
+
+  const toggleLessonCompletion = (moduleId, lessonId) => {
+    setCurriculumModules((prev) =>
+      prev.map((mod) => {
+        if (mod.id !== moduleId) return mod;
+        const updatedLessons = mod.lessons.map((les) =>
+          les.id === lessonId ? { ...les, completed: !les.completed } : les
+        );
+        const completedCount = updatedLessons.filter((l) => l.completed).length;
+        const progressPercent = Math.round((completedCount / updatedLessons.length) * 100);
+        return {
+          ...mod,
+          lessons: updatedLessons,
+          progressPercent,
+          status: progressPercent === 100 ? "Completed" : progressPercent > 0 ? "In Progress" : "Upcoming"
+        };
+      })
+    );
   };
 
   // Auth
@@ -519,6 +638,15 @@ export const AcademyProvider = ({ children }) => {
         deleteRecording,
         liveClassConfig,
         updateLiveClassConfig,
+        curriculumModules,
+        setCurriculumModules,
+        toggleLessonCompletion,
+        studentAssessments,
+        setStudentAssessments,
+        submitStudentAssessment,
+        gradeAssessment,
+        studentProfile,
+        setStudentProfile,
         isAdminLoggedIn: isAdminLoggedIn || userRole === "admin",
         authUser,
         setAuthUser,

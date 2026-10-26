@@ -1225,62 +1225,328 @@ export const PERFORMANCE_REELS = [
 
 
 
+export const INITIAL_STUDENT_PROFILE = {
+  registrationNo: "DR-DIP-2026-084",
+  studentName: "Ananya Menon",
+  enrolledProgram: "Online Bharatanatyam Diploma Course",
+  level: "Year 1 - Foundational Margam & Biomechanics",
+  term: "Autumn Term 2026/27",
+  academicYear: "2026 - 2027",
+  examEligibility: "Eligible for Annual Assessment",
+  attendancePercent: 94,
+  curriculumProgressPercent: 68,
+  assignedMentor: "Dr. Malavika M. Sunil (MBBS)"
+};
+
+export const CURRICULUM_MODULES = [
+  {
+    id: "mod-1",
+    moduleNumber: "Module 01",
+    title: "Foundational Adavu Biomechanics & Aramandi Posture",
+    description: "Core footwork drills, joint protection, knee turnout angles, and Tatta & Natta Adavus in three speeds.",
+    progressPercent: 100,
+    status: "Completed",
+    lessons: [
+      {
+        id: "rec-1",
+        title: "Tatta & Natta Adavu Speed Drills & Biomechanics",
+        duration: "58 mins",
+        date: "Term Week 1",
+        category: "Bharatanatyam",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: true,
+        topics: ["Aramandi alignment biomechanics", "Tatta Adavu 1-8 in 3 speeds", "Talam precision check"],
+        notesPdf: "Adavu_Biomechanics_Guide.pdf"
+      },
+      {
+        id: "rec-1b",
+        title: "Paraval & Kuditta Mettu Adavu Drills",
+        duration: "52 mins",
+        date: "Term Week 2",
+        category: "Bharatanatyam",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: true,
+        topics: ["Spring jumps (Kuditta Mettu)", "Spinal stabilization", "Sollukattu pacing"],
+        notesPdf: "Kuditta_Mettu_Notes.pdf"
+      }
+    ]
+  },
+  {
+    id: "mod-2",
+    moduleNumber: "Module 02",
+    title: "Natyashastra Hastas, Bhedas & Symbolic Gestures",
+    description: "28 Asamyuta Hastas (single hand), 24 Samyuta Hastas (double hand), and Viniyoga slokas from Abhinaya Darpana.",
+    progressPercent: 66,
+    status: "In Progress",
+    lessons: [
+      {
+        id: "rec-2",
+        title: "Asamyuta Hastas & Sloka Recitation Drill",
+        duration: "54 mins",
+        date: "Term Week 3",
+        category: "Bharatanatyam",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: true,
+        topics: ["Pataka to Chandrakala hand mudras", "Sloka pronunciation", "Wrist flexibility conditioning"],
+        notesPdf: "Asamyuta_Hastas_Handbook.pdf"
+      },
+      {
+        id: "rec-2b",
+        title: "Drishti, Greeva & Shiro Bhedas (Head, Eye & Neck Coordination)",
+        duration: "48 mins",
+        date: "Term Week 4",
+        category: "Bharatanatyam",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: false,
+        topics: ["Sama, Alokita & Pralokita eye glances", "Sundari neck glide biomechanics", "Expression focus"],
+        notesPdf: "Bhedas_Reference_Sheet.pdf"
+      }
+    ]
+  },
+  {
+    id: "mod-3",
+    moduleNumber: "Module 03",
+    title: "Tala, Laya & Rhythmic Synchronization (Carnatic Metre)",
+    description: "Understanding Adi Tala, Rupaka Tala, Jathi patterns, and rhythmic synchrony between cymbals and ankle bells.",
+    progressPercent: 30,
+    status: "In Progress",
+    lessons: [
+      {
+        id: "rec-3",
+        title: "Adi Tala Structure & Jathi Recitation (Tha-Dhi-Thom-Nam)",
+        duration: "50 mins",
+        date: "Term Week 5",
+        category: "Bharatanatyam",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: true,
+        topics: ["Laghu & Drutam hand counts", "Kaala (Speed) changes", "Rhythmic foot strike coordination"],
+        notesPdf: "Tala_Rhythm_Handbook.pdf"
+      },
+      {
+        id: "rec-3b",
+        title: "Carnatic Vocal & Shruti Alignment in Mayamalavagowla",
+        duration: "55 mins",
+        date: "Term Week 6",
+        category: "Carnatic Music",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: false,
+        topics: ["Voice pitch stabilization", "Sri Gananatha Geetham breakdown", "Tala tracking"],
+        notesPdf: "Mayamalavagowla_Geetham_Notation.pdf"
+      }
+    ]
+  },
+  {
+    id: "mod-4",
+    moduleNumber: "Module 04",
+    title: "Margam Repertoire: Alarippu (Tisra Ekam) & Exam Piece",
+    description: "Comprehensive step-by-step masterclass of the inaugural invocatory dance of the classical Margam.",
+    progressPercent: 0,
+    status: "Upcoming",
+    lessons: [
+      {
+        id: "rec-4",
+        title: "Alarippu (Tisra Ekam) Step-by-Step Repertoire & Sollukattu",
+        duration: "62 mins",
+        date: "Term Week 7",
+        category: "Bharatanatyam",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: false,
+        topics: ["Full Margam opening segment", "Temple salutation posture", "Graduation exam preparation"],
+        notesPdf: "Alarippu_Notation_Score.pdf"
+      }
+    ]
+  }
+];
+
 export const INITIAL_RECORDINGS = [
   {
     id: "rec-1",
     title: "Bharatanatyam Diploma: Tatta & Natta Adavu Speed Drills",
     batch: "Online Bharatanatyam Diploma Course",
     category: "Bharatanatyam",
+    module: "Module 01: Adavu Biomechanics",
     date: "Oct 24, 2026",
     duration: "58 mins",
+    embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoType: "youtube",
     topics: ["Aramandi alignment biomechanics", "Tatta Adavu 1-8 in 3 speeds", "Talam precision check"],
-    thumbnail: "/images/courses/Courses/bharatanatyam_diploma/main.jpg"
+    thumbnail: "/images/courses/Courses/bharatanatyam_diploma/main.jpg",
+    syllabus: [
+      "Aramandi Knee Angle & Joint Protection",
+      "Tatta Adavu 1-8 in Vilamba, Madhyama & Druta Kaala",
+      "Torso Elongation & Metronome Alignment"
+    ]
   },
   {
     id: "rec-2",
     title: "Alarippu (Tisra Ekam) Step-by-Step Repertoire & Sollukattu",
     batch: "Online Bharatanatyam Diploma Course",
     category: "Bharatanatyam",
+    module: "Module 04: Margam Repertoire",
     date: "Oct 20, 2026",
     duration: "62 mins",
+    embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoType: "youtube",
     topics: ["Eye and neck coordination (Drishti & Greeva Bheda)", "Full Alarippu rehearsal with cymbals"],
-    thumbnail: "/images/courses/Courses/bharatanatyam_diploma/slide_01.jpg"
+    thumbnail: "/images/courses/Courses/bharatanatyam_diploma/slide_01.jpg",
+    syllabus: [
+      "Invocatory Opening Postures",
+      "Drishti Bhedas (Eye Movements)",
+      "Neck Glides (Sundari & Tirascheena)"
+    ]
   },
   {
     id: "rec-3",
     title: "Carnatic Music: Mayamalavagowla Geetham & Shruti Alignment",
     batch: "Online Carnatic Music Classes",
     category: "Carnatic Music",
+    module: "Module 03: Tala & Laya",
     date: "Oct 22, 2026",
     duration: "55 mins",
+    embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoType: "youtube",
     topics: ["Voice culture in Madhyama Sthayi", "Sri Gananatha Geetham breakdown", "Tala tracking"],
-    thumbnail: "/images/courses/Courses/carnatic_music/main.jpg"
+    thumbnail: "/images/courses/Courses/carnatic_music/main.jpg",
+    syllabus: [
+      "Shruti Pitch Anchoring",
+      "Sri Gananatha (Malahari / Rupaka)",
+      "Swara Kalpana Foundation"
+    ]
   },
   {
     id: "rec-4",
     title: "Semi-Classical Bollywood: Graceful Mudras & Lyrical Choreography",
     batch: "Online Semi-Classical Bollywood Dance Classes",
     category: "Bollywood & Semi-Classical",
+    module: "Repertoire Electives",
     date: "Oct 18, 2026",
     duration: "50 mins",
+    embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
     videoType: "youtube",
     topics: ["Spins and lyrical arm flow", "Facial expressions (Navarasa)", "Stage presentation"],
-    thumbnail: "/images/courses/Courses/bollywood_dance/main.jpg"
+    thumbnail: "/images/courses/Courses/bollywood_dance/main.jpg",
+    syllabus: [
+      "Chakkar (Spins) Balance & Spotting",
+      "Navarasa Expression Modulation",
+      "Modern Stage Choreography Flow"
+    ]
   }
 ];
 
 export const INITIAL_LIVE_CLASS = {
   activeBatch: "Online Bharatanatyam Diploma Course",
   sessionTitle: "Bharatanatyam Diploma: Margam & Adavu Precision",
-  scheduledDayTime: "Monday & Friday • 05:30 PM - 06:30 PM",
-  meetUrl: "https://meet.google.com/new",
-  status: "Studio Ready",
+  scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
+  targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
+  meetUrl: "https://meet.google.com/dnc-ragas-live",
+  platform: "Google Meet",
+  meetingId: "dnc-ragas-live",
+  passcode: "RAGAS2026",
+  status: "Scheduled",
+  instructor: "Dr. Malavika M. Sunil (MBBS)",
   notice: "Interactive live masterclass conducted directly by Dr. Malavika. Ensure ghungroos and practice attire are ready."
 };
+
+export const INITIAL_STUDENT_ASSESSMENTS = [
+  {
+    id: "ass-1",
+    studentName: "Ananya Menon",
+    registrationNo: "DR-DIP-2026-084",
+    batch: "Bharatanatyam Diploma (Year 1)",
+    title: "Term 1 Practical Submission: Tatta & Natta Adavu Speed 1 to 3",
+    submissionDate: "Oct 24, 2026",
+    videoUrl: "https://drive.google.com/file/d/sample-adavu/view",
+    status: "Evaluated",
+    evaluationDate: "Oct 25, 2026",
+    facultyMentor: "Dr. Malavika M. Sunil (MBBS)",
+    rubric: {
+      biomechanics: {
+        score: 9.5,
+        maxScore: 10,
+        label: "Aramandi & Lower-Body Biomechanics",
+        remarks: "Superb external hip rotation and stable knee angle without medial collapse. Patellar tracking is aligned and healthy."
+      },
+      mudraPrecision: {
+        score: 9.0,
+        maxScore: 10,
+        label: "Hasta Mudra Precision",
+        remarks: "Crisp Pataka hand definition with extended thumb and taut palm plane."
+      },
+      layaTalam: {
+        score: 8.5,
+        maxScore: 10,
+        label: "Laya & Talam Synchronization",
+        remarks: "Steady adherence to the Metronome at Vilamba and Madhyama Kaala. Minor rush at Druta speed."
+      },
+      angaShuddhi: {
+        score: 9.0,
+        maxScore: 10,
+        label: "Anga Shuddhi (Upper-Body Posture)",
+        remarks: "Excellent thoracic spine elongation and centered shoulder line throughout."
+      }
+    },
+    totalScore: 36.0,
+    maxTotal: 40,
+    grade: "Distinction (90%)",
+    clinicalNote: "Student exhibits sound neuromuscular memory and safe biomechanical posture. Cleared for Module 2 progression."
+  },
+  {
+    id: "ass-2",
+    studentName: "Ananya Menon",
+    registrationNo: "DR-DIP-2026-084",
+    batch: "Bharatanatyam Diploma (Year 1)",
+    title: "Mid-Term Review: Asamyuta Hastas Recitation & Sloka Delivery",
+    submissionDate: "Oct 22, 2026",
+    videoUrl: "https://drive.google.com/file/d/sample-hastas/view",
+    status: "Under Faculty Evaluation",
+    evaluationDate: "Pending",
+    facultyMentor: "Dr. Malavika M. Sunil (MBBS)",
+    rubric: null,
+    totalScore: null,
+    grade: "Under Review",
+    clinicalNote: "Submission logged. Dr. Malavika is evaluating vocal clarity, wrist alignment, and mudra transition pacing."
+  }
+];
+
+export const INITIAL_STUDY_MATERIALS = [
+  {
+    id: "doc-1",
+    title: "Diploma Year 1: Natyashastra Mudras & Hastha Bhedas Handbook",
+    documentRef: "DR-SYL-MUDRA-01",
+    type: "Official PDF Document (24 Pages)",
+    category: "Theory Syllabus",
+    size: "3.4 MB",
+    verifiedBy: "Dr. Malavika M. Sunil"
+  },
+  {
+    id: "doc-2",
+    title: "Adavu Step-by-Step Footwork Notation & Talam Speed Drill Guide",
+    documentRef: "DR-PRA-ADAVU-02",
+    type: "Practice Guidebook",
+    category: "Practical Training",
+    size: "4.8 MB",
+    verifiedBy: "Dr. Malavika M. Sunil"
+  },
+  {
+    id: "doc-3",
+    title: "Alarippu (Tisra Ekam) Rhythmic Score Notation & Cymbals Guide",
+    documentRef: "DR-REP-ALARIPPU-03",
+    type: "Choreography Repertoire Score",
+    category: "Margam Repertoire",
+    size: "2.1 MB",
+    verifiedBy: "Dr. Malavika M. Sunil"
+  },
+  {
+    id: "doc-4",
+    title: "Dancer Musculoskeletal Posture, Joint Safety & Injury Prevention",
+    documentRef: "DR-MED-ANATOMY-04",
+    type: "Clinical Biomechanics Manual",
+    category: "Medical Dance Science by Dr. Malavika",
+    size: "5.2 MB",
+    verifiedBy: "Dr. Malavika M. Sunil (MBBS)"
+  }
+];

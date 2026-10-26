@@ -66,7 +66,9 @@ export default function AdminDashboard() {
     updateRecordings,
     deleteRecording,
     liveClassConfig,
-    updateLiveClassConfig
+    updateLiveClassConfig,
+    studentAssessments,
+    gradeAssessment
   } = useAcademy();
 
   const [passwordInput, setPasswordInput] = useState("");
@@ -105,18 +107,31 @@ export default function AdminDashboard() {
       feedback: ""
     }
   ]);
-  const [selectedReview, setSelectedReview] = useState(null);
-  const [feedbackInput, setFeedbackInput] = useState("");
+  const [selectedAssessment, setSelectedAssessment] = useState(null);
+  const [rubricDraft, setRubricDraft] = useState({
+    biomechanicsScore: 9.5,
+    biomechanicsRemarks: "Superb external hip rotation and stable knee angle without medial collapse.",
+    mudraScore: 9.0,
+    mudraRemarks: "Crisp Pataka hand definition with extended thumb and taut palm plane.",
+    layaScore: 8.5,
+    layaRemarks: "Steady adherence to the Metronome at Vilamba and Madhyama Kaala.",
+    angaScore: 9.0,
+    angaRemarks: "Excellent thoracic spine elongation and centered shoulder line throughout.",
+    clinicalNote: "Student exhibits sound neuromuscular memory and safe biomechanical posture. Cleared for Module 2 progression."
+  });
 
   // Live Broadcast & Recordings Vault State
   const [liveForm, setLiveForm] = useState({
-    title: liveClassConfig?.title || "Bharatanatyam Diploma Masterclass: Aramandi & Tala Sync",
+    sessionTitle: liveClassConfig?.sessionTitle || "Bharatanatyam Diploma: Margam & Adavu Precision",
     platform: liveClassConfig?.platform || "Google Meet",
-    joinUrl: liveClassConfig?.joinUrl || "https://meet.google.com/dnc-ragas-live",
-    scheduledTime: liveClassConfig?.scheduledTime || "Sunday, 5:00 PM IST / 7:30 AM EST",
-    status: liveClassConfig?.status || "Live Now",
-    instructor: liveClassConfig?.instructor || "Dr. Malavika Sunil",
-    targetBatch: liveClassConfig?.targetBatch || "Bharatanatyam Diploma & Non-Diploma"
+    meetUrl: liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live",
+    meetingId: liveClassConfig?.meetingId || "dnc-ragas-live",
+    passcode: liveClassConfig?.passcode || "RAGAS2026",
+    scheduledDayTime: liveClassConfig?.scheduledDayTime || "Sunday, 05:00 PM IST / 07:30 AM EST",
+    targetTimestamp: liveClassConfig?.targetTimestamp || new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    status: liveClassConfig?.status || "Scheduled",
+    instructor: liveClassConfig?.instructor || "Dr. Malavika M. Sunil (MBBS)",
+    activeBatch: liveClassConfig?.activeBatch || "Online Bharatanatyam Diploma Course"
   });
 
   const [isAddingRecModal, setIsAddingRecModal] = useState(false);
@@ -719,12 +734,12 @@ export default function AdminDashboard() {
         {/* Tab Switcher */}
         <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-[#FAF7F2] border border-[#B99A63]/30 shadow-xs overflow-x-auto max-w-full">
           {[
-            { id: "enquiries", label: `Enquiries (${enquiries.length})`, icon: MessageSquare },
-            { id: "courses", label: `Classes & Services (${courses.length})`, icon: BookOpen },
-            { id: "live_classroom", label: `Live Class & Vault (${(recordings || []).length})`, icon: Video },
-            { id: "gallery", label: `Media Vault (${gallery.length})`, icon: ImageIcon },
-            { id: "matter", label: "Announcement & FAQs CMS", icon: FileText },
-            { id: "students", label: "Student Reviews & Homework", icon: GraduationCap }
+            { id: "enquiries", label: `Admissions & Enrolments CRM (${enquiries.length})`, icon: MessageSquare },
+            { id: "courses", label: `Courses & Tuition Catalog (${courses.length})`, icon: BookOpen },
+            { id: "live_classroom", label: `Live Broadcast & Vault CMS (${(recordings || []).length})`, icon: Video },
+            { id: "students", label: `Student Assessment Desk (${(studentAssessments || []).length})`, icon: GraduationCap },
+            { id: "matter", label: "Site Announcements & Ticker", icon: FileText },
+            { id: "gallery", label: `Media Vault (${gallery.length})`, icon: ImageIcon }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1705,69 +1720,96 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB 5: STUDENT HOMEWORK & REVIEWS */}
+        {/* TAB 4: STUDENT ASSESSMENT DESK */}
         {activeTab === "students" && (
           <div className="space-y-6 text-left">
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-2">
-              <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
-                Student Video Submissions &amp; Biomechanical Feedback
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#3B0B14] text-[10px] font-bold uppercase tracking-wider">
+                  Academic Evaluation Portal
+                </span>
+                <span className="text-xs text-stone-500">Official 4-Criterion Biomechanical Rubric</span>
+              </div>
+              <h3 className="text-xl font-bold text-stone-900 font-serif-luxury">
+                Student Performance &amp; Biomechanical Assessment Desk
               </h3>
-              <p className="text-xs text-slate-500">
-                Review weekly practice videos uploaded by enrolled students from Georgia, India, and overseas batches.
+              <p className="text-xs text-stone-500 leading-relaxed">
+                Grade student adavu submissions using the medical-artistic rubric: Aramandi turnout, Mudra precision, Talam cadence, and Anga Shuddhi.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {studentReviews.map((rev) => (
+              {(studentAssessments || []).map((ass) => (
                 <div
-                  key={rev.id}
-                  className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3 flex flex-col justify-between"
+                  key={ass.id}
+                  className="p-5 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4 flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#3B0B14]">{rev.batch}</span>
+                      <span className="text-xs font-mono font-bold text-[#3B0B14]">
+                        {ass.registrationNo} &bull; {ass.batch}
+                      </span>
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                          rev.status === "reviewed"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          ass.status === "Evaluated"
+                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                            : "bg-amber-50 text-amber-800 border border-amber-200"
                         }`}
                       >
-                        {rev.status === "reviewed" ? "Reviewed" : "Pending Feedback"}
+                        {ass.status}
                       </span>
                     </div>
 
-                    <h4 className="text-sm font-bold text-slate-900">{rev.studentName}</h4>
-                    <p className="text-xs text-slate-600 font-medium">{rev.title}</p>
-                    <span className="text-[11px] text-slate-400 block">Submitted: {rev.date}</span>
+                    <h4 className="text-sm font-bold text-stone-900">{ass.studentName}</h4>
+                    <p className="text-xs text-stone-700 font-medium">{ass.title}</p>
+                    <span className="text-[11px] text-stone-400 block">Submitted: {ass.submissionDate}</span>
 
                     <a
-                      href={rev.videoUrl}
+                      href={ass.videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-[#B99A63] hover:text-purple-800 font-bold underline"
+                      className="inline-flex items-center gap-1.5 text-xs text-[#B99A63] hover:underline font-bold"
                     >
-                      <Video className="w-3.5 h-3.5" />
-                      <span>Watch Practice Video Link</span>
+                      <Video className="w-3.5 h-3.5 text-[#3B0B14]" />
+                      <span>Open Student Video Submission Link</span>
                     </a>
 
-                    {rev.feedback && (
-                      <div className="p-3 rounded-xl bg-slate-50 text-xs text-slate-700 mt-2 border border-slate-100">
-                        <strong className="text-slate-900 block mb-0.5">Your Feedback:</strong>
-                        {rev.feedback}
+                    {ass.rubric && (
+                      <div className="p-3 rounded-xl bg-stone-50 text-xs text-stone-700 space-y-1.5 border border-stone-100">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-stone-900">
+                          <span>Evaluation Score: {ass.totalScore} / 40</span>
+                          <span className="text-emerald-700">{ass.grade}</span>
+                        </div>
+                        <p className="text-[11px] text-stone-600 italic">
+                          &ldquo;{ass.clinicalNote}&rdquo;
+                        </p>
                       </div>
                     )}
                   </div>
 
-                  <div className="pt-3 border-t flex justify-end">
+                  <div className="pt-3 border-t border-stone-100 flex justify-end">
                     <button
+                      type="button"
                       onClick={() => {
-                        setSelectedReview(rev);
-                        setFeedbackInput(rev.feedback || "");
+                        setSelectedAssessment(ass);
+                        if (ass.rubric) {
+                          setRubricDraft({
+                            biomechanicsScore: ass.rubric.biomechanics.score,
+                            biomechanicsRemarks: ass.rubric.biomechanics.remarks,
+                            mudraScore: ass.rubric.mudraPrecision.score,
+                            mudraRemarks: ass.rubric.mudraPrecision.remarks,
+                            layaScore: ass.rubric.layaTalam.score,
+                            layaRemarks: ass.rubric.layaTalam.remarks,
+                            angaScore: ass.rubric.angaShuddhi.score,
+                            angaRemarks: ass.rubric.angaShuddhi.remarks,
+                            clinicalNote: ass.clinicalNote
+                          });
+                        }
                       }}
-                      className="px-4 py-2 rounded-xl bg-[#151515] hover:bg-purple-600 text-white font-bold text-xs transition-colors cursor-pointer"
+                      className="silk-zari-btn px-4 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
                     >
-                      {rev.status === "reviewed" ? "Update Feedback" : "Review & Add Feedback"}
+                      <GraduationCap className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <span>{ass.status === "Evaluated" ? "Update Assessment & Rubric" : "Grade with 4-Point Rubric"}</span>
                     </button>
                   </div>
                 </div>
@@ -1777,7 +1819,7 @@ export default function AdminDashboard() {
         )}
       </div>
 
-            {/* Add New Recording Modal (Option A2) */}
+      {/* Add New Recording Modal (Option A2) */}
       {isAddingRecModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
           <div className="w-full max-w-lg rounded-3xl bg-white border border-[#B99A63]/50 shadow-2xl overflow-hidden p-6 sm:p-7 space-y-5 text-left">
@@ -2744,75 +2786,259 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* MODAL: REVIEW STUDENT HOMEWORK */}
-      {selectedReview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-100 space-y-4 text-left">
-            <div className="flex items-center justify-between border-b pb-3">
+      {/* MODAL: 4-POINT OFFICIAL RUBRIC EVALUATION */}
+      {selectedAssessment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl border border-[#B99A63]/40 space-y-5 text-left my-8">
+            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
               <div>
-                <span className="text-xs font-bold text-[#B99A63] uppercase">Student Practice Review</span>
-                <h3 className="text-lg font-bold text-slate-900">{selectedReview.studentName}</h3>
+                <span className="text-[10px] font-bold text-[#B99A63] uppercase tracking-wider">
+                  Academic Performance Rubric &bull; {selectedAssessment.registrationNo}
+                </span>
+                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                  Grade Submission: {selectedAssessment.studentName}
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5">{selectedAssessment.title}</p>
               </div>
-              <button onClick={() => setSelectedReview(null)} className="p-1 text-slate-400 hover:text-slate-600">
-                <X className="w-5 h-5" />
+              <button
+                type="button"
+                onClick={() => setSelectedAssessment(null)}
+                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 space-y-1">
-                <span className="text-slate-500 block text-[11px]">Item / Exercise:</span>
-                <strong className="text-slate-900 text-sm block">{selectedReview.title}</strong>
-                <a
-                  href={selectedReview.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[#B99A63] hover:text-purple-800 font-bold underline mt-1"
-                >
-                  <Video className="w-3.5 h-3.5" />
-                  <span>Open Video Rehearsal Link</span>
-                </a>
-              </div>
+            <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
+              <span className="text-stone-600 font-semibold">Video Rehearsal:</span>
+              <a
+                href={selectedAssessment.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-[#3B0B14] hover:underline flex items-center gap-1.5"
+              >
+                <Video className="w-3.5 h-3.5" />
+                <span>Open Video Link</span>
+              </a>
+            </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">
-                  Dr. Malavika's Feedback (Musculoskeletal Alignment, Aramandi, Talam):
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="e.g. Ensure the spine remains straight during the Adavu jumps. Great speed precision..."
-                  value={feedbackInput}
-                  onChange={(e) => setFeedbackInput(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 text-xs focus:outline-none"
+            {/* Rubric Inputs */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const total =
+                  Number(rubricDraft.biomechanicsScore) +
+                  Number(rubricDraft.mudraScore) +
+                  Number(rubricDraft.layaScore) +
+                  Number(rubricDraft.angaScore);
+                const percent = Math.round((total / 40) * 100);
+                const grade =
+                  percent >= 85 ? "Distinction (90%)" : percent >= 70 ? "First Class (75%)" : "Merit Pass";
+
+                const rubricData = {
+                  biomechanics: {
+                    score: Number(rubricDraft.biomechanicsScore),
+                    maxScore: 10,
+                    label: "Aramandi & Lower-Body Biomechanics",
+                    remarks: rubricDraft.biomechanicsRemarks
+                  },
+                  mudraPrecision: {
+                    score: Number(rubricDraft.mudraScore),
+                    maxScore: 10,
+                    label: "Hasta Mudra Precision",
+                    remarks: rubricDraft.mudraRemarks
+                  },
+                  layaTalam: {
+                    score: Number(rubricDraft.layaScore),
+                    maxScore: 10,
+                    label: "Laya & Talam Synchronization",
+                    remarks: rubricDraft.layaRemarks
+                  },
+                  angaShuddhi: {
+                    score: Number(rubricDraft.angaScore),
+                    maxScore: 10,
+                    label: "Anga Shuddhi (Upper-Body Posture)",
+                    remarks: rubricDraft.angaRemarks
+                  }
+                };
+
+                gradeAssessment(
+                  selectedAssessment.id,
+                  rubricData,
+                  rubricDraft.clinicalNote,
+                  grade,
+                  total
+                );
+                setSelectedAssessment(null);
+              }}
+              className="space-y-4 text-xs"
+            >
+              {/* Criterion 1 */}
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-900">
+                    1. Aramandi &amp; Lower-Body Biomechanics (0 - 10)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="10"
+                    required
+                    value={rubricDraft.biomechanicsScore}
+                    onChange={(e) =>
+                      setRubricDraft({ ...rubricDraft, biomechanicsScore: e.target.value })
+                    }
+                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={rubricDraft.biomechanicsRemarks}
+                  onChange={(e) =>
+                    setRubricDraft({ ...rubricDraft, biomechanicsRemarks: e.target.value })
+                  }
+                  placeholder="Knee turnout remarks, patella tracking, foot placement..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
                 />
               </div>
 
-              <div className="pt-3 border-t flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedReview(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-bold"
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStudentReviews(
-                      studentReviews.map((r) =>
-                        r.id === selectedReview.id
-                          ? { ...r, feedback: feedbackInput, status: "reviewed" }
-                          : r
-                      )
-                    );
-                    setSelectedReview(null);
-                    showToast("Feedback sent directly to student portal!", "success");
-                  }}
-                  className="px-5 py-2 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold"
-                >
-                  Publish Guru Feedback
-                </button>
+              {/* Criterion 2 */}
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-900">
+                    2. Hasta Mudra Precision (0 - 10)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="10"
+                    required
+                    value={rubricDraft.mudraScore}
+                    onChange={(e) =>
+                      setRubricDraft({ ...rubricDraft, mudraScore: e.target.value })
+                    }
+                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={rubricDraft.mudraRemarks}
+                  onChange={(e) =>
+                    setRubricDraft({ ...rubricDraft, mudraRemarks: e.target.value })
+                  }
+                  placeholder="Finger articulation, thumb position, wrist stability..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
+                />
               </div>
-            </div>
+
+              {/* Criterion 3 */}
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-900">
+                    3. Laya &amp; Talam Synchronization (0 - 10)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="10"
+                    required
+                    value={rubricDraft.layaScore}
+                    onChange={(e) =>
+                      setRubricDraft({ ...rubricDraft, layaScore: e.target.value })
+                    }
+                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={rubricDraft.layaRemarks}
+                  onChange={(e) =>
+                    setRubricDraft({ ...rubricDraft, layaRemarks: e.target.value })
+                  }
+                  placeholder="Metronome pacing, foot strike on samam, speed transitions..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
+                />
+              </div>
+
+              {/* Criterion 4 */}
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-900">
+                    4. Anga Shuddhi &bull; Upper-Body Posture (0 - 10)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="10"
+                    required
+                    value={rubricDraft.angaScore}
+                    onChange={(e) =>
+                      setRubricDraft({ ...rubricDraft, angaScore: e.target.value })
+                    }
+                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={rubricDraft.angaRemarks}
+                  onChange={(e) =>
+                    setRubricDraft({ ...rubricDraft, angaRemarks: e.target.value })
+                  }
+                  placeholder="Spine elongation, shoulder centering, neck carriage..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
+                />
+              </div>
+
+              {/* Clinical Verdict */}
+              <div>
+                <label className="font-bold text-stone-900 block mb-1">
+                  Dr. Malavika's Biomechanical &amp; Performance Summary (Clinical Verdict)
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={rubricDraft.clinicalNote}
+                  onChange={(e) =>
+                    setRubricDraft({ ...rubricDraft, clinicalNote: e.target.value })
+                  }
+                  placeholder="Enter detailed feedback and module clearance notes..."
+                  className="w-full p-3 rounded-xl border border-stone-200 text-xs focus:outline-none focus:border-[#B99A63]"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                <span className="text-xs font-bold text-stone-900">
+                  Total Projected:{" "}
+                  <strong className="text-[#3B0B14] font-mono text-sm">
+                    {Number(rubricDraft.biomechanicsScore) +
+                      Number(rubricDraft.mudraScore) +
+                      Number(rubricDraft.layaScore) +
+                      Number(rubricDraft.angaScore)}{" "}
+                    / 40
+                  </strong>
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAssessment(null)}
+                    className="px-4 py-2 rounded-xl border border-stone-200 text-stone-700 font-bold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#151515] hover:bg-[#3B0B14] text-white font-bold text-xs shadow-md cursor-pointer"
+                  >
+                    Publish Assessment to Student Portal
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}
