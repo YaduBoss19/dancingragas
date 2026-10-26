@@ -27,8 +27,13 @@ export default function Home() {
     setLightboxItem,
     academyInfo,
     addEnquiry,
-    showToast
+    showToast,
+    faqs,
+    testimonials
   } = useAcademy();
+
+  const activeTestimonials = testimonials || TESTIMONIALS;
+  const activeFaqs = faqs || FAQS;
 
   // Booking Form State
   const [formData, setFormData] = useState({
@@ -306,8 +311,8 @@ export default function Home() {
             </p>
           </AnimatedSection>
 
-          <div className={TESTIMONIALS.length === 1 ? "max-w-2xl mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto"}>
-            {TESTIMONIALS.map((t, idx) => (
+          <div className={activeTestimonials.length === 1 ? "max-w-2xl mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto"}>
+            {activeTestimonials.map((t, idx) => (
               <AnimatedSection
                 key={t.id}
                 delay={idx * 80}
@@ -585,7 +590,7 @@ export default function Home() {
           </AnimatedSection>
 
           <div className="space-y-4 text-left">
-            {FAQS.map((faq, idx) => {
+            {activeFaqs.map((faq, idx) => {
               const isOpen = openFaqIndex === idx;
               const faqNum = faq.number || String(idx + 1).padStart(2, "0");
               return (

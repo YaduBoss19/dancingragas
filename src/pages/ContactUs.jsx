@@ -16,7 +16,8 @@ import {
 import { FAQS } from "../data/initialData";
 
 export default function ContactUs() {
-  const { academyInfo, showToast, addEnquiry } = useAcademy();
+  const { academyInfo, showToast, addEnquiry, faqs } = useAcademy();
+  const activeFaqs = faqs || FAQS;
 
   const [faqOpenIndex, setFaqOpenIndex] = useState(0);
 
@@ -369,7 +370,7 @@ export default function ContactUs() {
         </AnimatedSection>
 
         <div className="space-y-3">
-          {FAQS.map((faq, idx) => {
+          {activeFaqs.map((faq, idx) => {
             const isOpen = faqOpenIndex === idx;
             const faqNum = faq.number || String(idx + 1).padStart(2, "0");
             return (

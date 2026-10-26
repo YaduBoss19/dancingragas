@@ -5,7 +5,9 @@ import {
   INITIAL_TIMETABLE,
   INITIAL_GALLERY,
   INITIAL_ENQUIRIES,
-  ACADEMY_INFO
+  ACADEMY_INFO,
+  FAQS,
+  TESTIMONIALS
 } from "../data/initialData";
 
 const AcademyContext = createContext();
@@ -16,12 +18,28 @@ const STORAGE_KEYS = {
   TIMETABLE: "dancingragas_academy_timetable_v2",
   GALLERY: "dancingragas_academy_gallery_v3",
   ENQUIRIES: "dancingragas_academy_enquiries_v2",
-  AUTH: "dancingragas_academy_admin_auth_v2"
+  AUTH: "dancingragas_academy_admin_auth_v2",
+  FAQS: "dancingragas_academy_faqs_v2",
+  TESTIMONIALS: "dancingragas_academy_testimonials_v2",
+  INFO: "dancingragas_academy_info_v2"
 };
 
 export const AcademyProvider = ({ children }) => {
-  // Navigation
-  const [currentPage, setCurrentPage] = useState("home");
+  // Navigation & URL routing
+  const getInitialPage = () => {
+    if (typeof window === "undefined") return "home";
+    const path = window.location.pathname.replace(/^\//, "").toLowerCase();
+    if (path === "admin") return "admin";
+    if (path === "about") return "about";
+    if (path === "courses") return "courses";
+    if (path === "gallery") return "gallery";
+    if (path === "contact") return "contact";
+    if (path === "trial") return "trial";
+    if (path === "student-portal") return "student-portal";
+    return "home";
+  };
+
+  const [currentPage, setCurrentPage] = useState(getInitialPage);
   const [selectedCourseForTrial, setSelectedCourseForTrial] = useState(null);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
   const [lightboxItem, setLightboxItem] = useState(null);
@@ -70,6 +88,33 @@ export const AcademyProvider = ({ children }) => {
       return saved ? JSON.parse(saved) : INITIAL_ENQUIRIES;
     } catch {
       return INITIAL_ENQUIRIES;
+    }
+  });
+
+  const [faqs, setFaqs] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.FAQS);
+      return saved ? JSON.parse(saved) : FAQS;
+    } catch {
+      return FAQS;
+    }
+  });
+
+  const [academyInfo, setAcademyInfo] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.INFO);
+      return saved ? JSON.parse(saved) : ACADEMY_INFO;
+    } catch {
+      return ACADEMY_INFO;
+    }
+  });
+
+  const [testimonials, setTestimonials] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TESTIMONIALS);
+      return saved ? JSON.parse(saved) : TESTIMONIALS;
+    } catch {
+      return TESTIMONIALS;
     }
   });
 
@@ -170,6 +215,38 @@ export const AcademyProvider = ({ children }) => {
     }
   }, [enquiries]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.FAQS, JSON.stringify(faqs));
+    } catch (e) {
+      console.error("Failed to save faqs to localStorage", e);
+    }
+  }, [faqs]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.INFO, JSON.stringify(academyInfo));
+    } catch (e) {
+      console.error("Failed to save academyInfo to localStorage", e);
+    }
+  }, [academyInfo]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.TESTIMONIALS, JSON.stringify(testimonials));
+    } catch (e) {
+      console.error("Failed to save testimonials to localStorage", e);
+    }
+  }, [testimonials]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPage(getInitialPage());
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   // Toast notification system
   const showToast = (text, type = "success") => {
     const id = Date.now() + Math.random().toString();
@@ -183,13 +260,34 @@ export const AcademyProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Navigation helper
+  // Navigation helper with URL history sync
   const navigateTo = (page, data = null) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (page === "trial" && data) {
       setSelectedCourseForTrial(data);
     }
+    const targetUrl = page === "home" ? "/" : "/" + page;
+    if (typeof window !== "undefined" && window.location.pathname !== targetUrl) {
+      try {
+        window.history.pushState({ page }, "", targetUrl);
+      } catch {}
+    }
     setCurrentPage(page);
+  };
+
+  const updateFaqs = (newFaqs) => {
+    setFaqs(newFaqs);
+    showToast("FAQs updated successfully!", "success");
+  };
+
+  const updateAcademyInfo = (newInfo) => {
+    setAcademyInfo(newInfo);
+    showToast("Contact and academy details saved!", "success");
+  };
+
+  const updateTestimonials = (newTestimonials) => {
+    setTestimonials(newTestimonials);
+    showToast("Student stories and reviews saved!", "success");
   };
 
   // Auth
@@ -350,7 +448,12 @@ export const AcademyProvider = ({ children }) => {
         timetable,
         gallery,
         enquiries,
-        academyInfo: ACADEMY_INFO,
+        academyInfo,
+        faqs,
+        testimonials,
+        updateFaqs,
+        updateAcademyInfo,
+        updateTestimonials,
         isAdminLoggedIn: isAdminLoggedIn || userRole === "admin",
         authUser,
         setAuthUser,

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { FAQS } from "../data/initialData";
+import { compressImageFile } from "../utils/imageCompressor";
 import { uploadMediaToBucket, isSupabaseConfigured } from "../lib/supabaseClient";
 import {
   Lock,
@@ -53,7 +54,13 @@ export default function AdminDashboard() {
     deleteTimetableSlot,
     gallery,
     addGalleryItem,
-    deleteGalleryItem
+    deleteGalleryItem,
+    faqs,
+    updateFaqs,
+    academyInfo,
+    updateAcademyInfo,
+    testimonials,
+    updateTestimonials
   } = useAcademy();
 
   const [passwordInput, setPasswordInput] = useState("");
@@ -97,6 +104,22 @@ export default function AdminDashboard() {
 
   // Modals state
   const [editingCourse, setEditingCourse] = useState(null);
+  const [isUploadingCourseMedia, setIsUploadingCourseMedia] = useState(false);
+  const [uploadProgressText, setUploadProgressText] = useState("");
+
+  // Academy Info Form state
+  const [infoForm, setInfoForm] = useState({
+    whatsappNumber: academyInfo?.whatsappNumber || "+919074585672",
+    directPhone: academyInfo?.directPhone || "+91 90745 85672",
+    email: academyInfo?.email || "info@malavikasunil.com",
+    tagline: academyInfo?.tagline || "Your Passion. Your Pace. Your Personal Coach.",
+    instagramUrl: academyInfo?.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/",
+    instagramHandle: academyInfo?.instagramHandle || "@dancingragasbymalavika"
+  });
+
+  // Testimonials draft state
+  const [testimonialsDraft, setTestimonialsDraft] = useState(testimonials || []);
+  const [editingTestimonialIdx, setEditingTestimonialIdx] = useState(null);
   const [isAddingCourse, setIsAddingCourse] = useState(false);
 
   const [editingTeacher, setEditingTeacher] = useState(null);
@@ -114,17 +137,18 @@ export default function AdminDashboard() {
   // Course Form State
   const [courseForm, setCourseForm] = useState({
     title: "",
-    category: "Dance",
-    ageGroup: "Kids & Adults",
-    level: "All Levels",
-    fee: "$75 / month",
-    rawFee: 75,
-    duration: "60 mins per session",
-    frequency: "2 sessions / week",
-    badge: "New",
-    image: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80",
+    category: "Courses We Offer",
+    ageGroup: "Children, Teens & Adults",
+    level: "Foundation to Diploma",
+    fee: "Enrolment Open",
+    rawFee: 0,
+    duration: "1 hour per session",
+    frequency: "1–2 sessions per week (Online)",
+    badge: "Diploma & Certification",
+    image: "/images/courses/Courses/bharatanatyam_diploma/main.jpg",
+    images: [],
     description: "",
-    syllabusText: "Technique & alignment\nMusical rhythm timing\nChoreography routine"
+    syllabusText: "Comprehensive practical Adavu training\nPrescribed theoretical syllabus\nMargam repertoire"
   });
 
   // Teacher Form State
@@ -208,17 +232,18 @@ export default function AdminDashboard() {
   const openAddCourse = () => {
     setCourseForm({
       title: "",
-      category: "Dance",
-      ageGroup: "Kids & Adults",
-      level: "All Levels",
-      fee: "$75 / month",
-      rawFee: 75,
-      duration: "60 mins per session",
-      frequency: "2 sessions / week",
-      badge: "Popular",
-      image: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80",
+      category: "Courses We Offer",
+      ageGroup: "Children, Teens & Adults",
+      level: "All Levels Welcome",
+      fee: "Enrolment Open",
+      rawFee: 0,
+      duration: "1 hour per session",
+      frequency: "Weekly once (Online)",
+      badge: "New Discipline",
+      image: "/images/courses/Courses/bharatanatyam_diploma/main.jpg",
+      images: ["/images/courses/Courses/bharatanatyam_diploma/main.jpg"],
       description: "",
-      syllabusText: "Foundational techniques\nBody coordination & alignment\nEnd-of-term choreography"
+      syllabusText: "Core practical training\nTheory and mudras\nClassical choreographies"
     });
     setIsAddingCourse(true);
     setEditingCourse(null);
@@ -228,19 +253,57 @@ export default function AdminDashboard() {
     setEditingCourse(course);
     setCourseForm({
       title: course.title,
-      category: course.category,
+      category: course.category || "Courses We Offer",
       ageGroup: course.ageGroup,
       level: course.level,
       fee: course.fee,
-      rawFee: course.rawFee || 75,
-      duration: course.duration,
-      frequency: course.frequency || "2 sessions / week",
+      rawFee: course.rawFee || 0,
+      duration: course.duration || "1 hour per session",
+      frequency: course.frequency || "1–2 sessions per week (Online)",
       badge: course.badge || "",
       image: course.image,
+      images: Array.isArray(course.images) ? [...course.images] : [course.image].filter(Boolean),
       description: course.description,
       syllabusText: (course.syllabus || []).join("\n")
     });
     setIsAddingCourse(false);
+  };
+
+  const handleUploadCourseMedia = async (e, isSlide = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingCourseMedia(true);
+      setUploadProgressText("Compressing photo in browser...");
+      const compressed = await compressImageFile(file, 1920, 0.86);
+
+      setUploadProgressText("Uploading to cloud...");
+      const res = await uploadMediaToBucket("course-media", compressed.file);
+      const finalUrl = res.url || compressed.dataUrl;
+
+      if (isSlide) {
+        setCourseForm((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), finalUrl]
+        }));
+        showToast("Slide photo added and optimized!", "success");
+      } else {
+        setCourseForm((prev) => ({
+          ...prev,
+          image: finalUrl,
+          images: prev.images && prev.images.length > 0 ? prev.images : [finalUrl]
+        }));
+        showToast("Main photo updated and optimized!", "success");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload image", "error");
+    } finally {
+      setIsUploadingCourseMedia(false);
+      setUploadProgressText("");
+      e.target.value = "";
+    }
   };
 
   const handleSaveCourse = (e) => {
@@ -253,14 +316,16 @@ export default function AdminDashboard() {
     const payload = {
       title: courseForm.title,
       category: courseForm.category,
+      pillar: courseForm.category,
       ageGroup: courseForm.ageGroup,
       level: courseForm.level,
       fee: courseForm.fee,
-      rawFee: Number(courseForm.rawFee) || 75,
+      rawFee: Number(courseForm.rawFee) || 0,
       duration: courseForm.duration,
       frequency: courseForm.frequency,
       badge: courseForm.badge,
       image: courseForm.image,
+      images: courseForm.images && courseForm.images.length > 0 ? courseForm.images : [courseForm.image],
       description: courseForm.description,
       syllabus: courseForm.syllabusText.split("\n").map((s) => s.trim()).filter(Boolean)
     };
@@ -728,6 +793,132 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+
+            {/* Student & Parent Stories / Testimonials Manager */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
+                    Student &amp; Parent Stories ({(testimonials || []).length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Edit quotes, student names, locations, and upload profile photos.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newTestimonial = {
+                      id: "t-" + Date.now(),
+                      name: "Student Name",
+                      relation: "Dance Student • Location",
+                      location: "Kerala",
+                      avatar: "/images/testimonials/semmalar_dharman.jpg",
+                      avatarPosition: "object-center",
+                      quote: "Learning dance with DancingRagas has been a transformative journey!",
+                      stars: 5,
+                      tag: "Verified Student"
+                    };
+                    const updated = [...(testimonials || []), newTestimonial];
+                    updateTestimonials(updated);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Story</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(testimonials || []).map((t, tIdx) => (
+                  <div key={t.id || tIdx} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-900 shrink-0 border border-slate-200 relative">
+                          <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={t.name}
+                            onChange={(e) => {
+                              const updated = [...(testimonials || [])];
+                              updated[tIdx] = { ...updated[tIdx], name: e.target.value };
+                              updateTestimonials(updated);
+                            }}
+                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={t.location || ""}
+                            onChange={(e) => {
+                              const updated = [...(testimonials || [])];
+                              updated[tIdx] = { ...updated[tIdx], location: e.target.value, relation: `Dance Student • ${e.target.value}` };
+                              updateTestimonials(updated);
+                            }}
+                            placeholder="Location"
+                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 text-purple-700 cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                showToast("Optimizing student photo in browser...", "info");
+                                const compressed = await compressImageFile(file, 600, 0.88);
+                                const res = await uploadMediaToBucket("testimonials", compressed.file);
+                                const finalUrl = res.url || compressed.dataUrl;
+                                const updated = [...(testimonials || [])];
+                                updated[tIdx] = { ...updated[tIdx], avatar: finalUrl };
+                                updateTestimonials(updated);
+                                showToast("Student photo updated!", "success");
+                              } catch (err) {
+                                showToast("Failed to upload photo", "error");
+                              }
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Delete review from "${t.name}"?`)) {
+                              const updated = (testimonials || []).filter((_, idx) => idx !== tIdx);
+                              updateTestimonials(updated);
+                              showToast("Story removed", "info");
+                            }
+                          }}
+                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          title="Delete review"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea
+                      rows={3}
+                      value={t.quote}
+                      onChange={(e) => {
+                        const updated = [...(testimonials || [])];
+                        updated[tIdx] = { ...updated[tIdx], quote: e.target.value };
+                        updateTestimonials(updated);
+                      }}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-purple-600 font-serif-luxury"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -936,6 +1127,132 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+
+            {/* Student & Parent Stories / Testimonials Manager */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
+                    Student &amp; Parent Stories ({(testimonials || []).length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Edit quotes, student names, locations, and upload profile photos.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newTestimonial = {
+                      id: "t-" + Date.now(),
+                      name: "Student Name",
+                      relation: "Dance Student • Location",
+                      location: "Kerala",
+                      avatar: "/images/testimonials/semmalar_dharman.jpg",
+                      avatarPosition: "object-center",
+                      quote: "Learning dance with DancingRagas has been a transformative journey!",
+                      stars: 5,
+                      tag: "Verified Student"
+                    };
+                    const updated = [...(testimonials || []), newTestimonial];
+                    updateTestimonials(updated);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Story</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(testimonials || []).map((t, tIdx) => (
+                  <div key={t.id || tIdx} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-900 shrink-0 border border-slate-200 relative">
+                          <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={t.name}
+                            onChange={(e) => {
+                              const updated = [...(testimonials || [])];
+                              updated[tIdx] = { ...updated[tIdx], name: e.target.value };
+                              updateTestimonials(updated);
+                            }}
+                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={t.location || ""}
+                            onChange={(e) => {
+                              const updated = [...(testimonials || [])];
+                              updated[tIdx] = { ...updated[tIdx], location: e.target.value, relation: `Dance Student • ${e.target.value}` };
+                              updateTestimonials(updated);
+                            }}
+                            placeholder="Location"
+                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 text-purple-700 cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                showToast("Optimizing student photo in browser...", "info");
+                                const compressed = await compressImageFile(file, 600, 0.88);
+                                const res = await uploadMediaToBucket("testimonials", compressed.file);
+                                const finalUrl = res.url || compressed.dataUrl;
+                                const updated = [...(testimonials || [])];
+                                updated[tIdx] = { ...updated[tIdx], avatar: finalUrl };
+                                updateTestimonials(updated);
+                                showToast("Student photo updated!", "success");
+                              } catch (err) {
+                                showToast("Failed to upload photo", "error");
+                              }
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Delete review from "${t.name}"?`)) {
+                              const updated = (testimonials || []).filter((_, idx) => idx !== tIdx);
+                              updateTestimonials(updated);
+                              showToast("Story removed", "info");
+                            }
+                          }}
+                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          title="Delete review"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea
+                      rows={3}
+                      value={t.quote}
+                      onChange={(e) => {
+                        const updated = [...(testimonials || [])];
+                        updated[tIdx] = { ...updated[tIdx], quote: e.target.value };
+                        updateTestimonials(updated);
+                      }}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-purple-600 font-serif-luxury"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1027,21 +1344,105 @@ export default function AdminDashboard() {
               />
             </div>
 
+            {/* Academy Contact & Social Details */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
+                    Academy Contact &amp; Social Details
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Updates phone, WhatsApp, and social media handles across all public website pages.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateAcademyInfo({
+                      ...academyInfo,
+                      ...infoForm
+                    });
+                  }}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer shadow-sm"
+                >
+                  Save Contact Details
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">WhatsApp Number (e.g. +919074585672)</label>
+                  <input
+                    type="text"
+                    value={infoForm.whatsappNumber}
+                    onChange={(e) => setInfoForm({ ...infoForm, whatsappNumber: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Direct Call Phone (e.g. +91 90745 85672)</label>
+                  <input
+                    type="text"
+                    value={infoForm.directPhone}
+                    onChange={(e) => setInfoForm({ ...infoForm, directPhone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Contact Email</label>
+                  <input
+                    type="email"
+                    value={infoForm.email}
+                    onChange={(e) => setInfoForm({ ...infoForm, email: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Instagram Handle</label>
+                  <input
+                    type="text"
+                    value={infoForm.instagramHandle}
+                    onChange={(e) => setInfoForm({ ...infoForm, instagramHandle: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* FAQs Manager */}
             <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
-                    Frequently Asked Questions ({faqsList.length})
+                    Frequently Asked Questions ({(faqs || []).length})
                   </h3>
                   <p className="text-xs text-slate-500">
                     Edit questions, answers, and admission guidance displayed in the FAQ section.
                   </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newFaq = {
+                      number: String((faqs || []).length + 1).padStart(2, "0"),
+                      question: "New Question Title",
+                      answer: "Provide answers regarding schedule, admission, and fees."
+                    };
+                    const updated = [...(faqs || []), newFaq];
+                    updateFaqs(updated);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add FAQ</span>
+                </button>
               </div>
 
               <div className="space-y-3">
-                {faqsList.map((faq, fIdx) => (
+                {(faqs || []).map((faq, fIdx) => (
                   <div
                     key={fIdx}
                     className="p-4 rounded-2xl border border-slate-200 hover:border-purple-300 transition-all space-y-2 bg-slate-50/50"
@@ -1066,6 +1467,132 @@ export default function AdminDashboard() {
                       </button>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed pl-9">{faq.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Student & Parent Stories / Testimonials Manager */}
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 font-serif-luxury">
+                    Student &amp; Parent Stories ({(testimonials || []).length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Edit quotes, student names, locations, and upload profile photos.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newTestimonial = {
+                      id: "t-" + Date.now(),
+                      name: "Student Name",
+                      relation: "Dance Student • Location",
+                      location: "Kerala",
+                      avatar: "/images/testimonials/semmalar_dharman.jpg",
+                      avatarPosition: "object-center",
+                      quote: "Learning dance with DancingRagas has been a transformative journey!",
+                      stars: 5,
+                      tag: "Verified Student"
+                    };
+                    const updated = [...(testimonials || []), newTestimonial];
+                    updateTestimonials(updated);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Story</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(testimonials || []).map((t, tIdx) => (
+                  <div key={t.id || tIdx} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-900 shrink-0 border border-slate-200 relative">
+                          <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={t.name}
+                            onChange={(e) => {
+                              const updated = [...(testimonials || [])];
+                              updated[tIdx] = { ...updated[tIdx], name: e.target.value };
+                              updateTestimonials(updated);
+                            }}
+                            className="font-bold text-slate-900 text-xs sm:text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                          />
+                          <input
+                            type="text"
+                            value={t.location || ""}
+                            onChange={(e) => {
+                              const updated = [...(testimonials || [])];
+                              updated[tIdx] = { ...updated[tIdx], location: e.target.value, relation: `Dance Student • ${e.target.value}` };
+                              updateTestimonials(updated);
+                            }}
+                            placeholder="Location"
+                            className="block text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-purple-600 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <label className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 text-purple-700 cursor-pointer text-xs font-semibold flex items-center gap-1" title="Upload Student Photo">
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                showToast("Optimizing student photo in browser...", "info");
+                                const compressed = await compressImageFile(file, 600, 0.88);
+                                const res = await uploadMediaToBucket("testimonials", compressed.file);
+                                const finalUrl = res.url || compressed.dataUrl;
+                                const updated = [...(testimonials || [])];
+                                updated[tIdx] = { ...updated[tIdx], avatar: finalUrl };
+                                updateTestimonials(updated);
+                                showToast("Student photo updated!", "success");
+                              } catch (err) {
+                                showToast("Failed to upload photo", "error");
+                              }
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Delete review from "${t.name}"?`)) {
+                              const updated = (testimonials || []).filter((_, idx) => idx !== tIdx);
+                              updateTestimonials(updated);
+                              showToast("Story removed", "info");
+                            }
+                          }}
+                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          title="Delete review"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea
+                      rows={3}
+                      value={t.quote}
+                      onChange={(e) => {
+                        const updated = [...(testimonials || [])];
+                        updated[tIdx] = { ...updated[tIdx], quote: e.target.value };
+                        updateTestimonials(updated);
+                      }}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed text-slate-700 focus:outline-none focus:border-purple-600 font-serif-luxury"
+                    />
                   </div>
                 ))}
               </div>
@@ -1263,10 +1790,10 @@ export default function AdminDashboard() {
                   <select
                     value={courseForm.category}
                     onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none font-semibold text-slate-800"
                   >
-                    <option value="Dance">Dance</option>
-                    <option value="Music">Music</option>
+                    <option value="Courses We Offer">Courses We Offer</option>
+                    <option value="Other Services We Offer">Other Services We Offer</option>
                   </select>
                 </div>
 
@@ -1329,14 +1856,127 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Image URL (Unsplash or CDN)</label>
-                <input
-                  type="url"
-                  value={courseForm.image}
-                  onChange={(e) => setCourseForm({ ...courseForm, image: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Session Duration</label>
+                  <input
+                    type="text"
+                    value={courseForm.duration}
+                    onChange={(e) => setCourseForm({ ...courseForm, duration: e.target.value })}
+                    placeholder="e.g. 1 hour per session"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Weekly Frequency</label>
+                  <input
+                    type="text"
+                    value={courseForm.frequency}
+                    onChange={(e) => setCourseForm({ ...courseForm, frequency: e.target.value })}
+                    placeholder="e.g. 1–2 sessions per week (Online)"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Main Photo Uploader with Auto-Compression */}
+              <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/70 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="font-bold text-slate-800 block text-xs">
+                      Main Card Cover Photo
+                    </label>
+                    <p className="text-[11px] text-slate-500">
+                      Uploaded photos are automatically resized & compressed in the browser.
+                    </p>
+                  </div>
+                  {isUploadingCourseMedia && (
+                    <span className="text-xs text-purple-700 font-semibold animate-pulse">
+                      {uploadProgressText || "Processing..."}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-xl bg-slate-900 overflow-hidden shrink-0 border border-slate-200 shadow-sm relative">
+                    <img
+                      src={courseForm.image || "/images/hero/hero_slide_01.jpg"}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer shadow-sm transition-all tap-bounce">
+                      <UploadCloud className="w-4 h-4" />
+                      <span>Upload Photo from Phone / PC</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={isUploadingCourseMedia}
+                        onChange={(e) => handleUploadCourseMedia(e, false)}
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={courseForm.image}
+                      onChange={(e) => setCourseForm({ ...courseForm, image: e.target.value })}
+                      placeholder="Or enter image URL directly"
+                      className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] text-slate-600 focus:outline-none font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Carousel Slideshow Photos Manager */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="font-bold text-slate-800 block text-xs">
+                      Carousel Slideshow Photos ({courseForm.images?.length || 0})
+                    </label>
+                    <p className="text-[11px] text-slate-500">
+                      Add multiple slides for student recitals, costumes, and studio shots.
+                    </p>
+                  </div>
+
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-purple-700 text-white font-bold text-xs cursor-pointer transition-all">
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Slide Photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={isUploadingCourseMedia}
+                      onChange={(e) => handleUploadCourseMedia(e, true)}
+                    />
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-4 gap-2">
+                  {(courseForm.images || []).map((slideUrl, sIdx) => (
+                    <div key={sIdx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-square bg-slate-900">
+                      <img src={slideUrl} alt={`Slide ${sIdx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = courseForm.images.filter((_, idx) => idx !== sIdx);
+                          setCourseForm({ ...courseForm, images: updated });
+                          showToast("Slide photo removed", "info");
+                        }}
+                        className="absolute top-1 right-1 p-1 rounded-full bg-rose-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-700"
+                        title="Remove slide"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                      <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-[9px] text-white font-bold">
+                        #{sIdx + 1}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -1861,15 +2501,14 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    const updated = [...faqsList];
+                    const updated = [...(faqs || [])];
                     updated[editingFaqIdx] = {
                       ...updated[editingFaqIdx],
                       question: faqQuestionDraft,
                       answer: faqAnswerDraft
                     };
-                    setFaqsList(updated);
+                    updateFaqs(updated);
                     setEditingFaqIdx(null);
-                    showToast("FAQ updated successfully!", "success");
                   }}
                   className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
                 >
