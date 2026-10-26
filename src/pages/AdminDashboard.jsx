@@ -25,6 +25,7 @@ import {
   GraduationCap,
   CheckCircle2,
   Video,
+  Film,
   Sparkles,
   Award,
   Users,
