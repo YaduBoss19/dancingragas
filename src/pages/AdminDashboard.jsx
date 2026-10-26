@@ -78,9 +78,24 @@ export default function AdminDashboard() {
   } = useAcademy();
 
   const [passwordInput, setPasswordInput] = useState("");
+  const [workspaceMode, setWorkspaceMode] = useState("academic"); // 'academic' | 'admissions'
   const [activeTab, setActiveTab] = useState("course_areas"); // 'course_areas' | 'students_dir' | 'enquiries' | 'assessments' | 'live_studio' | 'matter' | 'gallery'
 
-  // Selected Course Area for Unlisted Video Management
+
+  const academicTabs = [
+    { id: "course_areas", label: "Course Areas & Video Vault", count: (recordings || []).length, icon: Film, desc: "Unlisted videos & course access" },
+    { id: "students_dir", label: "Enrolled Students Directory", count: (studentsList || []).length, icon: Users, desc: "Student roster & credentials" },
+    { id: "assessments", label: "Faculty Rubric Desk", count: (studentAssessments || []).length, icon: Award, desc: "4-point biomechanical grading" },
+    { id: "live_studio", label: "Live Broadcast Studio", count: null, icon: Video, desc: "Meet link & class countdown" }
+  ];
+
+  const admissionsTabs = [
+    { id: "enquiries", label: "Admissions CRM & Leads", count: (enquiries || []).length, icon: MessageSquare, desc: "Inquiries pipeline & WhatsApp" },
+    { id: "courses", label: "Courses & Tuition Catalog", count: (courses || []).length, icon: BookOpen, desc: "Public course offerings & fees" },
+    { id: "matter", label: "Site Announcements & CMS", count: null, icon: FileText, desc: "Ticker, FAQs & contact details" }
+  ];
+
+    // Selected Course Area for Unlisted Video Management
   const COURSE_OPTIONS = [
     "Bharatanatyam Diploma",
     "Bharatanatyam Non-Diploma",
@@ -606,19 +621,69 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* Main Tabbed Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 space-y-8">
-        {/* Navigation Tabs */}
+      {/* Main Executive Workspaces Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 space-y-6">
+        {/* Executive Mode Switcher: Academic Studio (Tutor) vs Admissions CRM (Admin) */}
+        <div className="p-3 sm:p-4 rounded-3xl bg-[#151515] border border-[#B99A63]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-black/40 border border-white/10 w-full md:w-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setWorkspaceMode("academic");
+                setActiveTab("course_areas");
+              }}
+              className={`flex-1 md:flex-initial px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                workspaceMode === "academic"
+                  ? "bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] shadow-lg shadow-[#D4AF37]/25"
+                  : "text-stone-300 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <GraduationCap className="w-4 h-4 text-[#151515]" />
+              <span>Academic Studio &amp; Vault</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                workspaceMode === "academic" ? "bg-black/20 text-[#151515]" : "bg-white/10 text-[#D4AF37]"
+              }`}>
+                {(recordings || []).length} Classes
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setWorkspaceMode("admissions");
+                setActiveTab("enquiries");
+              }}
+              className={`flex-1 md:flex-initial px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                workspaceMode === "admissions"
+                  ? "bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] shadow-lg shadow-[#D4AF37]/25"
+                  : "text-stone-300 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 text-[#151515]" />
+              <span>Admissions CRM &amp; CMS</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                workspaceMode === "admissions" ? "bg-black/20 text-[#151515]" : "bg-emerald-500/20 text-emerald-300"
+              }`}>
+                {(enquiries || []).filter(e => e.status === "New").length} New Leads
+              </span>
+            </button>
+          </div>
+
+          <div className="text-left md:text-right px-2">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#D4AF37] block">
+              {workspaceMode === "academic" ? "Tutor Pedagogy Suite" : "Admissions & Operations Office"}
+            </span>
+            <span className="text-xs text-stone-300">
+              {workspaceMode === "academic"
+                ? "Dr. Malavika M. Sunil • Masterclasses, Student Roster & Rubric Evaluations"
+                : "Student Inquiries, Tuition Catalog & Public Website CMS"}
+            </span>
+          </div>
+        </div>
+
+        {/* Workspace Dedicated Sub-Navigation Tabs */}
         <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-[#B99A63]/30 shadow-xs overflow-x-auto max-w-full">
-          {[
-            { id: "course_areas", label: `Course Areas & Unlisted Videos (${(recordings || []).length})`, icon: Film },
-            { id: "students_dir", label: `Enrolled Students Directory (${(studentsList || []).length})`, icon: Users },
-            { id: "enquiries", label: `Admissions & Enrolments CRM (${enquiries.length})`, icon: MessageSquare },
-            { id: "assessments", label: `Student Assessment Desk (${(studentAssessments || []).length})`, icon: Award },
-            { id: "courses", label: `Courses & Tuition Catalog (${courses.length})`, icon: BookOpen },
-            { id: "live_studio", label: "Live Broadcast Studio", icon: Video },
-            { id: "matter", label: "Site Announcements & Ticker", icon: FileText }
-          ].map((tab) => {
+          {(workspaceMode === "academic" ? academicTabs : admissionsTabs).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
@@ -633,6 +698,13 @@ export default function AdminDashboard() {
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
+                {tab.count !== null && (
+                  <span className={`px-2 py-0.2 rounded-full text-[10px] font-mono ${
+                    isActive ? "bg-[#151515] text-[#D4AF37]" : "bg-stone-200 text-stone-700"
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
               </button>
             );
           })}

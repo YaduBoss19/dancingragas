@@ -68,7 +68,7 @@ export default function Footer() {
               Ready to begin your personal dance or vocal journey?
             </h3>
             <p className="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
-              Book a trial session directly with Dr. Malavika M. Sunil. Flexible scheduling across international time zones with zero commitment.
+              Consult directly with Dr. Malavika M. Sunil. Flexible 1-on-1 pedagogical scheduling across international time zones with zero commitment.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto shrink-0">
@@ -81,9 +81,9 @@ export default function Footer() {
                   navigateTo("trial");
                 }
               }}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-[#B99A63] hover:bg-[#cca86d] text-[#151515] font-bold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] hover:brightness-105 text-[#151515] font-bold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
             >
-              <span>Book a Trial Session</span>
+              <span>Admissions Consultation</span>
               <ArrowRight className="w-4 h-4 text-[#151515]" />
             </button>
             <button
@@ -250,10 +250,10 @@ export default function Footer() {
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigateTo("admin")}
-              className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-stone-500 hover:text-[#D4AF37] transition-colors cursor-pointer"
             >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Instructor Portal</span>
+              <Lock className="w-3.5 h-3.5 text-[#B99A63]" />
+              <span>Director &amp; Tutor Suite</span>
             </button>
             <span className="hidden sm:inline text-slate-700">|</span>
             <span className="flex items-center gap-1 text-slate-400">

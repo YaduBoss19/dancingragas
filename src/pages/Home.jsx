@@ -369,7 +369,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-6 sm:space-y-10 relative z-10">
           <AnimatedSection animation="fade-up" className="text-center space-y-3">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#F5F0E8] font-serif-luxury">
-              Book a <span className="italic text-[#D4AF37]">Trial Session</span>
+              Admissions Consultation &amp; <span className="italic text-[#D4AF37]">Audition</span>
             </h2>
 
             <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto">
