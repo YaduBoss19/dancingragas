@@ -42,14 +42,17 @@ export const AcademyProvider = ({ children }) => {
   // Navigation & URL routing
   const getInitialPage = () => {
     if (typeof window === "undefined") return "home";
-    const path = window.location.pathname.replace(/^\//, "").toLowerCase();
-    if (path === "admin") return "admin";
-    if (path === "about") return "about";
-    if (path === "courses") return "courses";
-    if (path === "gallery") return "gallery";
-    if (path === "contact") return "contact";
-    if (path === "trial") return "trial";
-    if (path === "student-portal") return "student-portal";
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, "").toLowerCase();
+    const hash = window.location.hash.replace(/^#\/?/, "").toLowerCase();
+    const target = path || hash;
+
+    if (target === "admin" || target.startsWith("admin") || target === "tutor") return "admin";
+    if (target === "student-portal" || target.startsWith("student") || target === "portal") return "student-portal";
+    if (target === "about" || target.startsWith("about")) return "about";
+    if (target === "courses" || target.startsWith("courses")) return "courses";
+    if (target === "gallery" || target.startsWith("gallery")) return "gallery";
+    if (target === "contact" || target.startsWith("contact")) return "contact";
+    if (target === "trial" || target.startsWith("trial")) return "trial";
     return "home";
   };
 
@@ -358,11 +361,15 @@ export const AcademyProvider = ({ children }) => {
   }, [studentsList]);
 
   useEffect(() => {
-    const handlePopState = () => {
+    const handleNavigationEvent = () => {
       setCurrentPage(getInitialPage());
     };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener("popstate", handleNavigationEvent);
+    window.addEventListener("hashchange", handleNavigationEvent);
+    return () => {
+      window.removeEventListener("popstate", handleNavigationEvent);
+      window.removeEventListener("hashchange", handleNavigationEvent);
+    };
   }, []);
 
   // Toast notification system
