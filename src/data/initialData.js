@@ -20,7 +20,8 @@ export const INITIAL_COURSES = [
       "/images/courses/Courses/bharatanatyam_diploma/main.jpg",
       "/images/courses/Courses/bharatanatyam_diploma/slide_01.jpg",
       "/images/courses/Courses/bharatanatyam_diploma/slide_02.jpg",
-      "/images/courses/Courses/bharatanatyam_diploma/slide_03.jpg"
+      "/images/courses/Courses/bharatanatyam_diploma/slide_03.jpg",
+      "/images/courses/Courses/bharatanatyam_diploma/slide_04.jpg"
     ],
     description: "A structured program combining practical Bharatanatyam training with theoretical lessons aligned with the prescribed syllabus. The course includes yearly examinations and certification, providing students with a systematic learning experience.",
     syllabus: [
@@ -107,7 +108,8 @@ export const INITIAL_COURSES = [
       "/images/courses/Courses/bollywood_dance/main.jpg",
       "/images/courses/Courses/bollywood_dance/slide_01.jpg",
       "/images/courses/Courses/bollywood_dance/slide_02.jpg",
-      "/images/courses/Courses/bollywood_dance/slide_03.jpg"
+      "/images/courses/Courses/bollywood_dance/slide_03.jpg",
+      "/images/courses/Courses/bollywood_dance/slide_04.jpg"
     ],
     description: "Learn engaging choreographies set to a variety of songs, blending the grace of semi-classical movements with the vibrancy of Bollywood dance. Designed to enhance expression, rhythm, coordination, and performance skills.",
     syllabus: [

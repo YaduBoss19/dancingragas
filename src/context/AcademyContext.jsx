@@ -11,7 +11,7 @@ import {
 const AcademyContext = createContext();
 
 const STORAGE_KEYS = {
-  COURSES: "dancingragas_academy_courses_v8",
+  COURSES: "dancingragas_academy_courses_v9",
   TEACHERS: "dancingragas_academy_teachers_v2",
   TIMETABLE: "dancingragas_academy_timetable_v2",
   GALLERY: "dancingragas_academy_gallery_v3",
