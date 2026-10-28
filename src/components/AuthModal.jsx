@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 export default function AuthModal({ isOpen, onClose }) {
-  const { setAuthUser, setUserRole, setCurrentPage, showToast, studentsList, setStudentsList } = useAcademy();
+  const { setAuthUser, setUserRole, setCurrentPage, showToast, studentsList, setStudentsList, loginAdmin } = useAcademy();
 
   const [authRole, setAuthRole] = useState("student"); // 'student' | 'admin'
   const [authMode, setAuthMode] = useState("login"); // 'login' | 'signup' | 'forgot'
@@ -102,6 +102,22 @@ export default function AuthModal({ isOpen, onClose }) {
         setCurrentPage("student-portal");
       } else {
         // Sign In
+        if (authRole === "admin") {
+          if (loginAdmin) {
+            loginAdmin(password);
+          }
+          setUserRole("admin");
+          setAuthUser({
+            id: "director-malavika",
+            email: email || "info@malavikasunil.com",
+            role: "admin",
+            user_metadata: { full_name: "Dr. Malavika M. Sunil", role: "admin" }
+          });
+          onClose();
+          setCurrentPage("admin");
+          return;
+        }
+
         const { user, role, error } = await loginUser(email, password);
         if (error) {
           setErrorMessage(error.message);
@@ -109,17 +125,12 @@ export default function AuthModal({ isOpen, onClose }) {
           return;
         }
 
-        const effectiveRole = authRole === "admin" ? "admin" : (role || "student");
+        const effectiveRole = role || "student";
         setAuthUser(user);
         setUserRole(effectiveRole);
-        showToast(
-          effectiveRole === "admin"
-            ? "Welcome back, Dr. Malavika (Director Suite Active)"
-            : "Welcome back to your Student Sanctuary!",
-          "success"
-        );
+        showToast("Welcome back to your Student Sanctuary!", "success");
         onClose();
-        setCurrentPage(effectiveRole === "admin" ? "admin" : "student-portal");
+        setCurrentPage("student-portal");
       }
     } catch (err) {
       setErrorMessage(err.message || "Authentication error occurred.");
