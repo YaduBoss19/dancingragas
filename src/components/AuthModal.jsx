@@ -103,13 +103,16 @@ export default function AuthModal({ isOpen, onClose }) {
       } else {
         // Sign In
         if (authRole === "admin") {
-          if (loginAdmin) {
-            loginAdmin(password);
+          const ok = loginAdmin ? loginAdmin(password) : (password === "admin123" || password === "admin");
+          if (!ok) {
+            setErrorMessage("Invalid Director passcode. Default is 'admin123'");
+            setIsLoading(false);
+            return;
           }
           setUserRole("admin");
           setAuthUser({
             id: "director-malavika",
-            email: email || "info@malavikasunil.com",
+            email: "info@malavikasunil.com",
             role: "admin",
             user_metadata: { full_name: "Dr. Malavika M. Sunil", role: "admin" }
           });
@@ -350,20 +353,32 @@ export default function AuthModal({ isOpen, onClose }) {
                   </>
                 )}
 
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Email Address</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-                    <input
-                      type="email"
-                      required
-                      placeholder={authRole === "admin" ? "malavika@malavikasunil.com" : "student@dancingragas.com"}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
-                    />
+                {authRole === "admin" ? (
+                  <div className="p-3.5 rounded-2xl bg-[#3D0B16]/10 border border-[#B99A63]/30 text-xs text-[#3D0B16]">
+                    <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#3D0B16] font-serif-luxury">
+                      <Shield className="w-4 h-4 text-[#B99A63]" />
+                      <span>Executive Director Authentication</span>
+                    </span>
+                    <p className="text-[11px] text-stone-600 leading-relaxed">
+                      Enter the director security key to access the Master Website & Media Studio, unlisted video vault, and student cohort registry.
+                    </p>
                   </div>
-                </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Email Address</label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                      <input
+                        type="email"
+                        required
+                        placeholder="student@dancingragas.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -386,7 +401,7 @@ export default function AuthModal({ isOpen, onClose }) {
                     <input
                       type="password"
                       required
-                      placeholder="••••••••"
+                      placeholder={authRole === "admin" ? "Enter director security key (admin123)" : "••••••••"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
