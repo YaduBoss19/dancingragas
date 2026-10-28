@@ -75,7 +75,12 @@ export default function AdminDashboard() {
     studentsList,
     addStudent,
     deleteStudent,
-    setActiveStudentId
+    setActiveStudentId,
+    siteContent,
+    updateSection,
+    updateSiteContent,
+    isVisualEditMode,
+    setIsVisualEditMode
   } = useAcademy();
 
   const [passwordInput, setPasswordInput] = useState("");
