@@ -1,6 +1,8 @@
 import React from "react";
-import { ArrowRight, Bell, Calendar } from "lucide-react";
+import { ArrowRight, Bell, Calendar, Edit3 } from "lucide-react";
 import { playGhungrooChime } from "../utils/talamAudio";
+import { useAcademy } from "../context/AcademyContext";
+import { EditableText } from "./LiveVisualEditor";
 
 /**
  * Institutional Announcement Marquee Ticker
@@ -8,7 +10,9 @@ import { playGhungrooChime } from "../utils/talamAudio";
  * Clicking anywhere on the announcements takes the user directly to the Announcement section.
  */
 export default function AnnouncementsTicker({ onAnnouncementClick }) {
-  const announcements = [
+  const { siteContent, isVisualEditMode, isAdminLoggedIn } = useAcademy();
+
+  const defaultAnnouncements = [
     {
       id: "cohort-admissions",
       text: "Admissions Open: Studio Cohorts & Masterclasses for 2026/27 – Reserve your slot",
@@ -41,7 +45,21 @@ export default function AnnouncementsTicker({ onAnnouncementClick }) {
     }
   ];
 
+  // Derive from siteContent.ticker if customized
+  const rawAnnouncement = siteContent?.ticker?.announcementText?.trim();
+  const parsedAnnouncements = rawAnnouncement
+    ? rawAnnouncement.split("•").map((part, idx) => ({
+        id: `custom-ticker-${idx}`,
+        text: part.trim(),
+        tag: idx === 0 ? "Admissions" : "Live Update",
+        target: "academy-events"
+      }))
+    : defaultAnnouncements;
+
+  const announcements = parsedAnnouncements.length > 0 ? parsedAnnouncements : defaultAnnouncements;
+
   const handleClick = (e) => {
+    if (isVisualEditMode && isAdminLoggedIn) return;
     if (e) e.preventDefault();
     playGhungrooChime();
     const targetId = "academy-events";
@@ -58,7 +76,7 @@ export default function AnnouncementsTicker({ onAnnouncementClick }) {
   return (
     <div
       aria-label="Latest academy announcements"
-      className="w-full bg-[#151515] text-[#F5F0E8] border-y border-[#B99A63]/30 overflow-hidden flex items-stretch shadow-md select-none group"
+      className="w-full bg-[#151515] text-[#F5F0E8] border-y border-[#B99A63]/30 overflow-hidden flex items-stretch shadow-md select-none group relative"
     >
       {/* Left Fixed Badge */}
       <button
@@ -76,7 +94,7 @@ export default function AnnouncementsTicker({ onAnnouncementClick }) {
       {/* Marquee Ticker Track (Clickable, pauses on hover) */}
       <div
         onClick={handleClick}
-        title="Click to view Announcements"
+        title={isAdminLoggedIn && isVisualEditMode ? "Director Live Edit Mode" : "Click to view Announcements"}
         className="flex-1 overflow-hidden relative flex items-center py-2 sm:py-2.5 cursor-pointer"
       >
         <div className="animate-marquee whitespace-nowrap flex items-center hover:[animation-play-state:paused]">
@@ -97,6 +115,20 @@ export default function AnnouncementsTicker({ onAnnouncementClick }) {
           ))}
         </div>
       </div>
+
+      {/* Visual Edit overlay button for Ticker if Director mode active */}
+      {isAdminLoggedIn && isVisualEditMode && (
+        <div className="shrink-0 z-20 bg-[#1E050B] text-[#D4AF37] px-3 py-2 border-l border-[#D4AF37]/50 flex items-center gap-2">
+          <EditableText
+            section="ticker"
+            field="announcementText"
+            defaultValue={rawAnnouncement || "ADMISSIONS OPEN 2026/27: Online Bharatanatyam Diploma (Yearly Exams & Certificates) • Carnatic Classical Vocal Coaching • 1-on-1 Consultations"}
+            className="text-xs font-semibold cursor-pointer underline flex items-center gap-1 text-[#D4AF37]"
+          >
+            <span>Edit Ticker</span>
+          </EditableText>
+        </div>
+      )}
     </div>
   );
 }

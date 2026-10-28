@@ -1640,3 +1640,73 @@ export const INITIAL_STUDENTS = [
     attendance: 90
   }
 ];
+
+
+export const INITIAL_SITE_CONTENT = {
+  brand: {
+    name: "Dr. Malavika M Sunil",
+    brandTitle: "Classical Dance & Music",
+    tagline: "Your Passion. Your Pace. Your Personal Coach.",
+    logoUrl: "/images/logo_transparent.png",
+    phone: "+91 90745 85672",
+    directPhone: "+91 90745 85672",
+    whatsappNumber: "+919074585672",
+    email: "info@malavikasunil.com",
+    instagramUrl: "https://www.instagram.com/dancingragasbymalavika/",
+    instagramHandle: "@dancingragasbymalavika",
+    address: "Worldwide Online & Kerala / Bangalore, India"
+  },
+  hero: {
+    badge: "Physician (MBBS) & 21-Year Margam Lineage",
+    titleLine1: "Your Passion.",
+    titleLine2: "Your Pace.",
+    titleAccent: "Your Personal Coach.",
+    subtitle: "Physician-led classical Bharatanatyam Margam, Carnatic vocal music, and anatomical movement safety mentored directly by Dr. Malavika M. Sunil.",
+    videoUrl: "/videos/performance.mp4",
+    posterUrl: "/images/hero/hero_slide_01.jpg",
+    stats: [
+      { label: "Stage Recitals", value: "600+" },
+      { label: "Years Classical Lineage", value: "21+" },
+      { label: "Shows in Georgia", value: "20+" },
+      { label: "Teaching Experience", value: "5+ yrs" }
+    ]
+  },
+  ticker: {
+    announcementText: "ADMISSIONS OPEN 2026/27: Online Bharatanatyam Diploma (Yearly Exams & Certificates) • Carnatic Classical Vocal Coaching • 1-on-1 Consultations"
+  },
+  about: {
+    badge: "The Artist & Physician",
+    title: "Dr. Malavika M. Sunil",
+    doctorCredentials: "MBBS Physician & Classical Dancer",
+    intro: "Bridging 21 years of sacred Natyashastra Margam discipline with modern anatomical movement kinesiology.",
+    paragraphs: [
+      "Dr. Malavika M. Sunil represents a rare confluence of classical devotion and medical science. Initiated into Bharatanatyam at the age of four, she underwent rigorous Margam training under venerable gurus, culminating in her prestigious CCRT National Scholarship awarded by the Government of India.",
+      "As a practicing Physician (MBBS), Dr. Malavika brings profound anatomical insight into dance pedagogy. Her signature training methodology emphasizes joint alignment, Aramandi knee-angle stability, spine elongation, and breath control—ensuring dancers develop explosive rhythmic stamina without physical wear or joint injury.",
+      "Having performed over 600 recitals across India and more than 20 prestigious productions in the Republic of Georgia, her classes welcome both disciplined young aspirants preparing for diploma certifications and adult returners seeking meditative mastery."
+    ],
+    portraitImage: "/images/malavika_dance_stage.jpg",
+    credentials: [
+      "CCRT National Cultural Scholar (Govt. of India)",
+      "Bachelor of Medicine & Bachelor of Surgery (MBBS)",
+      "600+ Solo & Ensemble Stage Performances",
+      "20+ International Recitals in Republic of Georgia",
+      "Over 5 Years of Structured Pedagogical Mentorship"
+    ]
+  },
+  admissions: {
+    badge: "Selective Mentorship • Admissions 2026/27",
+    title: "Admissions Consultation & Audition",
+    subtitle: "A private 1-on-1 pedagogical evaluation with Dr. Malavika M. Sunil (MBBS) to assess biomechanical readiness, rhythm affinity, and map the optimal diploma trajectory.",
+    expectations: [
+      { title: "1-on-1 Artist Evaluation", desc: "Dr. Malavika personally evaluates natural rhythm, postural alignment, and recommends the appropriate diploma or recreational tier." },
+      { title: "Zero Equipment Needed", desc: "Simply join in comfortable clothing. Electronic Tanpura drone and practice guides are provided." },
+      { title: "International Time Zones", desc: "Sessions scheduled flexibly across India (IST), UAE (GST), Europe (GMT/CET), USA (EST/PST), and Georgia (GET)." },
+      { title: "No Up-Front Fee", desc: "Experience the virtual studio with zero up-front financial commitment." }
+    ]
+  },
+  footer: {
+    quote: "Move. Learn. Master.",
+    copyrightYear: "2026",
+    copyrightNotice: "Dr. Malavika M. Sunil. All rights reserved. Private Dance & Music Coaching."
+  }
+};

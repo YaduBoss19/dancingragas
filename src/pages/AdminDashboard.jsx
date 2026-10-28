@@ -1497,11 +1497,22 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={() => {
+                    setIsVisualEditMode(true);
+                    navigateTo("home");
+                  }}
+                  className="px-4 py-2.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] text-xs font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-[#1E050B]" />
+                  <span>Launch Visual Canvas Editor</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => navigateTo("home")}
                   className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Preview Live Site</span>
+                  <span>Preview Site</span>
                 </button>
               </div>
             </div>
@@ -1743,7 +1754,28 @@ export default function AdminDashboard() {
                 onClick={() => {
                   updateAcademyInfo(infoForm);
                   updateFaqs(faqsList);
-                  showToast("Website content published live! All changes active.", "success");
+                  if (updateSection) {
+                    updateSection("brand", {
+                      name: infoForm.brandName || academyInfo?.name || "Dr. Malavika M Sunil",
+                      brandTitle: infoForm.brandTitle || academyInfo?.brandTitle || "Classical Dance & Music",
+                      tagline: infoForm.tagline || academyInfo?.tagline,
+                      whatsappNumber: infoForm.whatsappNumber,
+                      directPhone: infoForm.directPhone,
+                      phone: infoForm.directPhone,
+                      email: infoForm.email,
+                      instagramUrl: infoForm.instagramUrl,
+                      instagramHandle: infoForm.instagramHandle
+                    });
+                    updateSection("hero", {
+                      titleAccent: infoForm.heroHeadline || "Your Passion. Your Pace. Your Personal Coach.",
+                      subtitle: infoForm.tagline || "Physician-led classical Bharatanatyam Margam, Carnatic vocal music, and anatomical movement safety mentored directly by Dr. Malavika M. Sunil.",
+                      videoUrl: infoForm.heroVideoUrl || "/videos/performance.mp4"
+                    });
+                    updateSection("ticker", {
+                      announcementText: tickerAnnouncement
+                    });
+                  }
+                  showToast("Website content & media published live! All changes active.", "success");
                 }}
                 className="silk-zari-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] font-bold text-xs sm:text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
               >

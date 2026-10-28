@@ -3,6 +3,7 @@ import AnimatedSection from "./AnimatedSection";
 import SacredMandalaScroll from "./SacredMandalaScroll";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
+import { EditableText, EditableMedia } from "./LiveVisualEditor";
 import {
   Sparkles,
   Award,
@@ -189,7 +190,7 @@ export default function CuratorMasterProfile() {
         {/* Section Header */}
         <AnimatedSection animation="fade-up" className="text-center max-w-3xl mx-auto space-y-3">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-[#151515] font-serif-luxury">
-            About <span className="italic text-[#B99A63]">Dr. Malavika M. Sunil</span>
+            About <EditableText section="about" field="title" defaultValue="Dr. Malavika M. Sunil" className="italic text-[#B99A63]" />
           </h2>
 
           <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
@@ -209,24 +210,25 @@ export default function CuratorMasterProfile() {
             {/* Museum Gilded Frame Portrait */}
             <div className="museum-frame group shadow-xl">
               <div className="museum-frame-inner aspect-[4/5] bg-[#151515] relative overflow-hidden rounded-2xl">
-                <img
-                  src="/images/malavika_portrait.jpg"
+                <EditableMedia
+                  section="about"
+                  field="portraitImage"
+                  defaultSrc="/images/malavika_portrait.jpg"
                   alt="Dr. Malavika M. Sunil Portrait"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#151515]/95 via-[#151515]/30 to-transparent pointer-events-none" />
 
                 {/* Gilded Plaque Overlay */}
                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5 text-left text-white space-y-0.5">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#3B0B14] text-[#D4AF37] border border-[#B99A63]/50 inline-block uppercase tracking-wider mb-1">
-                    Principal Guru &amp; Physician
+                    <EditableText section="about" field="badge" defaultValue="Principal Guru & Physician" />
                   </span>
                   <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-[#F5F0E8] leading-tight">
                     Dr. Malavika M. Sunil
                   </h3>
                   <p className="text-[11px] sm:text-xs text-[#A9A49D]">
-                    Disciple of Dr. Sunil Nellay &amp; Resmi Narayanan
+                    <EditableText section="about" field="doctorCredentials" defaultValue="Disciple of Dr. Sunil Nellay & Resmi Narayanan" />
                   </p>
                 </div>
               </div>
@@ -239,9 +241,7 @@ export default function CuratorMasterProfile() {
                 <span>My Teaching Philosophy</span>
               </div>
               <p className="text-xs sm:text-sm text-slate-300 italic leading-relaxed">
-                "No two bodies or voices are identical. In our dedicated coaching, we discard
-                one-size-fits-all pressures. We progress at your exact pace, aligning rhythm,
-                anatomy, and soulful expression so you truly own your art."
+                <EditableText section="about" field="philosophy" multiline defaultValue="No two bodies or voices are identical. In our dedicated coaching, we discard one-size-fits-all pressures. We progress at your exact pace, aligning rhythm, anatomy, and soulful expression so you truly own your art." />
               </p>
             </div>
 
@@ -298,11 +298,7 @@ export default function CuratorMasterProfile() {
               </span>
 
               <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                Welcome to a private space where classical dance and music are taught as living arts.
-                I began my Bharatanatyam journey over 21 years ago under my father and master guru,{" "}
-                <strong>Dr. Sunil Nellay</strong>, and trained for 16+ years in Carnatic vocal music
-                under my mother, <strong>Resmi Narayanan</strong>. At age 12, I was honored with the
-                prestigious <strong>CCRT National Scholarship</strong> by the Government of India.
+                <EditableText section="about" field="bio1" multiline defaultValue="Welcome to a private space where classical dance and music are taught as living arts. I began my Bharatanatyam journey over 21 years ago under my father and master guru, Dr. Sunil Nellay, and trained for 16+ years in Carnatic vocal music under my mother, Resmi Narayanan. At age 12, I was honored with the prestigious CCRT National Scholarship by the Government of India." />
               </p>
 
               <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">

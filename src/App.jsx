@@ -19,6 +19,7 @@ import StudentPortal from "./pages/StudentPortal";
 import CustomCursor from "./components/CustomCursor";
 import FloatingConciergePill from "./components/FloatingConciergePill";
 import AuthModal from "./components/AuthModal";
+import { DirectorLiveBar } from "./components/LiveVisualEditor";
 import "./App.css";
 
 function AppContent() {
@@ -100,6 +101,7 @@ function AppContent() {
       <CourseDetailsModal />
       <LightboxModal />
       <Toast />
+      <DirectorLiveBar />
     </div>
   );
 }

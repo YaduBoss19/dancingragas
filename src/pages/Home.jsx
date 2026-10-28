@@ -11,6 +11,7 @@ import AnnouncementsTicker from "../components/AnnouncementsTicker";
 import HeroSlideshow from "../components/HeroSlideshow";
 import AcademyNewsAndEvents from "../components/AcademyNewsAndEvents";
 import { playGhungrooChime } from "../utils/talamAudio";
+import { EditableText, EditableMedia } from "../components/LiveVisualEditor";
 import { FAQS, TESTIMONIALS } from "../data/initialData";
 import {
   Sparkles,
@@ -111,13 +112,12 @@ export default function Home() {
       ───────────────────────────────────────────────────────────── */}
       <section className="relative min-h-[100dvh] lg:min-h-[88vh] flex flex-col justify-center pt-8 xs:pt-10 sm:pt-14 lg:pt-16 pb-4 xs:pb-5 sm:pb-6 px-3.5 sm:px-6 lg:px-8 border-b border-[#B99A63]/30 overflow-hidden bg-[#151515] text-[#F5F0E8]">
         {/* Full-Bleed Ambient Performance Video Background */}
-        <video
-          src="/videos/performance.mp4"
+        <EditableMedia
+          section="hero"
+          field="videoUrl"
+          defaultSrc="/videos/performance.mp4"
           poster="/images/hero/hero_slide_01.jpg"
-          autoPlay
-          muted
-          loop
-          playsInline
+          type="video"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none scale-105 transition-opacity duration-1000"
         />
 
@@ -138,14 +138,21 @@ export default function Home() {
             {/* Left Headline & Pitch */}
             <AnimatedSection animation="fade-up" className="lg:col-span-7 text-left space-y-3 xs:space-y-4 sm:space-y-5">
               <h1 className="text-2xl xs:text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-[#F5F0E8] leading-[1.08] font-serif-luxury drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
-                Your Passion. <br />
-                Your Pace. <br />
-                <span className="italic text-[#D4AF37]">Your Personal Coach.</span>
+                <EditableText section="hero" field="titleLine1" defaultValue="Your Passion." /> <br />
+                <EditableText section="hero" field="titleLine2" defaultValue="Your Pace." /> <br />
+                <span className="italic text-[#D4AF37]">
+                  <EditableText section="hero" field="titleAccent" defaultValue="Your Personal Coach." />
+                </span>
               </h1>
 
-              <p className="text-xs xs:text-sm sm:text-base lg:text-lg text-slate-100 leading-relaxed max-w-xl font-normal drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]">
-                A personal space for dance, music, and creative expression. Master Bharatanatyam, Carnatic music, or bespoke choreography, through <strong>online and studio classes</strong> or <strong>personalized mentorship</strong> mentored personally by <strong>Dr. Malavika M. Sunil</strong>.
-              </p>
+              <EditableText
+                as="p"
+                section="hero"
+                field="subtitle"
+                defaultValue="A personal space for dance, music, and creative expression. Master Bharatanatyam, Carnatic music, or bespoke choreography, through online and studio classes or personalized mentorship mentored personally by Dr. Malavika M. Sunil."
+                multiline={true}
+                className="text-xs xs:text-sm sm:text-base lg:text-lg text-slate-100 leading-relaxed max-w-xl font-normal drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)] block"
+              />
 
               {/* Two Required Prominent CTAs: Explore Classes & Meet the Artist */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">

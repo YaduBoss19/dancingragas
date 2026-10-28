@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
 import { Sparkles, ChevronRight, GraduationCap, Shield, User } from "lucide-react";
+import { EditableText, EditableMedia } from "./LiveVisualEditor";
 
 export default function Navbar() {
-  const { currentPage, navigateTo, authUser, userRole, setIsAuthModalOpen } = useAcademy();
+  const { currentPage, navigateTo, authUser, userRole, setIsAuthModalOpen, siteContent } = useAcademy();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -97,21 +98,30 @@ export default function Navbar() {
             aria-label="Dr. Malavika M Sunil Home"
           >
             <div className="h-9 sm:h-11 md:h-12 flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shrink-0">
-              <img
-                src="/images/logo_transparent.png"
-                alt="Dr. Malavika M Sunil Logo"
+              <EditableMedia
+                section="brand"
+                field="logoUrl"
+                defaultSrc="/images/logo_transparent.png"
+                alt="Academy Logo"
                 className="h-full w-auto object-contain drop-shadow-xs"
               />
             </div>
             <div className="min-w-0">
               <div className="flex items-center">
-                <span className="font-bold text-sm sm:text-base md:text-lg lg:text-xl tracking-tight font-serif-luxury text-[#151515] leading-tight block whitespace-nowrap">
-                  Dr. Malavika M Sunil
-                </span>
+                <EditableText
+                  section="brand"
+                  field="name"
+                  defaultValue="Dr. Malavika M Sunil"
+                  className="font-bold text-sm sm:text-base md:text-lg lg:text-xl tracking-tight font-serif-luxury text-[#151515] leading-tight block whitespace-nowrap"
+                />
               </div>
-              <p className="text-[8px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-[0.2em] text-[#B99A63] uppercase mt-0.5 leading-none whitespace-nowrap">
-                Classical Dance &amp; Music
-              </p>
+              <EditableText
+                as="p"
+                section="brand"
+                field="brandTitle"
+                defaultValue="Classical Dance &amp; Music"
+                className="text-[8px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-[0.2em] text-[#B99A63] uppercase mt-0.5 leading-none whitespace-nowrap block"
+              />
             </div>
           </button>
 

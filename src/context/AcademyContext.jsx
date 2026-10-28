@@ -15,7 +15,8 @@ import {
   INITIAL_STUDENT_ASSESSMENTS,
   INITIAL_STUDY_MATERIALS,
   INITIAL_STUDENTS,
-  COURSE_AREAS
+  COURSE_AREAS,
+  INITIAL_SITE_CONTENT
 } from "../data/initialData";
 
 const AcademyContext = createContext();
@@ -35,7 +36,8 @@ const STORAGE_KEYS = {
   MODULES: "dancingragas_academy_modules_v2",
   ASSESSMENTS: "dancingragas_academy_assessments_v2",
   STUDENT_PROFILE: "dancingragas_academy_student_profile_v2",
-  STUDENTS: "dancingragas_academy_students_v3"
+  STUDENTS: "dancingragas_academy_students_v3",
+  SITE_CONTENT: "dancingragas_academy_site_content_v1"
 };
 
 export const AcademyProvider = ({ children }) => {
@@ -57,6 +59,19 @@ export const AcademyProvider = ({ children }) => {
   };
 
   const [currentPage, setCurrentPage] = useState(getInitialPage);
+
+  // Master Dynamic Website Content Store
+  const [siteContent, setSiteContent] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SITE_CONTENT);
+      return saved ? JSON.parse(saved) : INITIAL_SITE_CONTENT;
+    } catch {
+      return INITIAL_SITE_CONTENT;
+    }
+  });
+
+  // Live Visual On-Page Edit Mode (active only for authenticated director)
+  const [isVisualEditMode, setIsVisualEditMode] = useState(false);
   const [selectedCourseForTrial, setSelectedCourseForTrial] = useState(null);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
   const [lightboxItem, setLightboxItem] = useState(null);
@@ -569,6 +584,12 @@ export const AcademyProvider = ({ children }) => {
   // Reset to factory defaults
   const resetToDefaults = () => {
     setCourses(INITIAL_COURSES);
+    setSiteContent(INITIAL_SITE_CONTENT);
+    try {
+      localStorage.setItem(STORAGE_KEYS.SITE_CONTENT, JSON.stringify(INITIAL_SITE_CONTENT));
+    } catch (e) {
+      // Ignore
+    }
     setTeachers(INITIAL_TEACHERS);
     setTimetable(INITIAL_TIMETABLE);
     setGallery(INITIAL_GALLERY);

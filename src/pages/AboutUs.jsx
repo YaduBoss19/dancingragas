@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
+import { EditableText, EditableMedia } from "../components/LiveVisualEditor";
 import AnimatedSection from "../components/AnimatedSection";
 import FilmArchiveShowcase from "../components/FilmArchiveShowcase";
 import DiplomaGoldSeal from "../components/DiplomaGoldSeal";
@@ -95,6 +96,7 @@ function StatBadge({ icon: Icon, value, label, color = "rose" }) {
 }
 
 export default function AboutUs() {
+  const { siteContent } = useAcademy();
   const { navigateTo } = useAcademy();
 
   const milestones = [
@@ -232,15 +234,22 @@ export default function AboutUs() {
           <AnimatedSection animation="slide-left" className="lg:col-span-5 relative">
             <TiltCard>
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-amber-300/40 aspect-[4/5] hover-img-zoom bg-slate-950">
-                <img
-                  src="/images/malavika_portrait.jpg"
-                  alt="Dr. Malavika M. Sunil – Bharatanatyam artist"
+                <EditableMedia
+                  section="about"
+                  field="portraitImage"
+                  defaultSrc="/images/malavika_portrait.jpg"
+                  alt="Dr. Malavika M. Sunil"
                   className="w-full h-full object-cover"
-                  loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
                 <div className="absolute bottom-6 left-5 right-5 text-left text-white">
-                  <h3 className="text-lg sm:text-xl font-black font-serif-luxury">Dr. Malavika M. Sunil</h3>
+                  <EditableText
+                    as="h3"
+                    section="about"
+                    field="title"
+                    defaultValue="Dr. Malavika M. Sunil"
+                    className="text-lg sm:text-xl font-black font-serif-luxury block"
+                  />
                   <p className="text-[11px] text-rose-300 font-semibold tracking-wide mt-0.5">Founder & Artistic Director · DancingRagas</p>
                 </div>
               </div>
