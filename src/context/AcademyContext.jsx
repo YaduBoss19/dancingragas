@@ -425,6 +425,31 @@ export const AcademyProvider = ({ children }) => {
     showToast("Contact and academy details saved!", "success");
   };
 
+  const updateSiteContent = (newContent) => {
+    setSiteContent(newContent);
+    try {
+      localStorage.setItem(STORAGE_KEYS.SITE_CONTENT, JSON.stringify(newContent));
+    } catch {
+      // ignore
+    }
+    showToast("Website content updated successfully!", "success");
+  };
+
+  const updateSection = (sectionKey, patch) => {
+    setSiteContent((prev) => {
+      const currentSection = prev?.[sectionKey] || {};
+      const updatedSection = { ...currentSection, ...patch };
+      const nextContent = { ...prev, [sectionKey]: updatedSection };
+      try {
+        localStorage.setItem(STORAGE_KEYS.SITE_CONTENT, JSON.stringify(nextContent));
+      } catch {
+        // ignore
+      }
+      return nextContent;
+    });
+    showToast(`Updated ${sectionKey} live!`, "success");
+  };
+
   const updateTestimonials = (newTestimonials) => {
     setTestimonials(newTestimonials);
     showToast("Student stories and reviews saved!", "success");
@@ -779,7 +804,14 @@ export const AcademyProvider = ({ children }) => {
         updateTimetableSlot,
         deleteTimetableSlot,
         addGalleryItem,
-        deleteGalleryItem
+        deleteGalleryItem,
+        // Master Site Content & Visual Edit Mode
+        siteContent,
+        setSiteContent,
+        updateSiteContent,
+        updateSection,
+        isVisualEditMode,
+        setIsVisualEditMode
       }}
     >
       {children}
