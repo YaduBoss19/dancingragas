@@ -6,7 +6,7 @@ async function runVerification() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
 
-  const baseUrl = "http://localhost:5173";
+  const baseUrl = "https://dancingragas.vercel.app";
 
   // 1. Visit Homepage
   console.log("1. Visiting Homepage:", baseUrl);

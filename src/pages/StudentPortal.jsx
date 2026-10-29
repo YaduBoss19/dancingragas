@@ -32,8 +32,13 @@ import {
   Lock,
   UserCheck
 } from "lucide-react";
+import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
+import TanpuraDroneWidget from "../components/TanpuraDroneWidget";
+import SanadCertificateModal from "../components/SanadCertificateModal";
+import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
 export default function StudentPortal({ onOpenAuth }) {
+  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const {
     authUser,
     userRole,
@@ -223,7 +228,7 @@ export default function StudentPortal({ onOpenAuth }) {
         registrationNo: currentStudent.registrationNo,
         batch: selectedCourseArea,
         title: submitForm.title.trim(),
-        videoUrl: submitForm.videoUrl.trim(),
+        videoUrl: formatVideoEmbedUrl(submitForm.videoUrl.trim()),
         notes: submitForm.notes.trim()
       });
       setSubmitForm({ title: "", videoUrl: "", notes: "" });
@@ -333,6 +338,14 @@ export default function StudentPortal({ onOpenAuth }) {
                     Reg: <strong className="text-white">{currentStudent.registrationNo}</strong>
                   </span>
                 </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsCertificateOpen(true)}
+                    className="silk-zari-btn px-3 py-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] text-[10px] font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                  >
+                    <Award className="w-3 h-3 text-[#1E050B]" />
+                    <span>View Gurukula Sanad</span>
+                  </button>
 
                 <h1 className="text-2xl sm:text-3xl font-bold font-serif-luxury tracking-tight text-white">
                   {currentStudent.name}
@@ -410,6 +423,9 @@ export default function StudentPortal({ onOpenAuth }) {
           </div>
         </AnimatedSection>
 
+        {/* Authentic Electronic Tanpura & Shruti Drone for Sadhana */}
+        <TanpuraDroneWidget />
+
         {/* ═══════════════════════════════════════════════════════════════
             ACADEMIC NAVIGATION TABS
         ═══════════════════════════════════════════════════════════════ */}
@@ -474,15 +490,12 @@ export default function StudentPortal({ onOpenAuth }) {
                 </div>
 
                 {/* Video Frame */}
-                <div className="aspect-video w-full bg-black relative">
-                  <iframe
-                    src={selectedLesson.embedUrl || selectedLesson.videoUrl}
-                    title={selectedLesson.title}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
+                <UniversalVideoPlayer
+                  url={selectedLesson.embedUrl || selectedLesson.videoUrl}
+                  title={selectedLesson.title}
+                  poster={selectedLesson.thumbnail}
+                  className="w-full"
+                />
 
                 {/* Lesson Details */}
                 <div className="p-5 sm:p-6 space-y-4">
@@ -1059,6 +1072,11 @@ export default function StudentPortal({ onOpenAuth }) {
           </div>
         </div>
       )}
+      <SanadCertificateModal
+        isOpen={isCertificateOpen}
+        onClose={() => setIsCertificateOpen(false)}
+        student={currentStudent}
+      />
     </div>
   );
 }

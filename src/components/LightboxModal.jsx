@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useAcademy } from "../context/AcademyContext";
+import { formatVideoEmbedUrl } from "../utils/videoUtils";
 import { X, ChevronLeft, ChevronRight, Smartphone } from "lucide-react";
 
 export default function LightboxModal() {
@@ -131,7 +132,7 @@ export default function LightboxModal() {
           ) : lightboxItem.type === "video" && lightboxItem.videoUrl ? (
             <div className="w-full aspect-video">
               <iframe
-                src={lightboxItem.videoUrl}
+                src={formatVideoEmbedUrl(lightboxItem.videoUrl)}
                 title={lightboxItem.title}
                 className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

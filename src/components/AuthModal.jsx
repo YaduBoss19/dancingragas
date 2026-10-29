@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 export default function AuthModal({ isOpen, onClose }) {
-  const { setAuthUser, setUserRole, setCurrentPage, showToast, studentsList, setStudentsList, loginAdmin } = useAcademy();
+  const { setAuthUser, setUserRole, setCurrentPage, navigateTo, showToast, studentsList, setStudentsList, loginAdmin } = useAcademy();
 
   // 3 Prestigious Roles: 'student' (Disciple Sanctuary) | 'tutor' (Faculty & Guru Desk) | 'admin' (Directorate Suite)
   const [authRole, setAuthRole] = useState("student");
@@ -101,7 +101,7 @@ export default function AuthModal({ isOpen, onClose }) {
         setUserRole("student");
         showToast("Disciple account created successfully! Welcome to DancingRagas Sanctuary.", "success");
         onClose();
-        setCurrentPage("student-portal");
+        navigateTo("student-portal");
         return;
       }
 
@@ -125,7 +125,7 @@ export default function AuthModal({ isOpen, onClose }) {
         });
         showToast("Welcome to Faculty & Guru Desk! Academic suite active.", "success");
         onClose();
-        setCurrentPage("admin");
+        navigateTo("admin");
         return;
       }
 
@@ -146,7 +146,7 @@ export default function AuthModal({ isOpen, onClose }) {
         });
         showToast("Directorate Suite authenticated! Master Studio active.", "success");
         onClose();
-        setCurrentPage("admin");
+        navigateTo("admin");
         return;
       }
 
@@ -163,7 +163,7 @@ export default function AuthModal({ isOpen, onClose }) {
       setUserRole(effectiveRole);
       showToast("Welcome back to your Disciple Sanctuary!", "success");
       onClose();
-      setCurrentPage("student-portal");
+      navigateTo("student-portal");
     } catch (err) {
       setErrorMessage(err.message || "Authentication error occurred.");
     } finally {
@@ -334,9 +334,7 @@ export default function AuthModal({ isOpen, onClose }) {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
+                <button id="auth-modal-forgot-submit-btn" type="submit" disabled={isLoading}
                   className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce"
                 >
                   <KeyRound className="w-4 h-4 text-[#1E050B]" />
@@ -481,6 +479,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 </div>
 
                 <button
+                  id="auth-modal-submit-btn"
                   type="submit"
                   disabled={isLoading}
                   className="silk-zari-btn w-full py-3.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] hover:text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce border border-[#B99A63]/40"

@@ -43,6 +43,9 @@ import {
   Play,
   ArrowRight
 } from "lucide-react";
+import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
+import TuitionReceiptModal from "../components/TuitionReceiptModal";
+import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
 export default function AdminDashboard() {
   const {
@@ -121,6 +124,7 @@ export default function AdminDashboard() {
 
   // Add Unlisted Video Modal State
   const [isAddingVideoModal, setIsAddingVideoModal] = useState(false);
+  const [receiptStudent, setReceiptStudent] = useState(null);
   const [videoForm, setVideoForm] = useState({
     title: "",
     courseCategory: "Bharatanatyam Diploma",
@@ -510,7 +514,7 @@ export default function AdminDashboard() {
       badge: courseForm.badge,
       image: courseForm.image,
       images: courseForm.images && courseForm.images.length > 0 ? courseForm.images : [courseForm.image],
-      videoUrl: courseForm.videoUrl,
+      videoUrl: formatVideoEmbedUrl(courseForm.videoUrl || ""),
       description: courseForm.description,
       syllabus: courseForm.syllabusText.split("\n").map((s) => s.trim()).filter(Boolean)
     };
@@ -1549,15 +1553,11 @@ export default function AdminDashboard() {
                 .filter((r) => !selectedCourseArea || r.courseCategory === selectedCourseArea)
                 .map((rec) => (
                   <div key={rec.id} className="bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-sm flex flex-col justify-between">
-                    <div className="relative aspect-video bg-black">
-                      <iframe
-                        src={rec.embedUrl}
+                    <UniversalVideoPlayer
+                        url={rec.embedUrl}
                         title={rec.title}
-                        className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                        className="w-full"
                       />
-                    </div>
                     <div className="p-5 space-y-2 flex-1 flex flex-col justify-between text-xs">
                       <div>
                         <span className="text-[10px] text-[#B99A63] font-bold uppercase">{rec.module}</span>
@@ -1639,6 +1639,15 @@ export default function AdminDashboard() {
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Portal</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReceiptStudent(student)}
+                      className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="Generate Printable Tuition Receipt & Sanad"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-[#B99A63]" />
+                      <span>Tuition Receipt</span>
                     </button>
 
                     <button
@@ -2460,9 +2469,10 @@ export default function AdminDashboard() {
                   return;
                 }
                 addRecording({
-                  ...videoForm,
-                  courseCategory: selectedCourseArea
-                });
+      ...videoForm,
+      embedUrl: formatVideoEmbedUrl(videoForm.embedUrl.trim()),
+      courseCategory: selectedCourseArea
+    });
                 setIsAddingVideoModal(false);
                 showToast("Unlisted video added to course vault!", "success");
               }}
@@ -2813,6 +2823,12 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+      <TuitionReceiptModal
+        isOpen={Boolean(receiptStudent)}
+        onClose={() => setReceiptStudent(null)}
+        student={receiptStudent}
+        academyInfo={academyInfo}
+      />
     </div>
   );
 }
