@@ -76,7 +76,8 @@ export default function StudentPortal({ onOpenAuth }) {
     studentProfile,
     studentsList,
     activeStudentId,
-    setActiveStudentId
+    setActiveStudentId,
+    studyMaterials
   } = useAcademy();
 
   // Active student identity (from studentsList or authUser)
@@ -1071,44 +1072,7 @@ export default function StudentPortal({ onOpenAuth }) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                {
-                  id: "doc-1",
-                  title: "Diploma Year 1: Natyashastra Mudras & Hastha Bhedas Handbook",
-                  refNo: "DR-SYL-MUDRA-01",
-                  type: "Official PDF Document (24 Pages)",
-                  category: "Theory & Sanskrit Slokas",
-                  size: "3.4 MB",
-                  verified: "Dr. Malavika M. Sunil"
-                },
-                {
-                  id: "doc-2",
-                  title: "Adavu Step-by-Step Footwork Notation & Talam Speed Drill Guide",
-                  refNo: "DR-PRA-ADAVU-02",
-                  type: "Practice Guidebook",
-                  category: "Practical Training",
-                  size: "4.8 MB",
-                  verified: "Dr. Malavika M. Sunil"
-                },
-                {
-                  id: "doc-3",
-                  title: "Alarippu (Tisra Ekam) Rhythmic Score Notation & Cymbals Guide",
-                  refNo: "DR-REP-ALARIPPU-03",
-                  type: "Choreography Repertoire Score",
-                  category: "Margam Repertoire",
-                  size: "2.1 MB",
-                  verified: "Dr. Malavika M. Sunil"
-                },
-                {
-                  id: "doc-4",
-                  title: "Dancer Musculoskeletal Posture, Joint Safety & Injury Prevention",
-                  refNo: "DR-MED-ANATOMY-04",
-                  type: "Clinical Biomechanics Manual",
-                  category: "Medical Dance Science by Dr. Malavika",
-                  size: "5.2 MB",
-                  verified: "Dr. Malavika M. Sunil (MBBS)"
-                }
-              ].map((doc) => (
+              {(studyMaterials || []).map((doc) => (
                 <div
                   key={doc.id}
                   className="p-5 rounded-2xl bg-white border border-stone-200 shadow-xs flex items-center justify-between gap-4 hover:border-[#B99A63]/50 transition-all"
@@ -1119,6 +1083,11 @@ export default function StudentPortal({ onOpenAuth }) {
                         {doc.refNo}
                       </span>
                       <span className="text-[10px] text-stone-400">&bull; {doc.size}</span>
+                      {doc.courseCategory && (
+                        <span className="px-2 py-0.5 rounded-md bg-[#1E050B]/10 text-[#1E050B] text-[9px] font-bold">
+                          {doc.courseCategory}
+                        </span>
+                      )}
                     </div>
                     <h4 className="text-xs sm:text-sm font-bold text-stone-900 leading-snug">
                       {doc.title}
@@ -1128,14 +1097,22 @@ export default function StudentPortal({ onOpenAuth }) {
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => showToast(`Initiating download: ${doc.title}`, "success")}
-                    className="p-2.5 rounded-xl bg-stone-100 hover:bg-[#151515] hover:text-[#D4AF37] text-stone-700 transition-colors cursor-pointer shrink-0"
+                  <a
+                    href={doc.fileUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      if (!doc.fileUrl || doc.fileUrl.startsWith("#")) {
+                        e.preventDefault();
+                        showToast(`Viewing syllabus material: ${doc.title}`, "info");
+                      }
+                    }}
+                    className="p-2.5 rounded-xl bg-stone-100 hover:bg-[#151515] hover:text-[#D4AF37] text-stone-700 transition-colors cursor-pointer shrink-0 flex items-center gap-1.5 text-xs font-bold"
                     title="Download Official PDF"
                   >
-                    <Download className="w-4 h-4" />
-                  </button>
+                    <Download className="w-4 h-4 text-[#B99A63]" />
+                    <span className="hidden sm:inline">PDF</span>
+                  </a>
                 </div>
               ))}
             </div>

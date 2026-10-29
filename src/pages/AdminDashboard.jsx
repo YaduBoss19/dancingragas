@@ -85,6 +85,11 @@ export default function AdminDashboard() {
     studentsList,
     addStudent,
     deleteStudent,
+    addStudentToCourse,
+    removeStudentFromCourse,
+    studyMaterials,
+    addStudyMaterial,
+    deleteStudyMaterial,
     setActiveStudentId,
     siteContent,
     updateSection,
@@ -100,7 +105,8 @@ export default function AdminDashboard() {
   // Academic Tabs (Faculty & Gurus)
   const academicTabs = [
     { id: "course_areas", label: "Course Areas & Video Vault", count: (recordings || []).length, icon: Film, desc: "Unlisted videos & course access" },
-    { id: "students_dir", label: "Enrolled Disciples Directory", count: (studentsList || []).length, icon: Users, desc: "Disciple roster & credentials" },
+    { id: "students_dir", label: "Enrolled Disciples Directory", count: (studentsList || []).length, icon: Users, desc: "Disciple roster & course enrollments" },
+    { id: "materials_cms", label: "PDF Notes & Study Vault", count: (studyMaterials || []).length, icon: FileText, desc: "Upload and manage course PDFs & slokas" },
     { id: "assessments", label: "Faculty Rubric Desk", count: (studentAssessments || []).length, icon: Award, desc: "4-point biomechanical grading" },
     { id: "live_studio", label: "Live Broadcast Studio", count: null, icon: Video, desc: "Meet link & class countdown" }
   ];
@@ -139,6 +145,16 @@ export default function AdminDashboard() {
 
   // Add Student Modal State
   const [isAddingStudentModal, setIsAddingStudentModal] = useState(false);
+  const [materialForm, setMaterialForm] = useState({
+    title: "",
+    refNo: "",
+    category: "Theory & Sanskrit Slokas",
+    courseCategory: "Bharatanatyam Diploma",
+    fileUrl: "",
+    size: "3.2 MB",
+    verified: "Dr. Malavika M. Sunil (MBBS)"
+  });
+  const [isAddingMaterialModal, setIsAddingMaterialModal] = useState(false);
   const [newStudentForm, setNewStudentForm] = useState({
     name: "",
     email: "",
@@ -1547,6 +1563,87 @@ export default function AdminDashboard() {
               ))}
             </div>
 
+            {/* Disciples Enrolled in this Course Area */}
+            <div className="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
+                <div>
+                  <h4 className="text-sm sm:text-base font-bold font-serif-luxury text-stone-900 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-[#B99A63]" />
+                    <span>Disciples Enrolled in {selectedCourseArea}</span>
+                  </h4>
+                  <p className="text-[11px] text-stone-500">
+                    Manage students who have access to this course's masterclass vault &amp; curriculum.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <select
+                    id="quick-enroll-select"
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        addStudentToCourse(e.target.value, selectedCourseArea);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-xl border border-stone-200 text-xs font-semibold bg-stone-50 hover:bg-white focus:outline-none focus:border-[#B99A63] cursor-pointer"
+                  >
+                    <option value="" disabled>+ Enroll a Student to {selectedCourseArea}...</option>
+                    {(studentsList || [])
+                      .filter((s) => !(s.enrolledCourses || []).includes(selectedCourseArea))
+                      .map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} ({s.email})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              {(() => {
+                const enrolledHere = (studentsList || []).filter((s) =>
+                  (s.enrolledCourses || []).includes(selectedCourseArea)
+                );
+
+                if (enrolledHere.length === 0) {
+                  return (
+                    <p className="text-xs text-stone-400 italic py-2">
+                      No disciples currently enrolled in {selectedCourseArea}. Use the dropdown above to enroll students.
+                    </p>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                    {enrolledHere.map((stu) => (
+                      <div
+                        key={stu.id}
+                        className="p-3 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="space-y-0.5 min-w-0">
+                          <strong className="text-stone-900 block truncate">{stu.name}</strong>
+                          <span className="text-[10px] text-stone-500 block truncate font-mono">{stu.registrationNo}</span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Unenroll ${stu.name} from "${selectedCourseArea}"?`)) {
+                              removeStudentFromCourse(stu.id, selectedCourseArea);
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold border border-rose-200 transition-colors cursor-pointer shrink-0"
+                          title="Remove from this course"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
             {/* Recordings List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {(recordings || [])
@@ -1622,10 +1719,62 @@ export default function AdminDashboard() {
                     </span>
                   </div>
 
-                  <div className="text-xs text-stone-600 space-y-1">
-                    <p><strong>Discipline:</strong> {student.batchName || student.enrolledCourses?.[0]}</p>
-                    <p><strong>Location:</strong> {student.location || "International"}</p>
-                    <p><strong>Reg ID:</strong> <span className="font-mono text-[#3D0B16] font-bold">{student.registrationNo || student.id}</span></p>
+                  <div className="text-xs text-stone-600 space-y-2">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block mb-1">
+                        Enrolled Courses:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(student.enrolledCourses && student.enrolledCourses.length > 0
+                          ? student.enrolledCourses
+                          : [student.batchName || "Bharatanatyam Diploma"]
+                        ).map((courseName) => (
+                          <span
+                            key={courseName}
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1E050B]/10 text-[#1E050B] text-[11px] font-bold border border-[#B99A63]/30"
+                          >
+                            <span>{courseName}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Unenroll ${student.name} from "${courseName}"?`)) {
+                                  removeStudentFromCourse(student.id, courseName);
+                                }
+                              }}
+                              className="w-3.5 h-3.5 rounded-full hover:bg-rose-600 hover:text-white flex items-center justify-center text-stone-500 cursor-pointer ml-0.5 text-xs font-bold leading-none"
+                              title={`Remove from ${courseName}`}
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            addStudentToCourse(student.id, e.target.value);
+                            e.target.value = "";
+                          }
+                        }}
+                        className="w-full px-2.5 py-1 rounded-lg border border-stone-200 text-[11px] font-semibold bg-stone-50 hover:bg-white focus:outline-none focus:border-[#B99A63] cursor-pointer"
+                      >
+                        <option value="" disabled>+ Add to another course...</option>
+                        {COURSE_OPTIONS.filter((c) => !(student.enrolledCourses || []).includes(c)).map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="pt-1 flex items-center justify-between text-[11px] text-stone-500">
+                      <span>Location: <strong>{student.location || "International"}</strong></span>
+                      <span>Reg: <strong className="font-mono text-[#3D0B16]">{student.registrationNo || student.id}</strong></span>
+                    </div>
                   </div>
 
                   <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
@@ -1661,6 +1810,101 @@ export default function AdminDashboard() {
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════
+            STUDY MATERIALS & PDF VAULT (FACULTY & GURU DESK)
+        ═══════════════════════════════════════════════════════════════ */}
+        {activeTab === "materials_cms" && (
+          <div className="space-y-6 text-left">
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                  Study Materials &amp; PDF Vault
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Upload syllabus PDFs, sloka charts, lyric notations, and medical anatomy notes for enrolled disciples.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAddingMaterialModal(true)}
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Upload New PDF Document</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(studyMaterials || []).map((doc) => (
+                <div
+                  key={doc.id}
+                  className="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col justify-between gap-3 text-xs text-left"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold text-[#B99A63]">
+                          {doc.refNo}
+                        </span>
+                        <span className="text-[10px] text-stone-400">&bull; {doc.size}</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-[#1E050B]/10 text-[#1E050B] text-[9px] font-bold">
+                        {doc.courseCategory || "General"}
+                      </span>
+                    </div>
+
+                    <h4 className="font-bold text-stone-900 text-sm leading-snug">
+                      {doc.title}
+                    </h4>
+
+                    <p className="text-[11px] text-stone-500">
+                      {doc.type} &bull; Verified by {doc.verified}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                    <span className="text-[10px] text-stone-400">
+                      Uploaded: {doc.uploadDate || "Active"}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={doc.fileUrl || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (!doc.fileUrl || doc.fileUrl.startsWith("#")) {
+                            e.preventDefault();
+                            showToast(`Opening document: ${doc.title}`, "info");
+                          }
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-[#B99A63]" />
+                        <span>View / Download</span>
+                      </a>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Delete study material "${doc.title}"?`)) {
+                            deleteStudyMaterial(doc.id);
+                          }
+                        }}
+                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer"
+                        title="Delete material"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2671,6 +2915,144 @@ export default function AdminDashboard() {
                   className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
                 >
                   Confirm Enrollment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: UPLOAD PDF STUDY MATERIAL (FACULTY GURU)
+      ═══════════════════════════════════════════════════════════════ */}
+      {isAddingMaterialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-[#B99A63] tracking-wider block">Faculty Desk</span>
+                <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                  Upload PDF Study Material
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddingMaterialModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!materialForm.title.trim()) {
+                  showToast("Material title is required.", "error");
+                  return;
+                }
+                addStudyMaterial(materialForm);
+                setIsAddingMaterialModal(false);
+                setMaterialForm({
+                  title: "",
+                  refNo: "",
+                  category: "Theory & Sanskrit Slokas",
+                  courseCategory: "Bharatanatyam Diploma",
+                  fileUrl: "",
+                  size: "2.8 MB",
+                  verified: "Dr. Malavika M. Sunil (MBBS)"
+                });
+              }}
+              className="space-y-3.5 text-xs"
+            >
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Document Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Diploma Year 2: Jathiswaram Score & Korvai Notations"
+                  value={materialForm.title}
+                  onChange={(e) => setMaterialForm({ ...materialForm, title: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-stone-50 focus:bg-white focus:outline-none focus:border-[#B99A63]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Target Course</label>
+                  <select
+                    value={materialForm.courseCategory}
+                    onChange={(e) => setMaterialForm({ ...materialForm, courseCategory: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-xs bg-stone-50 focus:bg-white focus:outline-none"
+                  >
+                    {COURSE_OPTIONS.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Category Type</label>
+                  <select
+                    value={materialForm.category}
+                    onChange={(e) => setMaterialForm({ ...materialForm, category: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-xs bg-stone-50 focus:bg-white focus:outline-none"
+                  >
+                    <option value="Theory & Sanskrit Slokas">Theory &amp; Sanskrit Slokas</option>
+                    <option value="Practical Training">Practical Training</option>
+                    <option value="Margam Repertoire">Margam Repertoire</option>
+                    <option value="Medical Dance Science">Medical Dance Science</option>
+                    <option value="Audio Guide & Bol Sheet">Audio Guide &amp; Bol Sheet</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Choose PDF / Document File</label>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const sizeMb = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+                      setMaterialForm((prev) => ({
+                        ...prev,
+                        title: prev.title || file.name.replace(/\.[^/.]+$/, ""),
+                        size: sizeMb,
+                        fileUrl: URL.createObjectURL(file)
+                      }));
+                      showToast(`File "${file.name}" attached (${sizeMb})!`, "success");
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs bg-stone-50 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#1E050B] file:text-[#D4AF37] cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Or Document URL / Cloud Drive Link</label>
+                <input
+                  type="url"
+                  placeholder="https://drive.google.com/file/... or https://..."
+                  value={materialForm.fileUrl}
+                  onChange={(e) => setMaterialForm({ ...materialForm, fileUrl: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs bg-stone-50 focus:bg-white focus:outline-none font-mono"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingMaterialModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-5 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold shadow-md hover:brightness-105 transition-all cursor-pointer"
+                >
+                  Publish to Disciple Sanctuary
                 </button>
               </div>
             </form>

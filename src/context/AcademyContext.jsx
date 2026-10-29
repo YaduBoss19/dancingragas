@@ -37,7 +37,8 @@ const STORAGE_KEYS = {
   ASSESSMENTS: "dancingragas_academy_assessments_v2",
   STUDENT_PROFILE: "dancingragas_academy_student_profile_v2",
   STUDENTS: "dancingragas_academy_students_v3",
-  SITE_CONTENT: "dancingragas_academy_site_content_v1"
+  SITE_CONTENT: "dancingragas_academy_site_content_v1",
+  STUDY_MATERIALS: "dancingragas_academy_materials_v1"
 };
 
 export const AcademyProvider = ({ children }) => {
@@ -203,6 +204,23 @@ export const AcademyProvider = ({ children }) => {
       return INITIAL_STUDENTS;
     }
   });
+
+  const [studyMaterials, setStudyMaterials] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.STUDY_MATERIALS);
+      return saved ? JSON.parse(saved) : INITIAL_STUDY_MATERIALS;
+    } catch {
+      return INITIAL_STUDY_MATERIALS;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.STUDY_MATERIALS, JSON.stringify(studyMaterials));
+    } catch (e) {
+      console.error("Failed to save studyMaterials to localStorage", e);
+    }
+  }, [studyMaterials]);
 
   const [activeStudentId, setActiveStudentId] = useState("stu-1");
 
@@ -521,6 +539,60 @@ export const AcademyProvider = ({ children }) => {
     showToast(`Enrolment for "${student ? student.name : ""}" removed.`, "info");
   };
 
+  const addStudentToCourse = (studentId, courseName) => {
+    setStudentsList((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const currentCourses = s.enrolledCourses || [];
+        if (currentCourses.includes(courseName)) return s;
+        return {
+          ...s,
+          enrolledCourses: [...currentCourses, courseName]
+        };
+      })
+    );
+    showToast(`Disciple enrolled in "${courseName}"!`, "success");
+  };
+
+  const removeStudentFromCourse = (studentId, courseName) => {
+    const student = studentsList.find((s) => s.id === studentId);
+    setStudentsList((prev) =>
+      prev.map((s) => {
+        if (s.id !== studentId) return s;
+        const currentCourses = s.enrolledCourses || [];
+        const filtered = currentCourses.filter((c) => c !== courseName);
+        return {
+          ...s,
+          enrolledCourses: filtered.length > 0 ? filtered : ["Bharatanatyam Diploma"]
+        };
+      })
+    );
+    showToast(`Removed "${student ? student.name : "Student"}" from "${courseName}".`, "info");
+  };
+
+  const addStudyMaterial = (docData) => {
+    const newDoc = {
+      id: "doc-" + Date.now(),
+      refNo: docData.refNo || `DR-MAT-${Math.floor(100 + Math.random() * 900)}`,
+      title: docData.title.trim(),
+      type: docData.type || "Official PDF Document",
+      category: docData.category || "Theory & Slokas",
+      courseCategory: docData.courseCategory || "Bharatanatyam Diploma",
+      size: docData.size || "2.5 MB",
+      verified: docData.verified || "Dr. Malavika M. Sunil (MBBS)",
+      fileUrl: docData.fileUrl || "/materials/sample_syllabus.pdf",
+      uploadDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    };
+    setStudyMaterials((prev) => [newDoc, ...prev]);
+    showToast(`PDF study material "${newDoc.title}" published! Available in Disciple Sanctuary.`, "success");
+    return newDoc;
+  };
+
+  const deleteStudyMaterial = (id) => {
+    setStudyMaterials((prev) => prev.filter((d) => d.id !== id));
+    showToast("Study material removed from vault.", "info");
+  };
+
   const updateLiveClassConfig = (newConfig) => {
     setLiveClassConfig(newConfig);
     showToast("Live class configuration updated successfully!", "success");
@@ -784,6 +856,11 @@ export const AcademyProvider = ({ children }) => {
         addStudent,
         updateStudent,
         deleteStudent,
+        addStudentToCourse,
+        removeStudentFromCourse,
+        studyMaterials,
+        addStudyMaterial,
+        deleteStudyMaterial,
         isAdminLoggedIn: isAdminLoggedIn || userRole === "admin" || userRole === "tutor",
         authUser,
         setAuthUser,
