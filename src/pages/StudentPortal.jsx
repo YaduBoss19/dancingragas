@@ -30,15 +30,37 @@ import {
   Layers,
   ArrowLeft,
   Lock,
-  UserCheck
+  UserCheck,
+  Stethoscope,
+  Share2,
+  Heart,
+  Compass,
+  CheckCircle,
+  Flame,
+  CreditCard
 } from "lucide-react";
 import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
 import TanpuraDroneWidget from "../components/TanpuraDroneWidget";
+import SollukattuRhythmWidget from "../components/SollukattuRhythmWidget";
 import SanadCertificateModal from "../components/SanadCertificateModal";
+import PhysicianWellnessReportModal from "../components/PhysicianWellnessReportModal";
+import StudentShowcaseModal from "../components/StudentShowcaseModal";
+import AbsenceCatchupModal from "../components/AbsenceCatchupModal";
+import MargamRoadmapWidget from "../components/MargamRoadmapWidget";
+import TuitionRenewalCard from "../components/TuitionRenewalCard";
+import VirtualStageRecitalsWidget from "../components/VirtualStageRecitalsWidget";
+import TuitionReceiptModal from "../components/TuitionReceiptModal";
 import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
 export default function StudentPortal({ onOpenAuth }) {
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [isWellnessModalOpen, setIsWellnessModalOpen] = useState(false);
+  const [isShowcaseModalOpen, setIsShowcaseModalOpen] = useState(false);
+  const [isAbsenceModalOpen, setIsAbsenceModalOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [sadhanaStreak, setSadhanaStreak] = useState(14);
+  const [practicedToday, setPracticedToday] = useState(false);
+  const [activePracticeTool, setActivePracticeTool] = useState("tanpura"); // 'tanpura' | 'talam'
   const {
     authUser,
     userRole,
@@ -338,6 +360,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     Reg: <strong className="text-white">{currentStudent.registrationNo}</strong>
                   </span>
                 </div>
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
                   <button
                     type="button"
                     onClick={() => setIsCertificateOpen(true)}
@@ -346,6 +369,34 @@ export default function StudentPortal({ onOpenAuth }) {
                     <Award className="w-3 h-3 text-[#1E050B]" />
                     <span>View Gurukula Sanad</span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsWellnessModalOpen(true)}
+                    className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                  >
+                    <Stethoscope className="w-3 h-3 text-emerald-300" />
+                    <span>Doctor's Wellness Check</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsShowcaseModalOpen(true)}
+                    className="px-3 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-200 hover:bg-rose-500/30 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                  >
+                    <Heart className="w-3 h-3 text-rose-300" />
+                    <span>Family Showcase</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAbsenceModalOpen(true)}
+                    className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-stone-200 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                  >
+                    <Calendar className="w-3 h-3 text-[#D4AF37]" />
+                    <span>Absence &amp; Catch-Up</span>
+                  </button>
+                </div>
 
                 <h1 className="text-2xl sm:text-3xl font-bold font-serif-luxury tracking-tight text-white">
                   {currentStudent.name}
@@ -423,15 +474,108 @@ export default function StudentPortal({ onOpenAuth }) {
           </div>
         </AnimatedSection>
 
-        {/* Authentic Electronic Tanpura & Shruti Drone for Sadhana */}
-        <TanpuraDroneWidget />
+        {/* ═══════════════════════════════════════════════════════════════
+            DAILY SADHANA STREAK & PRACTICE COUNTER (CUSTOMER DELIGHT)
+        ═══════════════════════════════════════════════════════════════ */}
+        <div className="rounded-2xl bg-gradient-to-r from-[#1E050B] via-[#2E0913] to-[#1E050B] border border-[#B99A63]/40 p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg text-left">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#D4AF37] text-[#1E050B] flex items-center justify-center font-bold shadow-md shrink-0">
+              <Flame className="w-6 h-6 text-[#1E050B] fill-[#1E050B]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-sm sm:text-base font-serif-luxury text-white">
+                  Daily Sadhana Streak: <span className="text-[#D4AF37]">{sadhanaStreak} Days Continuous Riyaz</span>
+                </h4>
+                {practicedToday && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/40">
+                    Logged Today
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-stone-300">
+                {practicedToday
+                  ? "Sadhana completed for today! Guru Dr. Malavika honors your devotion."
+                  : "Consistent 20-min daily Adavu drills build injury-free muscle memory & laya stamina."}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!practicedToday) {
+                setPracticedToday(true);
+                setSadhanaStreak((prev) => prev + 1);
+                showToast("Sadhana logged! Your 15-day streak is active. Keep up the sacred discipline!", "success");
+              } else {
+                showToast("Today's sadhana is already recorded! Practice anytime with the Tanpura drone.", "info");
+              }
+            }}
+            className={`silk-zari-btn px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer tap-bounce shrink-0 self-start sm:self-auto ${
+              practicedToday
+                ? "bg-emerald-900/60 text-emerald-200 border border-emerald-500/40"
+                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] hover:brightness-105"
+            }`}
+          >
+            <CheckCircle className="w-3.5 h-3.5" />
+            <span>{practicedToday ? "Sadhana Logged for Today" : "I Practiced 30m Today"}</span>
+          </button>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            PRACTICE TOOL SUITE: TANPURA DRONE vs SOLLUKATTU TALAM
+        ═══════════════════════════════════════════════════════════════ */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActivePracticeTool("tanpura")}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activePracticeTool === "tanpura"
+                  ? "bg-[#1E050B] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
+                  : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200"
+              }`}
+            >
+              Electronic Tanpura Drone
+            </button>
+
+            <button
+              onClick={() => setActivePracticeTool("talam")}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activePracticeTool === "talam"
+                  ? "bg-[#1E050B] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
+                  : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200"
+              }`}
+            >
+              Sollukattu &amp; Talam Metronome
+            </button>
+          </div>
+
+          {activePracticeTool === "tanpura" ? (
+            <TanpuraDroneWidget />
+          ) : (
+            <SollukattuRhythmWidget />
+          )}
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            FINANCIAL TRANSPARENCY & TUITION CARD
+        ═══════════════════════════════════════════════════════════════ */}
+        <TuitionRenewalCard
+          studentName={currentStudent.name}
+          registrationNo={currentStudent.registrationNo}
+          batchName={currentStudent.enrolledCourses?.[0] || "Online Bharatanatyam Diploma Course"}
+          onOpenReceipt={() => setIsReceiptModalOpen(true)}
+        />
 
         {/* ═══════════════════════════════════════════════════════════════
             ACADEMIC NAVIGATION TABS
         ═══════════════════════════════════════════════════════════════ */}
         <div className="flex items-center gap-2 border-b border-stone-200 pb-2 overflow-x-auto text-left">
           {[
-            { id: "curriculum", label: `Course Area & Unlisted Vault (${authorizedRecordings.length})`, icon: BookOpen },
+            { id: "curriculum", label: `Course Area & Vault (${authorizedRecordings.length})`, icon: BookOpen },
+            { id: "roadmap", label: "Margam Journey & Milestones", icon: Compass },
+            { id: "virtual_stage", label: "Virtual Stage & Recitals", icon: Sparkles },
             { id: "live_studio", label: "Live Classroom & Countdown", icon: Calendar },
             { id: "evaluations", label: `Performance Evaluations (${studentAssessments.length})`, icon: Award },
             { id: "documents", label: "Study Materials & Notes", icon: FileText }
@@ -625,6 +769,25 @@ export default function StudentPortal({ onOpenAuth }) {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB: MARGAM JOURNEY & DIPLOMA MILESTONES (CUSTOMER PROGRESS)
+        ═══════════════════════════════════════════════════════════════ */}
+        {activeTab === "roadmap" && (
+          <MargamRoadmapWidget
+            currentLevel={3}
+            courseName={selectedCourseArea}
+          />
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB: VIRTUAL STAGE & RECITAL CONCLAVES (CUSTOMER PERFORMANCE)
+        ═══════════════════════════════════════════════════════════════ */}
+        {activeTab === "virtual_stage" && (
+          <VirtualStageRecitalsWidget
+            studentName={currentStudent.name}
+          />
         )}
 
         {/* ═══════════════════════════════════════════════════════════════
@@ -1075,6 +1238,43 @@ export default function StudentPortal({ onOpenAuth }) {
       <SanadCertificateModal
         isOpen={isCertificateOpen}
         onClose={() => setIsCertificateOpen(false)}
+        student={currentStudent}
+      />
+
+      {/* Physician Biomechanical Health Assessment */}
+      <PhysicianWellnessReportModal
+        isOpen={isWellnessModalOpen}
+        onClose={() => setIsWellnessModalOpen(false)}
+        studentName={currentStudent.name}
+        registrationNo={currentStudent.registrationNo}
+        batchName={currentStudent.enrolledCourses?.[0]}
+      />
+
+      {/* Proud Parent & Grandparent Digital Showcase */}
+      <StudentShowcaseModal
+        isOpen={isShowcaseModalOpen}
+        onClose={() => setIsShowcaseModalOpen(false)}
+        studentName={currentStudent.name}
+        registrationNo={currentStudent.registrationNo}
+        batchName={currentStudent.enrolledCourses?.[0]}
+        activePiece={selectedLesson?.title || "Jathiswaram in Ragam Kalyani"}
+        featuredVideoUrl={selectedLesson?.embedUrl || selectedLesson?.videoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
+      />
+
+      {/* Absence Care & Makeup Catch-Up */}
+      <AbsenceCatchupModal
+        isOpen={isAbsenceModalOpen}
+        onClose={() => setIsAbsenceModalOpen(false)}
+        studentName={currentStudent.name}
+        onAbsenceLogged={(data) => {
+          showToast(`Absence recorded for ${data.date}. Your attendance streak is protected!`, "success");
+        }}
+      />
+
+      {/* Official Tuition Sanad & Fee Receipt */}
+      <TuitionReceiptModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => setIsReceiptModalOpen(false)}
         student={currentStudent}
       />
     </div>
