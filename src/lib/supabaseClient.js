@@ -88,32 +88,66 @@ export async function logoutUser() {
  * Media Storage Uploader
  * Uploads images or videos to a Supabase bucket and returns the public CDN URL
  */
-export async function uploadMediaToBucket(bucketName, file, folder = "uploads") {
-  if (!isSupabaseConfigured || !supabase) {
-    // Return base64 or object URL fallback
-    return {
-      url: URL.createObjectURL(file),
-      path: `${folder}/${file.name}`,
-      error: null
-    };
+export async function uploadMediaToBucket(bucketName = "academy-media", file, folder = "uploads") {
+  // Try Supabase Storage Bucket first if configured
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const fileExt = file.name ? file.name.split(".").pop() : "jpg";
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true
+        });
+
+      if (!error && data) {
+        const { data: publicUrlData } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(filePath);
+        return {
+          url: publicUrlData.publicUrl,
+          path: filePath,
+          error: null,
+          source: "supabase"
+        };
+      }
+      console.warn("Supabase storage upload error, falling back to local persistent data URL:", error);
+    } catch (e) {
+      console.warn("Supabase storage exception, falling back:", e);
+    }
   }
 
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-  const filePath = `${folder}/${fileName}`;
-
-  const { data, error } = await supabase.storage
-    .from(bucketName)
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false
-    });
-
-  if (error) return { url: null, error };
-
-  const { data: publicUrlData } = supabase.storage
-    .from(bucketName)
-    .getPublicUrl(filePath);
-
-  return { url: publicUrlData.publicUrl, path: filePath, error: null };
+  // Fallback to FileReader Base64 Data URL so it is fully persistent across sessions
+  return new Promise((resolve) => {
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve({
+          url: reader.result,
+          path: `${folder}/${file.name || "media"}`,
+          error: null,
+          source: "local"
+        });
+      };
+      reader.onerror = () => {
+        resolve({
+          url: URL.createObjectURL(file),
+          path: `${folder}/${file.name || "media"}`,
+          error: null,
+          source: "objectUrl"
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      resolve({
+        url: URL.createObjectURL(file),
+        path: `${folder}/${file.name || "media"}`,
+        error: null,
+        source: "objectUrl"
+      });
+    }
+  });
 }

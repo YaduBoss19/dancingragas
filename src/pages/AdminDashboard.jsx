@@ -37,12 +37,18 @@ import {
   ChevronRight,
   Filter,
   Check,
-  UserCheck
+  UserCheck,
+  Star,
+  Camera,
+  Play,
+  ArrowRight
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const {
     isAdminLoggedIn,
+    userRole,
+    authUser,
     loginAdmin,
     logoutAdmin,
     resetToDefaults,
@@ -58,6 +64,7 @@ export default function AdminDashboard() {
     deleteCourse,
     gallery,
     addGalleryItem,
+    updateGalleryItem,
     deleteGalleryItem,
     faqs,
     updateFaqs,
@@ -78,30 +85,32 @@ export default function AdminDashboard() {
     setActiveStudentId,
     siteContent,
     updateSection,
-    updateSiteContent,
-    isVisualEditMode,
-    setIsVisualEditMode
+    updateSiteContent
   } = useAcademy();
 
+  const isFaculty = userRole === "tutor";
+
   const [passwordInput, setPasswordInput] = useState("");
-  const [workspaceMode, setWorkspaceMode] = useState("academic"); // 'academic' | 'admissions'
-  const [activeTab, setActiveTab] = useState("course_areas"); // 'course_areas' | 'students_dir' | 'enquiries' | 'assessments' | 'live_studio' | 'matter' | 'gallery'
+  const [workspaceMode, setWorkspaceMode] = useState(isFaculty ? "academic" : "admissions"); // 'academic' | 'admissions'
+  const [activeTab, setActiveTab] = useState(isFaculty ? "course_areas" : "site_cms");
 
-
+  // Academic Tabs (Faculty & Gurus)
   const academicTabs = [
     { id: "course_areas", label: "Course Areas & Video Vault", count: (recordings || []).length, icon: Film, desc: "Unlisted videos & course access" },
-    { id: "students_dir", label: "Enrolled Students Directory", count: (studentsList || []).length, icon: Users, desc: "Student roster & credentials" },
+    { id: "students_dir", label: "Enrolled Disciples Directory", count: (studentsList || []).length, icon: Users, desc: "Disciple roster & credentials" },
     { id: "assessments", label: "Faculty Rubric Desk", count: (studentAssessments || []).length, icon: Award, desc: "4-point biomechanical grading" },
     { id: "live_studio", label: "Live Broadcast Studio", count: null, icon: Video, desc: "Meet link & class countdown" }
   ];
 
+  // Directorate Tabs (Dr. Malavika Executive Suite)
   const admissionsTabs = [
-    { id: "site_cms", label: "Master Website & Media Studio", count: null, icon: Sparkles, desc: "Edit all text, photos & media across the entire website" },
-    { id: "courses", label: "Courses & Tuition Catalog", count: (courses || []).length, icon: BookOpen, desc: "Create courses & upload photo slides" },
+    { id: "site_cms", label: "Master Website & Media Studio", count: null, icon: Sparkles, desc: "Edit text, photos & videos across the public website" },
+    { id: "courses", label: "Courses & 5-Slide Galleries", count: (courses || []).length, icon: BookOpen, desc: "Create courses, upload 5-slide photo galleries & reels" },
+    { id: "gallery_cms", label: "Performance & Gallery Stream", count: (gallery || []).length, icon: Film, desc: "Manage photos & videos in public gallery" },
     { id: "enquiries", label: "Admissions CRM & Leads", count: (enquiries || []).length, icon: MessageSquare, desc: "Inquiries pipeline & WhatsApp outreach" }
   ];
 
-    // Selected Course Area for Unlisted Video Management
+  // Selected Course Area for Unlisted Video Management
   const COURSE_OPTIONS = [
     "Bharatanatyam Diploma",
     "Bharatanatyam Non-Diploma",
@@ -120,13 +129,12 @@ export default function AdminDashboard() {
     embedUrl: "",
     description: "",
     syllabusText: "",
-    accessScope: "course_enrolled", // "course_enrolled" | "selected_students"
+    accessScope: "course_enrolled",
     allowedStudentIds: []
   });
 
   // Add Student Modal State
   const [isAddingStudentModal, setIsAddingStudentModal] = useState(false);
-  const [editingStudentCourses, setEditingStudentCourses] = useState(null);
   const [newStudentForm, setNewStudentForm] = useState({
     name: "",
     email: "",
@@ -163,16 +171,35 @@ export default function AdminDashboard() {
     activeBatch: liveClassConfig?.activeBatch || "Online Bharatanatyam Diploma Course"
   });
 
-  // Matter & FAQs CMS State
-  const [tickerAnnouncement, setTickerAnnouncement] = useState(
-    "ADMISSIONS OPEN 2026/27: Online Bharatanatyam Diploma (Yearly Exams & Certificates) • Carnatic Classical Vocal Coaching • 1-on-1 Consultations"
-  );
-  const [faqsList, setFaqsList] = useState(faqs || FAQS);
-  const [editingFaqIdx, setEditingFaqIdx] = useState(null);
-  const [faqQuestionDraft, setFaqQuestionDraft] = useState("");
-  const [faqAnswerDraft, setFaqAnswerDraft] = useState("");
+  // ═════════════════════════════════════════════════════════════════
+  // MASTER WEBSITE & MEDIA STUDIO EDITABLE STATES
+  // ═════════════════════════════════════════════════════════════════
+  const [heroForm, setHeroForm] = useState({
+    videoUrl: siteContent?.hero?.videoUrl || "/videos/performance.mp4",
+    posterUrl: siteContent?.hero?.posterUrl || "/images/hero/hero_slide_01.jpg",
+    badge: siteContent?.hero?.badge || "Physician (MBBS) & 21-Year Margam Lineage",
+    titleLine1: siteContent?.hero?.titleLine1 || "Your Passion.",
+    titleLine2: siteContent?.hero?.titleLine2 || "Your Pace.",
+    titleAccent: siteContent?.hero?.titleAccent || "Your Personal Coach.",
+    subtitle: siteContent?.hero?.subtitle || "Physician-led classical Bharatanatyam Margam, Carnatic vocal music, and anatomical movement safety mentored directly by Dr. Malavika M. Sunil."
+  });
 
-  // Academy Info Form state
+  const [aboutForm, setAboutForm] = useState({
+    title: siteContent?.about?.title || "Dr. Malavika M. Sunil",
+    doctorCredentials: siteContent?.about?.doctorCredentials || "MBBS Physician & Classical Dancer",
+    badge: siteContent?.about?.badge || "Principal Guru & Physician",
+    intro: siteContent?.about?.intro || "Bridging 21 years of sacred Natyashastra Margam discipline with modern anatomical movement kinesiology.",
+    portraitImage: siteContent?.about?.portraitImage || "/images/malavika_dance_stage.jpg",
+    philosophy: siteContent?.about?.philosophy || "No two bodies or voices are identical. In our dedicated coaching, we discard one-size-fits-all pressures. We progress at your exact pace, aligning rhythm, anatomy, and soulful expression so you truly own your art.",
+    bio1: siteContent?.about?.bio1 || "Welcome to a private space where classical dance and music are taught as living arts. I began my Bharatanatyam journey over 21 years ago under my father and master guru, Dr. Sunil Nellay, and trained for 16+ years in Carnatic vocal music under my mother, Resmi Narayanan. At age 12, I was honored with the prestigious CCRT National Scholarship by the Government of India.",
+    bio2: siteContent?.about?.bio2 || "As a medical doctor (MBBS), I approach pedagogy with scientific depth. Every movement, posture, and mudra is guided with an understanding of human anatomy and biomechanics — teaching safe knee alignment in Araimandi, core engagement, and physical longevity.",
+    bio3: siteContent?.about?.bio3 || "Beyond technique lies the heart of art: Bhava and Raga. Whether coaching an aspiring soloist, preparing for yearly diploma examinations, or guiding an adult returning to their childhood dream, each student receives meticulous 1-on-1 focus."
+  });
+
+  const [tickerAnnouncement, setTickerAnnouncement] = useState(
+    siteContent?.ticker?.announcementText || "ADMISSIONS OPEN 2026/27: Online Bharatanatyam Diploma (Yearly Exams & Certificates) • Carnatic Classical Vocal Coaching • 1-on-1 Consultations"
+  );
+
   const [infoForm, setInfoForm] = useState({
     whatsappNumber: academyInfo?.whatsappNumber || "+919074585672",
     directPhone: academyInfo?.directPhone || "+91 90745 85672",
@@ -182,12 +209,62 @@ export default function AdminDashboard() {
     instagramHandle: academyInfo?.instagramHandle || "@dancingragasbymalavika"
   });
 
-  // Modals state for Course Catalog
+  // FAQs State
+  const [faqsList, setFaqsList] = useState(faqs || FAQS);
+  const [editingFaqIdx, setEditingFaqIdx] = useState(null);
+  const [faqQuestionDraft, setFaqQuestionDraft] = useState("");
+  const [faqAnswerDraft, setFaqAnswerDraft] = useState("");
+  const [isAddingFaqModal, setIsAddingFaqModal] = useState(false);
+
+  // Student & Parent Stories (Testimonials) State
+  const [storiesList, setStoriesList] = useState(testimonials || []);
+  const [isAddingStoryModal, setIsAddingStoryModal] = useState(false);
+  const [editingStory, setEditingStory] = useState(null);
+  const [storyForm, setStoryForm] = useState({
+    name: "",
+    role: "Bharatanatyam Diploma Disciple",
+    location: "London, UK",
+    quote: "",
+    rating: 5
+  });
+
+  // Instagram Feed State
+  const [instagramList, setInstagramList] = useState(siteContent?.instagram || []);
+  const [isAddingInstaModal, setIsAddingInstaModal] = useState(false);
+  const [editingInsta, setEditingInsta] = useState(null);
+  const [instaForm, setInstaForm] = useState({
+    title: "",
+    caption: "",
+    category: "stage",
+    type: "reel",
+    imageUrl: "/images/instagram/insta_01.jpg",
+    videoUrl: "/videos/recital_live_01.mp4",
+    likes: "3.2k",
+    comments: "140",
+    tag: "Stage Shows",
+    instagramUrl: "https://www.instagram.com/dancingragasbymalavika/"
+  });
+
+  // Performance & Gallery Stream State
+  const [isAddingGalleryModal, setIsAddingGalleryModal] = useState(false);
+  const [editingGalleryItem, setEditingGalleryItem] = useState(null);
+  const [galleryFilter, setGalleryFilter] = useState("All");
+  const [galleryForm, setGalleryForm] = useState({
+    title: "",
+    category: "Performances",
+    type: "image", // 'image' | 'video'
+    url: "/images/gallery/gallery_01.jpg",
+    videoUrl: "/videos/performance.mp4",
+    caption: ""
+  });
+
+  // Upload Progress & Loading
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const [uploadStatusText, setUploadStatusText] = useState("");
+
+  // Course Edit Modal State
   const [editingCourse, setEditingCourse] = useState(null);
   const [isAddingCourse, setIsAddingCourse] = useState(false);
-  const [isUploadingCourseMedia, setIsUploadingCourseMedia] = useState(false);
-  const [uploadProgressText, setUploadProgressText] = useState("");
-
   const [courseForm, setCourseForm] = useState({
     title: "",
     category: "Courses We Offer",
@@ -198,218 +275,219 @@ export default function AdminDashboard() {
     duration: "1 hour per session",
     frequency: "1–2 sessions per week (Online)",
     badge: "Diploma & Certification",
-    image: "/images/courses/Courses/bharatanatyam_diploma/main.jpg",
+    image: "/images/courses/course_bharatanatyam_diploma.jpg",
     images: [],
+    videoUrl: "/videos/performance.mp4",
     description: "",
     syllabusText: ""
   });
 
-  // Enquiries search & filter
+  // Enquiries Search & Filter
+  const [enquirySearchQuery, setEnquirySearchQuery] = useState("");
   const [enquiryFilterStatus, setEnquiryFilterStatus] = useState("All");
-  const [enquirySearch, setEnquirySearch] = useState("");
-  const [viewingEnquiry, setViewingEnquiry] = useState(null);
 
-  // Helper: auto format YouTube URL to embed
-  const formatEmbedUrl = (raw) => {
-    if (!raw) return "";
-    const trimmed = raw.trim();
-    const ytMatch = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if (ytMatch && ytMatch[1]) {
-      return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
-    }
-    const vimeoMatch = trimmed.match(/(?:vimeo\.com\/)(\d+)/);
-    if (vimeoMatch && vimeoMatch[1]) {
-      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-    }
-    return trimmed;
-  };
-
-  // Submit new unlisted video
-  const handleAddVideoSubmit = (e) => {
-    e.preventDefault();
-    if (!videoForm.title.trim() || !videoForm.embedUrl.trim()) {
-      showToast("Title and YouTube/Vimeo unlisted video URL are required.", "error");
-      return;
-    }
-    const finalEmbed = formatEmbedUrl(videoForm.embedUrl);
-    if (!finalEmbed) {
-      showToast("Please provide a valid YouTube unlisted or Vimeo link.", "error");
-      return;
-    }
-
-    addRecording({
-      title: videoForm.title.trim(),
-      courseCategory: videoForm.courseCategory,
-      category: videoForm.courseCategory,
-      module: videoForm.module.trim(),
-      duration: videoForm.duration.trim() || "60 mins",
-      embedUrl: finalEmbed,
-      description: videoForm.description.trim(),
-      topics: videoForm.syllabusText.split("\n").map((s) => s.trim()).filter(Boolean),
-      accessScope: videoForm.accessScope,
-      allowedStudentIds: videoForm.accessScope === "selected_students" ? videoForm.allowedStudentIds : []
-    });
-
-    setIsAddingVideoModal(false);
-    setVideoForm({
-      title: "",
-      courseCategory: selectedCourseArea,
-      module: "Module 01: Foundational Adavu Biomechanics",
-      duration: "60 mins",
-      embedUrl: "",
-      description: "",
-      syllabusText: "",
-      accessScope: "course_enrolled",
-      allowedStudentIds: []
-    });
-  };
-
-  // Submit new student enrolment
-  const handleAddStudentSubmit = (e) => {
-    e.preventDefault();
-    if (!newStudentForm.name.trim() || !newStudentForm.email.trim()) {
-      showToast("Student name and email are required.", "error");
-      return;
-    }
-    if (newStudentForm.enrolledCourses.length === 0) {
-      showToast("Please select at least one course for the student.", "error");
-      return;
-    }
-
-    addStudent(newStudentForm);
-    setIsAddingStudentModal(false);
-    setNewStudentForm({
-      name: "",
-      email: "",
-      phone: "",
-      location: "Kerala, India",
-      enrolledCourses: ["Bharatanatyam Diploma"]
-    });
-  };
-
-  const handleSaveLiveConfig = (e) => {
-    e.preventDefault();
-    updateLiveClassConfig(liveForm);
-    showToast("Live classroom broadcast settings saved! Reflected in student portal.", "success");
-  };
-
+  // Handlers for Login
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    loginAdmin(passwordInput);
-    setPasswordInput("");
-  };
-
-  // Export Enquiries CSV
-  const handleExportCSV = () => {
-    if (!enquiries || enquiries.length === 0) {
-      showToast("No enquiries available to export.", "info");
-      return;
+    if (passwordInput === "tutor123" || passwordInput === "faculty123") {
+      loginAdmin && loginAdmin("admin123");
+      showToast("Authenticated as Faculty Guru. Welcome to Faculty Desk!", "success");
+    } else {
+      const ok = loginAdmin(passwordInput);
+      if (ok) {
+        showToast("Authenticated as Academy Directorate. Welcome Dr. Malavika!", "success");
+      } else {
+        showToast("Incorrect passcode. Try 'admin123' for Directorate or 'tutor123' for Faculty.", "error");
+      }
     }
-    const headers = ["Reference ID", "Student Name", "Age", "Parent Name", "Phone", "Email", "Course", "Category", "Level", "Preferred Slot", "Branch", "Status", "Date", "Notes"];
-    const rows = enquiries.map((enq) => [
-      enq.id,
-      `"${enq.studentName || ""}"`,
-      enq.studentAge || "",
-      `"${enq.parentName || ""}"`,
-      `"${enq.phone || ""}"`,
-      `"${enq.email || ""}"`,
-      `"${enq.course || ""}"`,
-      enq.category || "",
-      `"${enq.skillLevel || ""}"`,
-      `"${enq.preferredTime || ""}"`,
-      `"${enq.branch || ""}"`,
-      enq.status || "New",
-      enq.date || "",
-      `"${(enq.notes || "").replace(/"/g, '""')}"`
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `dancingragas_enquiries_${new Date().toISOString().split("T")[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("Enquiries exported successfully to CSV!", "success");
   };
 
-  // Course Handlers
-  const openAddCourse = () => {
-    setCourseForm({
-      title: "",
-      category: "Courses We Offer",
-      ageGroup: "Children, Teens & Adults",
-      level: "All Levels Welcome",
-      fee: "Enrolment Open",
-      rawFee: 0,
-      duration: "1 hour per session",
-      frequency: "Weekly once (Online)",
-      badge: "New Discipline",
-      image: "/images/courses/Courses/bharatanatyam_diploma/main.jpg",
-      images: ["/images/courses/Courses/bharatanatyam_diploma/main.jpg"],
-      description: "",
-      syllabusText: "Core practical training\nTheory and mudras\nClassical choreographies"
-    });
-    setIsAddingCourse(true);
-    setEditingCourse(null);
+  // ═════════════════════════════════════════════════════════════════
+  // MEDIA UPLOADER HELPERS (USING SUPABASE STORAGE BUCKET 'academy-media')
+  // ═════════════════════════════════════════════════════════════════
+  const handleUploadHeroMedia = async (e, targetField) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      setUploadStatusText("Processing media for hero section...");
+      if (file.type.startsWith("image/")) {
+        const compressed = await compressImageFile(file, 1920, 0.88);
+        const res = await uploadMediaToBucket("academy-media", compressed.file, "hero");
+        const finalUrl = res.url || compressed.dataUrl;
+        setHeroForm((prev) => ({ ...prev, [targetField]: finalUrl }));
+        showToast("Hero poster image uploaded and optimized successfully!", "success");
+      } else {
+        const res = await uploadMediaToBucket("academy-media", file, "hero");
+        setHeroForm((prev) => ({ ...prev, [targetField]: res.url }));
+        showToast("Hero ambient video uploaded successfully to cloud!", "success");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload media.", "error");
+    } finally {
+      setIsUploadingMedia(false);
+      setUploadStatusText("");
+      e.target.value = "";
+    }
   };
 
+  const handleUploadAboutPortrait = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      setUploadStatusText("Compressing portrait photo...");
+      const compressed = await compressImageFile(file, 1200, 0.90);
+      const res = await uploadMediaToBucket("academy-media", compressed.file, "about");
+      const finalUrl = res.url || compressed.dataUrl;
+      setAboutForm((prev) => ({ ...prev, portraitImage: finalUrl }));
+      showToast("Dr. Malavika's stage portrait updated successfully!", "success");
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload portrait.", "error");
+    } finally {
+      setIsUploadingMedia(false);
+      setUploadStatusText("");
+      e.target.value = "";
+    }
+  };
+
+  const handleUploadGalleryMedia = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      setUploadStatusText("Uploading gallery media to storage...");
+      if (file.type.startsWith("image/")) {
+        const compressed = await compressImageFile(file, 1600, 0.88);
+        const res = await uploadMediaToBucket("academy-media", compressed.file, "gallery");
+        const finalUrl = res.url || compressed.dataUrl;
+        setGalleryForm((prev) => ({ ...prev, url: finalUrl, type: "image" }));
+        showToast("Gallery photo optimized and staged for publishing!", "success");
+      } else {
+        const res = await uploadMediaToBucket("academy-media", file, "gallery");
+        setGalleryForm((prev) => ({ ...prev, videoUrl: res.url, url: res.url, type: "video" }));
+        showToast("Gallery performance video uploaded to storage!", "success");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload gallery media.", "error");
+    } finally {
+      setIsUploadingMedia(false);
+      setUploadStatusText("");
+      e.target.value = "";
+    }
+  };
+
+  const handleUploadInstaMedia = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      setUploadStatusText("Compressing Instagram photo/reel...");
+      if (file.type.startsWith("image/")) {
+        const compressed = await compressImageFile(file, 1200, 0.88);
+        const res = await uploadMediaToBucket("academy-media", compressed.file, "instagram");
+        const finalUrl = res.url || compressed.dataUrl;
+        setInstaForm((prev) => ({ ...prev, imageUrl: finalUrl }));
+        showToast("Instagram media uploaded successfully!", "success");
+      } else {
+        const res = await uploadMediaToBucket("academy-media", file, "instagram");
+        setInstaForm((prev) => ({ ...prev, videoUrl: res.url, type: "reel" }));
+        showToast("Instagram reel video uploaded!", "success");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload Instagram media.", "error");
+    } finally {
+      setIsUploadingMedia(false);
+      setUploadStatusText("");
+      e.target.value = "";
+    }
+  };
+
+  // Master Publish Function
+  const handlePublishAllSiteContent = () => {
+    const updatedContent = {
+      ...(siteContent || {}),
+      hero: {
+        ...(siteContent?.hero || {}),
+        ...heroForm
+      },
+      about: {
+        ...(siteContent?.about || {}),
+        ...aboutForm,
+        paragraphs: [aboutForm.bio1, aboutForm.bio2, aboutForm.bio3].filter(Boolean)
+      },
+      ticker: {
+        announcementText: tickerAnnouncement
+      },
+      instagram: instagramList,
+      brand: {
+        ...(siteContent?.brand || {}),
+        ...infoForm
+      }
+    };
+
+    updateSiteContent(updatedContent);
+    updateAcademyInfo(infoForm);
+    updateFaqs(faqsList);
+    updateTestimonials(storiesList);
+    showToast("Master Website & Media changes published live across the academy!", "success");
+  };
+
+  // Course handlers
   const openEditCourse = (course) => {
     setEditingCourse(course);
     setCourseForm({
       title: course.title,
       category: course.category || "Courses We Offer",
-      ageGroup: course.ageGroup,
-      level: course.level,
-      fee: course.fee,
+      ageGroup: course.ageGroup || "Children, Teens & Adults",
+      level: course.level || "Foundation to Diploma",
+      fee: course.fee || "Enrolment Open",
       rawFee: course.rawFee || 0,
       duration: course.duration || "1 hour per session",
       frequency: course.frequency || "1–2 sessions per week (Online)",
-      badge: course.badge || "",
-      image: course.image,
+      badge: course.badge || "Diploma & Certification",
+      image: course.image || "/images/courses/course_bharatanatyam_diploma.jpg",
       images: Array.isArray(course.images) ? [...course.images] : [course.image].filter(Boolean),
-      description: course.description,
+      videoUrl: course.videoUrl || "/videos/performance.mp4",
+      description: course.description || "",
       syllabusText: (course.syllabus || []).join("\n")
     });
     setIsAddingCourse(false);
   };
 
-  const handleUploadCourseMedia = async (e, isSlide = false) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploadingCourseMedia(true);
-      setUploadProgressText("Compressing photo in browser...");
-      const compressed = await compressImageFile(file, 1920, 0.86);
-
-      setUploadProgressText("Uploading to cloud...");
-      const res = await uploadMediaToBucket("course-media", compressed.file);
-      const finalUrl = res.url || compressed.dataUrl;
-
-      if (isSlide) {
-        setCourseForm((prev) => ({
-          ...prev,
-          images: [...(prev.images || []), finalUrl]
-        }));
-        showToast("Slide photo added and optimized!", "success");
-      } else {
-        setCourseForm((prev) => ({
-          ...prev,
-          image: finalUrl,
-          images: prev.images && prev.images.length > 0 ? prev.images : [finalUrl]
-        }));
-        showToast("Main cover photo updated and optimized!", "success");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast(err.message || "Failed to upload image", "error");
-    } finally {
-      setIsUploadingCourseMedia(false);
-      setUploadProgressText("");
-      e.target.value = "";
-    }
+  const openAddCourse = () => {
+    setEditingCourse(null);
+    setCourseForm({
+      title: "",
+      category: "Courses We Offer",
+      ageGroup: "Children, Teens & Adults",
+      level: "Foundation to Diploma",
+      fee: "Enrolment Open",
+      rawFee: 0,
+      duration: "1 hour per session",
+      frequency: "1–2 sessions per week (Online)",
+      badge: "Diploma & Certification",
+      image: "/images/courses/course_bharatanatyam_diploma.jpg",
+      images: [
+        "/images/hero/hero_slide_01.jpg",
+        "/images/hero/hero_slide_02.jpg",
+        "/images/hero/hero_slide_03.jpg",
+        "/images/hero/hero_slide_04.jpg",
+        "/images/hero/hero_slide_05.jpg"
+      ],
+      videoUrl: "/videos/performance.mp4",
+      description: "",
+      syllabusText: "Module 1: Basic Adavus\nModule 2: Hastha Mudras\nModule 3: Tala & Laya Precision"
+    });
+    setIsAddingCourse(true);
   };
 
   const handleSaveCourse = (e) => {
@@ -432,6 +510,7 @@ export default function AdminDashboard() {
       badge: courseForm.badge,
       image: courseForm.image,
       images: courseForm.images && courseForm.images.length > 0 ? courseForm.images : [courseForm.image],
+      videoUrl: courseForm.videoUrl,
       description: courseForm.description,
       syllabus: courseForm.syllabusText.split("\n").map((s) => s.trim()).filter(Boolean)
     };
@@ -439,35 +518,15 @@ export default function AdminDashboard() {
     if (editingCourse) {
       updateCourse(editingCourse.id, payload);
       setEditingCourse(null);
+      showToast("Course details and 5-slide gallery updated!", "success");
     } else {
       addCourse(payload);
       setIsAddingCourse(false);
+      showToast("New course published to catalog!", "success");
     }
   };
 
-  // Filtered Enquiries
-  const filteredEnquiries = (enquiries || []).filter((enq) => {
-    if (enquiryFilterStatus !== "All" && enq.status !== enquiryFilterStatus) {
-      return false;
-    }
-    if (enquirySearch.trim()) {
-      const q = enquirySearch.toLowerCase();
-      const matchName = (enq.studentName || "").toLowerCase().includes(q);
-      const matchParent = (enq.parentName || "").toLowerCase().includes(q);
-      const matchPhone = (enq.phone || "").toLowerCase().includes(q);
-      const matchCourse = (enq.course || "").toLowerCase().includes(q);
-      return matchName || matchParent || matchPhone || matchCourse;
-    }
-    return true;
-  });
-
-  // Filter recordings for selected course area
-  const currentAreaRecordings = (recordings || []).filter((r) => {
-    const cat = r.courseCategory || r.category;
-    return cat === selectedCourseArea || cat?.toLowerCase().includes(selectedCourseArea.toLowerCase().split(" ")[0]);
-  });
-
-  // IF NOT LOGGED IN: Render Luxury Director Login Screen
+  // IF NOT LOGGED IN: Render Luxury Portal Authentication Screen
   if (!isAdminLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-[#1E050B] via-[#3D0B16] to-[#1E050B] relative overflow-hidden font-sans">
@@ -480,19 +539,19 @@ export default function AdminDashboard() {
 
           <div className="space-y-1.5">
             <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-[#D4AF37]">
-              Director &amp; Tutor Suite
+              Academy Portal Access
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold font-serif-luxury text-white">
-              DancingRagas <span className="text-[#D4AF37]">Tutor Portal</span>
+              DancingRagas <span className="text-[#D4AF37]">Suites</span>
             </h2>
             <p className="text-xs text-stone-300 leading-relaxed pt-1">
-              Authorized access for Dr. Malavika to manage course areas, add unlisted masterclasses, enroll students, and evaluate performance.
+              Authorized access for Dr. Malavika (Directorate) and Academy Faculty (Gurus) to govern curriculum, manage media, and grade disciples.
             </p>
           </div>
 
           <form onSubmit={handleLoginSubmit} className="space-y-4 pt-2 text-left">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-200">Director Passcode</label>
+              <label className="text-xs font-bold text-stone-200">Security Passcode</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-[#B99A63] absolute left-3.5 top-3.5" />
                 <input
@@ -500,7 +559,7 @@ export default function AdminDashboard() {
                   required
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="Enter authorized passcode"
+                  placeholder="Enter passcode ('admin123' or 'tutor123')"
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#B99A63]/30 bg-[#121212] text-white text-sm placeholder:text-stone-500 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                 />
               </div>
@@ -508,9 +567,9 @@ export default function AdminDashboard() {
 
             <button
               type="submit"
-              className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
+              className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] font-bold text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
             >
-              <span>Authenticate &amp; Enter Tutor Portal</span>
+              <span>Authenticate &amp; Enter Portal</span>
               <Sparkles className="w-4 h-4" />
             </button>
           </form>
@@ -529,13 +588,11 @@ export default function AdminDashboard() {
   }
 
   // ═════════════════════════════════════════════════════════════════
-  // LOGGED IN: TUTOR & DIRECTOR EXECUTIVE WORKSPACE
+  // LOGGED IN WORKSPACE: FACULTY GURU DESK vs DIRECTORATE SUITE
   // ═════════════════════════════════════════════════════════════════
   return (
     <div className="min-h-screen bg-[#FBF9F5] text-[#151515] font-sans pb-24 text-left">
-      {/* ═══════════════════════════════════════════════════════════════
-          DEDICATED TUTOR PORTAL APP TOP NAVIGATION (NO MARKETING HEADER)
-      ═══════════════════════════════════════════════════════════════ */}
+      {/* APP TOP NAVIGATION BAR */}
       <header className="sticky top-0 z-40 bg-[#1E050B] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -545,14 +602,20 @@ export default function AdminDashboard() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-white tracking-wide font-serif-luxury">
-                  DancingRagas <span className="text-[#D4AF37]">Tutor Suite</span>
+                  {isFaculty ? (
+                    <>DancingRagas <span className="text-[#D4AF37]">Faculty &amp; Guru Desk</span></>
+                  ) : (
+                    <>DancingRagas <span className="text-[#D4AF37]">Directorate Suite</span></>
+                  )}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider">
-                  Director Active
+                  {isFaculty ? "Faculty Guru Active" : "Director Active"}
                 </span>
               </div>
               <p className="text-[11px] text-stone-300">
-                Dr. Malavika M. Sunil (MBBS) &bull; Masterclasses, Student Enrolments &amp; Rubric Desk
+                {isFaculty
+                  ? "Teaching Faculty • 4-Point Biomechanical Rubrics & Disciple Vaults"
+                  : "Dr. Malavika M. Sunil (MBBS) • Master Website & Media Studio, Admissions CRM & Governance"}
               </p>
             </div>
           </div>
@@ -564,7 +627,7 @@ export default function AdminDashboard() {
               className="px-3.5 py-1.5 rounded-xl bg-[#3D0B16] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
             >
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>Switch to Student View</span>
+              <span>Switch to Disciple Sanctuary</span>
             </button>
 
             <button
@@ -572,7 +635,7 @@ export default function AdminDashboard() {
               className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 text-stone-300 border border-white/10 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Exit to Website</span>
+              <span>Preview Website</span>
             </button>
 
             <button
@@ -594,102 +657,81 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      {/* High Level Executive Metrics */}
+      {/* METRICS OVERVIEW BAR */}
       <section className="bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] py-8 px-4 sm:px-8 border-b border-[#B99A63]/30">
         <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">Enrolled Students</span>
-            <p className="text-2xl font-bold font-serif-luxury text-white mt-1">{(studentsList || []).length}</p>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Disciples</span>
+            <span className="text-2xl font-bold font-serif-luxury text-white">{(studentsList || []).length}</span>
+            <span className="text-[10px] text-emerald-400 block mt-1">Active Cohorts</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[10px] font-semibold text-[#D4AF37] uppercase tracking-wider">Course Areas</span>
-            <p className="text-2xl font-bold font-serif-luxury text-[#D4AF37] mt-1">{COURSE_OPTIONS.length}</p>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Courses</span>
+            <span className="text-2xl font-bold font-serif-luxury text-white">{(courses || []).length}</span>
+            <span className="text-[10px] text-[#D4AF37] block mt-1">Tuition Disciplines</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[10px] font-semibold text-amber-300 uppercase tracking-wider">Unlisted Videos</span>
-            <p className="text-2xl font-bold font-serif-luxury text-amber-300 mt-1">{(recordings || []).length}</p>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Masterclass Vault</span>
+            <span className="text-2xl font-bold font-serif-luxury text-white">{(recordings || []).length}</span>
+            <span className="text-[10px] text-sky-400 block mt-1">Unlisted Videos</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[10px] font-semibold text-rose-300 uppercase tracking-wider">Pending Submissions</span>
-            <p className="text-2xl font-bold font-serif-luxury text-rose-400 mt-1">
-              {(studentAssessments || []).filter((a) => a.status !== "Evaluated").length}
-            </p>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Rubric Reviews</span>
+            <span className="text-2xl font-bold font-serif-luxury text-white">{(studentAssessments || []).length}</span>
+            <span className="text-[10px] text-amber-400 block mt-1">Graded Assessments</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[10px] font-semibold text-emerald-300 uppercase tracking-wider">New Inquiries</span>
-            <p className="text-2xl font-bold font-serif-luxury text-emerald-400 mt-1">
-              {(enquiries || []).filter((e) => e.status === "New").length}
-            </p>
+          <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20 col-span-2 sm:col-span-1">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Admissions Leads</span>
+            <span className="text-2xl font-bold font-serif-luxury text-[#D4AF37]">{(enquiries || []).length}</span>
+            <span className="text-[10px] text-emerald-400 block mt-1">Inquiry Pipeline</span>
           </div>
         </div>
       </section>
 
-      {/* Main Executive Workspaces Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 space-y-6">
-        {/* Executive Mode Switcher: Academic Studio (Tutor) vs Admissions CRM (Admin) */}
-        <div className="p-3 sm:p-4 rounded-3xl bg-[#1E050B] border border-[#B99A63]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-black/40 border border-white/10 w-full md:w-auto">
+      {/* WORKSPACE MODE SWITCHER (FOR DIRECTORATE) */}
+      {!isFaculty && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
+          <div className="p-1.5 rounded-2xl bg-stone-200/60 border border-stone-300 max-w-md flex items-center gap-1">
             <button
-              type="button"
+              onClick={() => {
+                setWorkspaceMode("admissions");
+                setActiveTab("site_cms");
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                workspaceMode === "admissions"
+                  ? "bg-[#1E050B] text-[#D4AF37] shadow-sm"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Directorate &amp; Master Studio</span>
+            </button>
+
+            <button
               onClick={() => {
                 setWorkspaceMode("academic");
                 setActiveTab("course_areas");
               }}
-              className={`flex-1 md:flex-initial px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 workspaceMode === "academic"
-                  ? "bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] shadow-lg shadow-[#D4AF37]/25"
-                  : "text-stone-300 hover:text-white hover:bg-white/5"
+                  ? "bg-[#1E050B] text-[#D4AF37] shadow-sm"
+                  : "text-stone-600 hover:text-stone-900"
               }`}
             >
-              <GraduationCap className="w-4 h-4 text-[#151515]" />
-              <span>Academic Studio &amp; Vault</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                workspaceMode === "academic" ? "bg-black/20 text-[#151515]" : "bg-white/10 text-[#D4AF37]"
-              }`}>
-                {(recordings || []).length} Classes
-              </span>
+              <Film className="w-3.5 h-3.5" />
+              <span>Academic &amp; Student Cohorts</span>
             </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setWorkspaceMode("admissions");
-                setActiveTab("enquiries");
-              }}
-              className={`flex-1 md:flex-initial px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
-                workspaceMode === "admissions"
-                  ? "bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] shadow-lg shadow-[#D4AF37]/25"
-                  : "text-stone-300 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <MessageSquare className="w-4 h-4 text-[#151515]" />
-              <span>Admissions CRM &amp; CMS</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                workspaceMode === "admissions" ? "bg-black/20 text-[#151515]" : "bg-emerald-500/20 text-emerald-300"
-              }`}>
-                {(enquiries || []).filter(e => e.status === "New").length} New Leads
-              </span>
-            </button>
-          </div>
-
-          <div className="text-left md:text-right px-2">
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#D4AF37] block">
-              {workspaceMode === "academic" ? "Tutor Pedagogy Suite" : "Admissions & Operations Office"}
-            </span>
-            <span className="text-xs text-stone-300">
-              {workspaceMode === "academic"
-                ? "Dr. Malavika M. Sunil • Masterclasses, Student Roster & Rubric Evaluations"
-                : "Student Inquiries, Tuition Catalog & Public Website CMS"}
-            </span>
           </div>
         </div>
+      )}
 
-        {/* Workspace Dedicated Sub-Navigation Tabs */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-[#B99A63]/30 shadow-xs overflow-x-auto max-w-full">
+      {/* TABS NAVIGATION BAR */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-4">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-stone-200">
           {(workspaceMode === "academic" ? academicTabs : admissionsTabs).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -697,18 +739,20 @@ export default function AdminDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   isActive
-                    ? "bg-[#3D0B16] text-[#D4AF37] border border-[#B99A63]/50 shadow-sm"
-                    : "text-stone-700 hover:text-stone-900 hover:bg-[#F0EBE1]"
+                    ? "bg-[#1E050B] text-white shadow-md border border-[#B99A63]/50"
+                    : "bg-white border border-stone-200 text-stone-700 hover:bg-stone-50"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={`w-4 h-4 ${isActive ? "text-[#D4AF37]" : "text-stone-500"}`} />
                 <span>{tab.label}</span>
                 {tab.count !== null && (
-                  <span className={`px-2 py-0.2 rounded-full text-[10px] font-mono ${
-                    isActive ? "bg-[#1E050B] text-[#D4AF37]" : "bg-stone-200 text-stone-700"
-                  }`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                      isActive ? "bg-[#D4AF37] text-[#1E050B]" : "bg-stone-100 text-stone-600"
+                    }`}
+                  >
                     {tab.count}
                   </span>
                 )}
@@ -716,560 +760,664 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+      </div>
 
+      {/* MAIN TAB CONTENT CONTAINER */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8 space-y-8">
         {/* ═══════════════════════════════════════════════════════════════
-            TAB 1: COURSE AREAS & UNLISTED VIDEO VAULT
+            TAB: MASTER WEBSITE & MEDIA STUDIO (DIRECTORATE)
         ═══════════════════════════════════════════════════════════════ */}
-        {activeTab === "course_areas" && (
-          <div className="space-y-6 text-left">
-            {/* Header & Course Area Filter */}
-            <div className="p-6 rounded-3xl bg-white border border-[#B99A63]/30 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {activeTab === "site_cms" && (
+          <div className="space-y-8 text-left">
+            {/* Studio Header Banner */}
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-white border border-[#B99A63]/50 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#3B0B14] text-[10px] font-bold uppercase tracking-wider">
-                    Course Area Access Control
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37] text-[#1E050B] text-[10px] font-bold uppercase tracking-wider">
+                    Academy Directorate Master Studio
                   </span>
-                  <span className="text-xs text-stone-500">YouTube Unlisted &bull; Instant Student Sync</span>
+                  <span className="text-xs text-stone-300">Complete Zero-Code Website CMS</span>
                 </div>
+                <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-white">
+                  Live Website Content &amp; Media Studio
+                </h3>
+                <p className="text-xs text-stone-300 max-w-xl">
+                  Centralized control for Dr. Malavika to replace hero videos, artist portraits, announcements, disciple stories, and FAQs. Connected directly to Supabase storage.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePublishAllSiteContent}
+                  className="silk-zari-btn px-6 py-2.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] text-xs font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#1E050B]" />
+                  <span>Publish All Changes Live</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigateTo("home")}
+                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Preview Website</span>
+                </button>
+              </div>
+            </div>
+
+            {/* SECTIONS GRID */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* 1. CINEMATIC HERO MEDIA & HEADINGS */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
+                <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">1</div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Hero Section Media &amp; Headlines</h4>
+                    <p className="text-[11px] text-stone-500">Full-bleed ambient video background, poster fallback &amp; pitch</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  {/* Hero Video Preview & Uploader */}
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-stone-800">Ambient Background Video</label>
+                      <span className="text-[10px] text-stone-500">Muted Loop on Homepage</span>
+                    </div>
+
+                    <div className="relative rounded-xl overflow-hidden aspect-video bg-black max-h-40 border border-stone-300">
+                      <video
+                        src={heroForm.videoUrl}
+                        poster={heroForm.posterUrl}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <label className="silk-zari-btn px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Upload Video File (Supabase)</span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(e) => handleUploadHeroMedia(e, "videoUrl")}
+                        />
+                      </label>
+                      <input
+                        type="text"
+                        value={heroForm.videoUrl}
+                        onChange={(e) => setHeroForm({ ...heroForm, videoUrl: e.target.value })}
+                        placeholder="Or enter direct video URL / MP4"
+                        className="flex-1 px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hero Poster Preview & Uploader */}
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-stone-800">Poster Fallback Image</label>
+                      <span className="text-[10px] text-stone-500">Instant Load Photo</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-20 h-14 rounded-xl overflow-hidden bg-black shrink-0 border border-stone-300">
+                        <img src={heroForm.posterUrl} alt="Hero Poster" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>Replace Poster (Supabase)</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleUploadHeroMedia(e, "posterUrl")}
+                          />
+                        </label>
+                        <input
+                          type="text"
+                          value={heroForm.posterUrl}
+                          onChange={(e) => setHeroForm({ ...heroForm, posterUrl: e.target.value })}
+                          placeholder="Or enter photo URL"
+                          className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hero Headlines */}
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Hero Lineage Badge</label>
+                      <input
+                        type="text"
+                        value={heroForm.badge}
+                        onChange={(e) => setHeroForm({ ...heroForm, badge: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="font-bold text-stone-700 block mb-1">Title Line 1</label>
+                        <input
+                          type="text"
+                          value={heroForm.titleLine1}
+                          onChange={(e) => setHeroForm({ ...heroForm, titleLine1: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-50/50"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-bold text-stone-700 block mb-1">Title Line 2</label>
+                        <input
+                          type="text"
+                          value={heroForm.titleLine2}
+                          onChange={(e) => setHeroForm({ ...heroForm, titleLine2: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-50/50"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Title Gold Accent Pitch</label>
+                      <input
+                        type="text"
+                        value={heroForm.titleAccent}
+                        onChange={(e) => setHeroForm({ ...heroForm, titleAccent: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Hero Subtitle Narrative</label>
+                      <textarea
+                        rows={2}
+                        value={heroForm.subtitle}
+                        onChange={(e) => setHeroForm({ ...heroForm, subtitle: e.target.value })}
+                        className="w-full p-3 rounded-xl border border-stone-200 bg-stone-50/50 text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. ABOUT DR. MALAVIKA (PORTRAIT + BIO + PHILOSOPHY) */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
+                <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">2</div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">About Section: Dr. Malavika Profile</h4>
+                    <p className="text-[11px] text-stone-500">Stage portrait, medical credentials, bio paragraphs &amp; philosophy</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  {/* Portrait Photo Uploader */}
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
+                    <label className="font-bold text-stone-800 block">Dr. Malavika Stage Portrait Photo</label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-24 rounded-2xl overflow-hidden bg-stone-900 shrink-0 border border-stone-300 shadow-sm">
+                        <img src={aboutForm.portraitImage} alt="Dr. Malavika Portrait" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                          <UploadCloud className="w-4 h-4" />
+                          <span>Upload New Stage Portrait (Supabase)</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleUploadAboutPortrait}
+                          />
+                        </label>
+                        <input
+                          type="text"
+                          value={aboutForm.portraitImage}
+                          onChange={(e) => setAboutForm({ ...aboutForm, portraitImage: e.target.value })}
+                          placeholder="Or enter portrait image URL"
+                          className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Artist / Doctor Name</label>
+                      <input
+                        type="text"
+                        value={aboutForm.title}
+                        onChange={(e) => setAboutForm({ ...aboutForm, title: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-50/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Medical &amp; Art Credentials</label>
+                      <input
+                        type="text"
+                        value={aboutForm.doctorCredentials}
+                        onChange={(e) => setAboutForm({ ...aboutForm, doctorCredentials: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-50/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Pedagogical Philosophy Statement</label>
+                    <textarea
+                      rows={2}
+                      value={aboutForm.philosophy}
+                      onChange={(e) => setAboutForm({ ...aboutForm, philosophy: e.target.value })}
+                      className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50/50 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Bio Paragraph 1 (Classical Lineage)</label>
+                    <textarea
+                      rows={2}
+                      value={aboutForm.bio1}
+                      onChange={(e) => setAboutForm({ ...aboutForm, bio1: e.target.value })}
+                      className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50/50 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Bio Paragraph 2 (MBBS Medical &amp; Biomechanics)</label>
+                    <textarea
+                      rows={2}
+                      value={aboutForm.bio2}
+                      onChange={(e) => setAboutForm({ ...aboutForm, bio2: e.target.value })}
+                      className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50/50 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. ACADEMY ANNOUNCEMENTS TICKER & FAQS */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
+                <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">3</div>
+                  <div>
+                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Announcements &amp; FAQs</h4>
+                    <p className="text-[11px] text-stone-500">Header scrolling marquee ticker &amp; public admissions questions</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  <div>
+                    <label className="font-bold text-stone-700 block mb-1">Header Scrolling Marquee Ticker Text</label>
+                    <textarea
+                      rows={2}
+                      value={tickerAnnouncement}
+                      onChange={(e) => setTickerAnnouncement(e.target.value)}
+                      placeholder="ADMISSIONS OPEN 2026/27..."
+                      className="w-full p-3 rounded-xl border border-stone-200 bg-stone-50/50 text-xs"
+                    />
+                  </div>
+
+                  {/* FAQs Manager */}
+                  <div className="pt-2 border-t border-stone-100 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-stone-800">Frequently Asked Questions ({faqsList.length})</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const q = window.prompt("Enter new FAQ Question:");
+                          if (!q) return;
+                          const a = window.prompt("Enter FAQ Answer:");
+                          if (!a) return;
+                          const updated = [...faqsList, { question: q, answer: a }];
+                          setFaqsList(updated);
+                          updateFaqs(updated);
+                          showToast("New FAQ added successfully!", "success");
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Add FAQ</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                      {faqsList.map((faq, idx) => (
+                        <div key={idx} className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-start justify-between gap-2">
+                          <div className="space-y-1">
+                            <p className="font-bold text-stone-900">{faq.question}</p>
+                            <p className="text-stone-600 text-[11px] line-clamp-2">{faq.answer}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = faqsList.filter((_, i) => i !== idx);
+                              setFaqsList(updated);
+                              updateFaqs(updated);
+                              showToast("FAQ removed.", "info");
+                            }}
+                            className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer shrink-0"
+                            title="Delete FAQ"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. STUDENT & PARENT STORIES (TESTIMONIALS) */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">4</div>
+                    <div>
+                      <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Student &amp; Parent Stories</h4>
+                      <p className="text-[11px] text-stone-500">Verified reviews displayed on the public website</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingStory(null);
+                      setStoryForm({
+                        name: "",
+                        role: "Bharatanatyam Diploma Disciple",
+                        location: "London, UK",
+                        quote: "",
+                        rating: 5
+                      });
+                      setIsAddingStoryModal(true);
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Story</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1 text-xs">
+                  {storiesList.map((story, idx) => (
+                    <div key={story.id || idx} className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-stone-900">{story.name}</span>
+                          <span className="text-[10px] text-[#B99A63] font-semibold">&bull; {story.role}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-amber-500">
+                          {Array.from({ length: story.rating || 5 }).map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-amber-400" />
+                          ))}
+                        </div>
+                        <p className="text-stone-600 text-[11px] italic leading-relaxed line-clamp-2">
+                          &ldquo;{story.quote}&rdquo;
+                        </p>
+                        <span className="text-[10px] text-stone-400 block">{story.location}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = storiesList.filter((_, i) => i !== idx);
+                          setStoriesList(updated);
+                          updateTestimonials(updated);
+                          showToast("Story deleted.", "info");
+                        }}
+                        className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer shrink-0"
+                        title="Delete Story"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 5. INSTAGRAM FEED STUDIO */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5 lg:col-span-2">
+                <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">5</div>
+                    <div>
+                      <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Instagram Grid &amp; Reels Manager</h4>
+                      <p className="text-[11px] text-stone-500">Live reels &amp; stage snapshots displayed in the homepage social wall</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingInsta(null);
+                      setInstaForm({
+                        title: "",
+                        caption: "",
+                        category: "stage",
+                        type: "reel",
+                        imageUrl: "/images/instagram/insta_01.jpg",
+                        videoUrl: "/videos/recital_live_01.mp4",
+                        likes: "3.5k",
+                        comments: "150",
+                        tag: "Stage Shows",
+                        instagramUrl: "https://www.instagram.com/dancingragasbymalavika/"
+                      });
+                      setIsAddingInstaModal(true);
+                    }}
+                    className="silk-zari-btn px-4 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Instagram Post/Reel</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {instagramList.map((item, idx) => (
+                    <div key={item.id || idx} className="rounded-2xl overflow-hidden border border-stone-200 bg-stone-50 flex flex-col justify-between shadow-xs">
+                      <div className="relative aspect-square bg-stone-900">
+                        <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 text-white text-[10px] font-bold uppercase tracking-wider backdrop-blur-xs">
+                          {item.type === "reel" ? "Reel" : "Post"}
+                        </div>
+                        <div className="absolute bottom-2 left-2 text-[10px] text-white/90 bg-black/60 px-2 py-0.5 rounded-md backdrop-blur-xs">
+                          ❤️ {item.likes}
+                        </div>
+                      </div>
+
+                      <div className="p-3 text-xs space-y-2 flex-1 flex flex-col justify-between">
+                        <div>
+                          <p className="font-bold text-stone-900 line-clamp-1">{item.title}</p>
+                          <p className="text-[11px] text-stone-500 line-clamp-2 mt-0.5">{item.caption}</p>
+                        </div>
+
+                        <div className="pt-2 border-t border-stone-200 flex items-center justify-between">
+                          <label className="text-[11px] font-bold text-[#1E050B] hover:underline cursor-pointer">
+                            Replace Photo
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                try {
+                                  showToast("Uploading replacement photo to Supabase...", "info");
+                                  const comp = await compressImageFile(file, 1200, 0.88);
+                                  const res = await uploadMediaToBucket("academy-media", comp.file, "instagram");
+                                  const finalUrl = res.url || comp.dataUrl;
+                                  const updated = instagramList.map((it, i) => i === idx ? { ...it, imageUrl: finalUrl } : it);
+                                  setInstagramList(updated);
+                                  updateSection("instagram", updated);
+                                  showToast("Instagram photo replaced and published!", "success");
+                                } catch (err) {
+                                  showToast("Failed to upload photo", "error");
+                                }
+                              }}
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = instagramList.filter((_, i) => i !== idx);
+                              setInstagramList(updated);
+                              showToast("Instagram item deleted.", "info");
+                            }}
+                            className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* MASTER PUBLISH BAR */}
+            <div className="sticky bottom-4 z-30 p-5 rounded-3xl bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-white border border-[#D4AF37]/50 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="font-bold text-white block text-sm font-serif-luxury">
+                  Publish Website Content &amp; Media
+                </span>
+                <span className="text-xs text-stone-300">
+                  Instantly saves all headlines, photos, videos, FAQs, and reviews live across the academy.
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigateTo("home")}
+                  className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all cursor-pointer"
+                >
+                  View Public Website
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePublishAllSiteContent}
+                  className="silk-zari-btn px-8 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] font-bold text-xs sm:text-sm shadow-xl hover:brightness-105 transition-all cursor-pointer flex items-center gap-2 tap-bounce"
+                >
+                  <Sparkles className="w-4 h-4 text-[#1E050B]" />
+                  <span>Save &amp; Publish Website Changes</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════
+            TAB: PERFORMANCE & GALLERY STREAM (PUBLIC MEDIA REPOSITORY)
+        ═══════════════════════════════════════════════════════════════ */}
+        {activeTab === "gallery_cms" && (
+          <div className="space-y-6 text-left">
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
                 <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                  Course Areas &amp; Unlisted Masterclasses
+                  Performance &amp; Gallery Stream
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Add unlisted YouTube/Vimeo class recordings to a Course Area. Only students enrolled in that course (or specifically assigned) can watch.
+                  Add, replace, or delete photos and performance video reels shown in the public gallery.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => {
-                  setVideoForm({
-                    ...videoForm,
-                    courseCategory: selectedCourseArea
+                  setGalleryForm({
+                    title: "",
+                    category: "Performances",
+                    type: "image",
+                    url: "/images/gallery/gallery_01.jpg",
+                    videoUrl: "/videos/performance.mp4",
+                    caption: ""
                   });
-                  setIsAddingVideoModal(true);
+                  setIsAddingGalleryModal(true);
                 }}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white hover:text-[#D4AF37] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-[#D4AF37]" />
-                <span>Add Unlisted Video to {selectedCourseArea}</span>
+                <Plus className="w-4 h-4" />
+                <span>Upload New Gallery Media</span>
               </button>
             </div>
 
-            {/* Course Area Selector Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {COURSE_OPTIONS.map((cName) => {
-                const count = (recordings || []).filter(
-                  (r) => (r.courseCategory || r.category) === cName || (r.courseCategory || r.category)?.toLowerCase().includes(cName.toLowerCase().split(" ")[0])
-                ).length;
-                const isSelected = selectedCourseArea === cName;
-                return (
-                  <button
-                    key={cName}
-                    onClick={() => setSelectedCourseArea(cName)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                      isSelected
-                        ? "bg-[#1E050B] text-[#D4AF37] shadow-sm"
-                        : "bg-white text-stone-600 border border-stone-200 hover:bg-stone-50"
-                    }`}
-                  >
-                    <span>{cName}</span>
-                    <span className={`px-2 py-0.2 rounded-full text-[10px] ${isSelected ? "bg-[#3D0B16] text-white" : "bg-stone-100 text-stone-600"}`}>
-                      {count} videos
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* Gallery Media Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {gallery.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-3xl overflow-hidden bg-white border border-stone-200 shadow-sm flex flex-col justify-between"
+                >
+                  <div className="relative aspect-[4/3] bg-stone-900">
+                    <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-black/70 text-[#D4AF37] text-[10px] font-bold uppercase backdrop-blur-xs">
+                      {item.category}
+                    </div>
+                    {item.type === "video" && (
+                      <div className="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-bold flex items-center gap-1">
+                        <Video className="w-3 h-3" />
+                        <span>Video</span>
+                      </div>
+                    )}
+                  </div>
 
-            {/* Videos Grid in Selected Course Area */}
-            {currentAreaRecordings.length === 0 ? (
-              <div className="p-12 rounded-3xl bg-white border border-stone-200 text-center space-y-3">
-                <Video className="w-8 h-8 text-stone-400 mx-auto" />
-                <h4 className="text-base font-bold text-stone-900">
-                  No Unlisted Videos in &ldquo;{selectedCourseArea}&rdquo;
-                </h4>
-                <p className="text-xs text-stone-500 max-w-md mx-auto">
-                  Click the button above to add an unlisted YouTube or Vimeo class link. It will instantly appear for all enrolled students in {selectedCourseArea}.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {currentAreaRecordings.map((rec) => (
-                  <div
-                    key={rec.id}
-                    className="rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-xs flex flex-col justify-between"
-                  >
+                  <div className="p-4 space-y-2 flex-1 flex flex-col justify-between text-xs">
                     <div>
-                      {/* Video Embed */}
-                      <div className="aspect-video w-full bg-black relative">
-                        <iframe
-                          src={rec.embedUrl}
-                          title={rec.title}
-                          className="w-full h-full border-0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-
-                      <div className="p-4 space-y-2.5">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-bold text-[#3B0B14]">{rec.module || rec.courseCategory}</span>
-                          <span className="text-stone-500">{rec.duration} &bull; {rec.date}</span>
-                        </div>
-
-                        <h4 className="text-sm font-bold text-stone-900 line-clamp-2">
-                          {rec.title}
-                        </h4>
-
-                        {/* Access Scope Indicator */}
-                        <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200 text-[11px] text-stone-600">
-                          {rec.accessScope === "selected_students" ? (
-                            <span className="text-amber-800 font-bold flex items-center gap-1">
-                              <Lock className="w-3 h-3 text-amber-600 shrink-0" />
-                              <span>Restricted to {(rec.allowedStudentIds || []).length} Selected Students</span>
-                            </span>
-                          ) : (
-                            <span className="text-emerald-800 font-bold flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-                              <span>All Enrolled Students in {selectedCourseArea}</span>
-                            </span>
-                          )}
-                        </div>
-
-                        {Array.isArray(rec.topics) && rec.topics.length > 0 && (
-                          <div className="space-y-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                              Covered Topics:
-                            </span>
-                            <div className="flex flex-wrap gap-1">
-                              {rec.topics.map((top, idx) => (
-                                <span
-                                  key={idx}
-                                  className="text-[10px] px-2 py-0.5 rounded bg-stone-100 text-stone-700"
-                                >
-                                  {top}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      <h4 className="font-bold text-stone-900 line-clamp-1">{item.title}</h4>
+                      <p className="text-stone-500 text-[11px] line-clamp-2 mt-1">{item.caption}</p>
                     </div>
 
-                    <div className="p-3 bg-stone-50 border-t border-stone-200 flex items-center justify-between">
-                      <a
-                        href={rec.embedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-bold text-[#3B0B14] hover:underline flex items-center gap-1"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Open Direct Link</span>
-                      </a>
+                    <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-[#1E050B] hover:underline cursor-pointer flex items-center gap-1">
+                        <Camera className="w-3 h-3 text-[#B99A63]" />
+                        <span>Replace Media</span>
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              showToast("Uploading replacement to Supabase storage...", "info");
+                              if (file.type.startsWith("image/")) {
+                                const comp = await compressImageFile(file, 1600, 0.88);
+                                const res = await uploadMediaToBucket("academy-media", comp.file, "gallery");
+                                const finalUrl = res.url || comp.dataUrl;
+                                updateGalleryItem(item.id, { url: finalUrl, type: "image" });
+                              } else {
+                                const res = await uploadMediaToBucket("academy-media", file, "gallery");
+                                updateGalleryItem(item.id, { url: res.url, videoUrl: res.url, type: "video" });
+                              }
+                              showToast("Gallery media replaced successfully!", "success");
+                            } catch (err) {
+                              showToast("Failed to upload replacement", "error");
+                            }
+                          }}
+                        />
+                      </label>
 
                       <button
                         type="button"
                         onClick={() => {
-                          if (window.confirm(`Delete recording "${rec.title}"?`)) {
-                            deleteRecording(rec.id);
+                          if (window.confirm(`Delete "${item.title}" from gallery?`)) {
+                            deleteGalleryItem(item.id);
                           }
                         }}
-                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Delete recording"
+                        className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer"
+                        title="Delete from gallery"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            TAB 2: ENROLLED STUDENTS DIRECTORY
-        ═══════════════════════════════════════════════════════════════ */}
-        {activeTab === "students_dir" && (
-          <div className="space-y-6 text-left">
-            <div className="p-6 rounded-3xl bg-white border border-[#B99A63]/30 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#3B0B14] text-[10px] font-bold uppercase tracking-wider">
-                    Student Roster Management
-                  </span>
-                  <span className="text-xs text-stone-500">{(studentsList || []).length} Registered Students</span>
-                </div>
-                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                  Enrolled Students Directory &amp; Course Permissions
-                </h3>
-                <p className="text-xs text-stone-500">
-                  Add new students, assign them to Course Areas, and manage student authorization credentials.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsAddingStudentModal(true)}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white hover:text-[#D4AF37] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
-              >
-                <Plus className="w-4 h-4 text-[#D4AF37]" />
-                <span>Enroll New Student</span>
-              </button>
-            </div>
-
-            {/* Students Table */}
-            <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold uppercase tracking-wider text-[11px]">
-                      <th className="py-3.5 px-4">Student &amp; Reg ID</th>
-                      <th className="py-3.5 px-4">Enrolled Course Area(s)</th>
-                      <th className="py-3.5 px-4">Contact Info</th>
-                      <th className="py-3.5 px-4">Attendance</th>
-                      <th className="py-3.5 px-4">Enrolment Date</th>
-                      <th className="py-3.5 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100">
-                    {(studentsList || []).map((stu) => (
-                      <tr key={stu.id} className="hover:bg-stone-50/60 transition-colors">
-                        <td className="py-4 px-4">
-                          <div className="font-bold text-stone-900 text-sm">{stu.name}</div>
-                          <span className="font-mono text-[11px] text-[#B99A63] font-bold block">{stu.registrationNo}</span>
-                          <span className="text-[11px] text-stone-400">{stu.location}</span>
-                        </td>
-
-                        <td className="py-4 px-4">
-                          <div className="flex flex-wrap gap-1">
-                            {stu.enrolledCourses?.map((cName) => (
-                              <span
-                                key={cName}
-                                className="px-2.5 py-0.5 rounded-full bg-[#3D0B16]/10 text-[#3B0B14] font-bold text-[11px] border border-[#3B0B14]/20"
-                              >
-                                {cName}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-
-                        <td className="py-4 px-4 space-y-0.5">
-                          <div className="text-stone-800">{stu.email}</div>
-                          <span className="text-stone-500 text-[11px]">{stu.phone || "No phone logged"}</span>
-                        </td>
-
-                        <td className="py-4 px-4">
-                          <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
-                            {stu.attendance || 94}% Attendance
-                          </span>
-                        </td>
-
-                        <td className="py-4 px-4 text-stone-500">
-                          {stu.enrolledDate}
-                        </td>
-
-                        <td className="py-4 px-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {stu.phone && (
-                              <a
-                                href={`https://wa.me/${stu.phone.replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(stu.name)}!%20This%20is%20Dr.%20Malavika%20from%20DancingRagas.`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 rounded-xl text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
-                                title="Message on WhatsApp"
-                              >
-                                <MessageCircle className="w-3.5 h-3.5" />
-                              </a>
-                            )}
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setActiveStudentId(stu.id);
-                                navigateTo("student-portal");
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#1E050B] hover:text-white text-stone-800 font-bold text-xs transition-colors"
-                              title="Preview Portal as this student"
-                            >
-                              View As Student
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (window.confirm(`Revoke enrolment for student "${stu.name}"?`)) {
-                                  deleteStudent(stu.id);
-                                }
-                              }}
-                              className="p-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors"
-                              title="Delete student"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            TAB 3: ADMISSIONS & ENROLMENTS CRM (ENQUIRIES)
-        ═══════════════════════════════════════════════════════════════ */}
-        {activeTab === "enquiries" && (
-          <div className="space-y-6 text-left">
-            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative w-full md:w-72">
-                  <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={enquirySearch}
-                    onChange={(e) => setEnquirySearch(e.target.value)}
-                    placeholder="Search leads by name, course, phone..."
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-none focus:border-[#B99A63]"
-                  />
-                </div>
-
-                <select
-                  value={enquiryFilterStatus}
-                  onChange={(e) => setEnquiryFilterStatus(e.target.value)}
-                  className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none"
-                >
-                  <option value="All">All Statuses</option>
-                  <option value="New">New</option>
-                  <option value="Contacted">Contacted</option>
-                  <option value="Trial Scheduled">Trial Scheduled</option>
-                  <option value="Enrolled">Enrolled</option>
-                  <option value="Declined">Declined</option>
-                </select>
-              </div>
-
-              <button
-                onClick={handleExportCSV}
-                className="px-4 py-2.5 rounded-xl bg-[#1E050B] hover:bg-stone-800 text-white text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer w-full md:w-auto justify-center"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export Enquiries to CSV</span>
-              </button>
-            </div>
-
-            {/* Enquiries Table */}
-            <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold uppercase tracking-wider text-[11px]">
-                      <th className="py-3.5 px-4">Ref &amp; Date</th>
-                      <th className="py-3.5 px-4">Student &amp; Age</th>
-                      <th className="py-3.5 px-4">Contact Info</th>
-                      <th className="py-3.5 px-4">Course &amp; Slot</th>
-                      <th className="py-3.5 px-4">Status</th>
-                      <th className="py-3.5 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100">
-                    {filteredEnquiries.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="py-12 text-center text-stone-500">
-                          No enquiries found matching your criteria.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredEnquiries.map((enq) => (
-                        <tr key={enq.id} className="hover:bg-stone-50/60 transition-colors">
-                          <td className="py-4 px-4">
-                            <span className="font-mono text-[#B99A63] font-bold block">{enq.id}</span>
-                            <span className="text-stone-400 text-[11px]">{enq.date}</span>
-                          </td>
-
-                          <td className="py-4 px-4">
-                            <div className="font-bold text-stone-900">{enq.studentName}</div>
-                            <span className="text-stone-500 text-[11px]">Age: {enq.studentAge || "Not provided"}</span>
-                          </td>
-
-                          <td className="py-4 px-4 space-y-0.5">
-                            <div className="text-stone-800">{enq.phone}</div>
-                            <span className="text-stone-500 text-[11px] block">{enq.email}</span>
-                          </td>
-
-                          <td className="py-4 px-4">
-                            <span className="font-semibold text-stone-900 block">{enq.course}</span>
-                            <span className="text-stone-400 text-[11px]">{enq.preferredTime || "Flexible"}</span>
-                          </td>
-
-                          <td className="py-4 px-4">
-                            <select
-                              value={enq.status || "New"}
-                              onChange={(e) => updateEnquiryStatus(enq.id, e.target.value)}
-                              className={`px-2.5 py-1 rounded-full text-[11px] font-bold border focus:outline-none ${
-                                enq.status === "New"
-                                  ? "bg-rose-50 text-rose-700 border-rose-200"
-                                  : enq.status === "Enrolled"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  : "bg-stone-100 text-stone-700 border-stone-200"
-                              }`}
-                            >
-                              <option value="New">New</option>
-                              <option value="Contacted">Contacted</option>
-                              <option value="Trial Scheduled">Trial Scheduled</option>
-                              <option value="Enrolled">Enrolled</option>
-                              <option value="Declined">Declined</option>
-                            </select>
-                          </td>
-
-                          <td className="py-4 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                onClick={() => {
-                                  // Quick Enroll directly from Enquiry
-                                  addStudent({
-                                    name: enq.studentName,
-                                    email: enq.email,
-                                    phone: enq.phone,
-                                    location: enq.branch || "Online",
-                                    enrolledCourses: [enq.course?.includes("Carnatic") ? "Carnatic Music" : enq.course?.includes("Bollywood") ? "Bollywood & Semi-Classical" : "Bharatanatyam Diploma"]
-                                  });
-                                  updateEnquiryStatus(enq.id, "Enrolled");
-                                }}
-                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] cursor-pointer"
-                                title="One-Click Enrol Student"
-                              >
-                                + Enroll Student
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  const text = `Hello ${enq.parentName || enq.studentName}! This is Dr. Malavika from DancingRagas Classical Arts regarding your trial class inquiry for ${enq.course}.`;
-                                  window.open(`https://wa.me/${enq.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(text)}`, "_blank");
-                                }}
-                                className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50"
-                                title="Message on WhatsApp"
-                              >
-                                <MessageCircle className="w-4 h-4" />
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  if (window.confirm(`Delete enquiry from ${enq.studentName}?`)) {
-                                    deleteEnquiry(enq.id);
-                                  }
-                                }}
-                                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"
-                                title="Delete Enquiry"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            TAB 4: STUDENT ASSESSMENT DESK (RUBRIC)
-        ═══════════════════════════════════════════════════════════════ */}
-        {activeTab === "assessments" && (
-          <div className="space-y-6 text-left">
-            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#3B0B14] text-[10px] font-bold uppercase tracking-wider">
-                  Academic Evaluation Portal
-                </span>
-                <span className="text-xs text-stone-500">Official 4-Criterion Biomechanical Rubric</span>
-              </div>
-              <h3 className="text-xl font-bold text-stone-900 font-serif-luxury">
-                Student Performance &amp; Biomechanical Assessment Desk
-              </h3>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                Grade student adavu submissions using the medical-artistic rubric: Aramandi turnout, Mudra precision, Talam cadence, and Anga Shuddhi.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(studentAssessments || []).map((ass) => (
-                <div
-                  key={ass.id}
-                  className="p-5 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4 flex flex-col justify-between"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-[#3B0B14]">
-                        {ass.registrationNo} &bull; {ass.batch}
-                      </span>
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          ass.status === "Evaluated"
-                            ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                            : "bg-amber-50 text-amber-800 border border-amber-200"
-                        }`}
-                      >
-                        {ass.status}
-                      </span>
-                    </div>
-
-                    <h4 className="text-sm font-bold text-stone-900">{ass.studentName}</h4>
-                    <p className="text-xs text-stone-700 font-medium">{ass.title}</p>
-                    <span className="text-[11px] text-stone-400 block">Submitted: {ass.submissionDate}</span>
-
-                    <a
-                      href={ass.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-[#B99A63] hover:underline font-bold"
-                    >
-                      <Video className="w-3.5 h-3.5 text-[#3B0B14]" />
-                      <span>Open Student Video Submission Link</span>
-                    </a>
-
-                    {ass.rubric && (
-                      <div className="p-3 rounded-xl bg-stone-50 text-xs text-stone-700 space-y-1.5 border border-stone-100">
-                        <div className="flex items-center justify-between text-[11px] font-bold text-stone-900">
-                          <span>Evaluation Score: {ass.totalScore} / 40</span>
-                          <span className="text-emerald-700">{ass.grade}</span>
-                        </div>
-                        <p className="text-[11px] text-stone-600 italic">
-                          &ldquo;{ass.clinicalNote}&rdquo;
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-3 border-t border-stone-100 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedAssessment(ass);
-                        if (ass.rubric) {
-                          setRubricDraft({
-                            biomechanicsScore: ass.rubric.biomechanics.score,
-                            biomechanicsRemarks: ass.rubric.biomechanics.remarks,
-                            mudraScore: ass.rubric.mudraPrecision.score,
-                            mudraRemarks: ass.rubric.mudraPrecision.remarks,
-                            layaScore: ass.rubric.layaTalam.score,
-                            layaRemarks: ass.rubric.layaTalam.remarks,
-                            angaScore: ass.rubric.angaShuddhi.score,
-                            angaRemarks: ass.rubric.angaShuddhi.remarks,
-                            clinicalNote: ass.clinicalNote
-                          });
-                        }
-                      }}
-                      className="silk-zari-btn px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-                    >
-                      <GraduationCap className="w-3.5 h-3.5 text-[#D4AF37]" />
-                      <span>{ass.status === "Evaluated" ? "Update Assessment & Rubric" : "Grade with 4-Point Rubric"}</span>
-                    </button>
                   </div>
                 </div>
               ))}
@@ -1278,21 +1426,21 @@ export default function AdminDashboard() {
         )}
 
         {/* ═══════════════════════════════════════════════════════════════
-            TAB 5: COURSES & TUITION CATALOG
+            TAB: COURSES & 5-SLIDE GALLERIES
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "courses" && (
           <div className="space-y-6 text-left">
-            <div className="flex items-center justify-between">
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-xl font-bold text-stone-900 font-serif-luxury">Courses &amp; Tuition Catalog</h3>
-                <p className="text-xs text-stone-500">Edit course details, upload photos, and update fees shown on the public site.</p>
+                <p className="text-xs text-stone-500">Edit course details, upload 5-slide photo galleries, and update fees shown on the public site.</p>
               </div>
 
               <button
                 onClick={openAddCourse}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-[#D4AF37]" />
+                <Plus className="w-4 h-4" />
                 <span>Add New Course</span>
               </button>
             </div>
@@ -1318,6 +1466,11 @@ export default function AdminDashboard() {
                       <h4 className="text-lg font-bold text-stone-900 font-serif-luxury">{course.title}</h4>
                       <p className="text-xs text-[#B99A63] font-semibold mt-0.5">{course.ageGroup}</p>
                       <p className="text-xs text-stone-600 line-clamp-2 mt-2 leading-relaxed">{course.description}</p>
+                      {course.images && course.images.length > 0 && (
+                        <span className="inline-block mt-2 text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-md font-bold">
+                          📸 {course.images.length} Slide Photos
+                        </span>
+                      )}
                     </div>
 
                     <div className="pt-4 border-t border-stone-100 flex items-center justify-between gap-2">
@@ -1326,7 +1479,7 @@ export default function AdminDashboard() {
                         className="px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-50 text-xs font-bold text-stone-700 flex items-center gap-1.5 cursor-pointer"
                       >
                         <Edit className="w-3.5 h-3.5" />
-                        <span>Edit Course</span>
+                        <span>Edit Details &amp; Slides</span>
                       </button>
 
                       <button
@@ -1349,500 +1502,334 @@ export default function AdminDashboard() {
         )}
 
         {/* ═══════════════════════════════════════════════════════════════
-            TAB 6: LIVE BROADCAST STUDIO
+            ACADEMIC TABS: COURSE AREAS, STUDENTS, ASSESSMENTS, LIVE STUDIO
         ═══════════════════════════════════════════════════════════════ */}
-        {activeTab === "live_studio" && (
+        {activeTab === "course_areas" && (
           <div className="space-y-6 text-left">
-            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#B99A63]/30 shadow-sm space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-5">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                    <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">
-                      Broadcast Control
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                    Live Google Meet / Zoom Classroom Configuration
-                  </h3>
-                  <p className="text-xs text-stone-500">
-                    Update the active link, meeting ID, passcode, and countdown date. Updates reflect immediately on student portals worldwide.
-                  </p>
-                </div>
-
-                <a
-                  href={liveForm.meetUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold transition-colors flex items-center gap-1.5"
-                >
-                  <Video className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Test Meeting Link</span>
-                </a>
-              </div>
-
-              <form onSubmit={handleSaveLiveConfig} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700">Masterclass Topic / Session Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={liveForm.sessionTitle}
-                    onChange={(e) => setLiveForm({ ...liveForm, sessionTitle: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:border-[#B99A63]"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700">Platform</label>
-                  <select
-                    value={liveForm.platform}
-                    onChange={(e) => setLiveForm({ ...liveForm, platform: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none"
-                  >
-                    <option value="Google Meet">Google Meet</option>
-                    <option value="Zoom">Zoom</option>
-                    <option value="Microsoft Teams">Microsoft Teams</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700">Direct Join URL</label>
-                  <input
-                    type="url"
-                    required
-                    value={liveForm.meetUrl}
-                    onChange={(e) => setLiveForm({ ...liveForm, meetUrl: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700">Meeting ID / Code</label>
-                  <input
-                    type="text"
-                    value={liveForm.meetingId}
-                    onChange={(e) => setLiveForm({ ...liveForm, meetingId: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-mono"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700">Passcode</label>
-                  <input
-                    type="text"
-                    value={liveForm.passcode}
-                    onChange={(e) => setLiveForm({ ...liveForm, passcode: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-mono"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-stone-700">Display Scheduled Date &amp; Time</label>
-                  <input
-                    type="text"
-                    required
-                    value={liveForm.scheduledDayTime}
-                    onChange={(e) => setLiveForm({ ...liveForm, scheduledDayTime: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1 md:col-span-2">
-                  <label className="font-bold text-stone-700">Countdown Target Timestamp (ISO / Date)</label>
-                  <input
-                    type="text"
-                    value={liveForm.targetTimestamp}
-                    onChange={(e) => setLiveForm({ ...liveForm, targetTimestamp: e.target.value })}
-                    placeholder="e.g. 2026-10-30T17:00:00Z"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-mono"
-                  />
-                  <span className="text-[11px] text-stone-500 block">
-                    The student portal counts down real-time Days:Hours:Mins:Secs until this date.
-                  </span>
-                </div>
-
-                <div className="md:col-span-2 pt-2 flex justify-end">
-                  <button
-                    type="submit"
-                    className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-white hover:text-[#D4AF37] font-bold text-xs shadow-md cursor-pointer"
-                  >
-                    Save Live Classroom Broadcast
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            TAB 7: SITE ANNOUNCEMENTS & TICKER
-        ═══════════════════════════════════════════════════════════════ */}
-        
-        {/* ═══════════════════════════════════════════════════════════════
-            TAB: MASTER WEBSITE CONTENT & MEDIA CMS (ZERO-CODE CLIENT STUDIO)
-        ═══════════════════════════════════════════════════════════════ */}
-        {activeTab === "site_cms" && (
-          <div className="space-y-8 text-left">
-            <div className="p-6 rounded-3xl bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-white border border-[#B99A63]/50 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37] text-[#1E050B] text-[10px] font-bold uppercase tracking-wider">
-                    Turnkey Client Studio
-                  </span>
-                  <span className="text-xs text-stone-300">Header to Footer Zero-Code Live Editor</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-white">
-                  Master Website Content &amp; Media Studio
-                </h3>
-                <p className="text-xs text-stone-300 max-w-xl">
-                  Update any headline, photo, bio, announcement ticker, or contact detail across the live website. Click &ldquo;Publish Website Changes&rdquo; below to update the live academy instantly.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsVisualEditMode(true);
-                    navigateTo("home");
-                  }}
-                  className="px-4 py-2.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] text-xs font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Edit3 className="w-3.5 h-3.5 text-[#1E050B]" />
-                  <span>Launch Visual Canvas Editor</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigateTo("home")}
-                  className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Preview Site</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Grid of Sections to Edit */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* SECTION 1: HEADER & ACADEMY BRANDING */}
-              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">1</div>
-                  <div>
-                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Header &amp; Brand Identity</h4>
-                    <p className="text-[11px] text-stone-500">Website navbar titles and logo presentation</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Artist / Academy Brand Name</label>
-                    <input
-                      type="text"
-                      value={infoForm.brandName || academyInfo.name || "Dr. Malavika M Sunil"}
-                      onChange={(e) => setInfoForm({ ...infoForm, brandName: e.target.value })}
-                      placeholder="e.g., Dr. Malavika M Sunil"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Brand Subtitle / Tag</label>
-                    <input
-                      type="text"
-                      value={infoForm.brandTitle || academyInfo.brandTitle || "Classical Dance & Music"}
-                      onChange={(e) => setInfoForm({ ...infoForm, brandTitle: e.target.value })}
-                      placeholder="e.g., Classical Dance & Music"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Hero / Studio Tagline</label>
-                    <input
-                      type="text"
-                      value={infoForm.tagline || academyInfo.tagline || "Your Passion. Your Pace. Your Personal Coach."}
-                      onChange={(e) => setInfoForm({ ...infoForm, tagline: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 2: CINEMATIC HERO & VIDEO */}
-              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">2</div>
-                  <div>
-                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Cinematic Hero Background</h4>
-                    <p className="text-[11px] text-stone-500">Video background and headline pitch</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Hero Main Pitch</label>
-                    <input
-                      type="text"
-                      value={infoForm.heroHeadline || "Your Passion. Your Pace. Your Personal Coach."}
-                      onChange={(e) => setInfoForm({ ...infoForm, heroHeadline: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Ambient Video URL (MP4 / Web)</label>
-                    <input
-                      type="text"
-                      value={infoForm.heroVideoUrl || "/videos/performance.mp4"}
-                      onChange={(e) => setInfoForm({ ...infoForm, heroVideoUrl: e.target.value })}
-                      placeholder="/videos/performance.mp4 or https://..."
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-900 text-[11px] flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>The full-bleed background video runs seamlessly muted on loop with stage gold particles.</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 3: ANNOUNCEMENT TICKER & FAQS */}
-              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">3</div>
-                  <div>
-                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Announcements Ticker &amp; FAQs</h4>
-                    <p className="text-[11px] text-stone-500">Live scrolling ticker and student inquiries accordion</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Scrolling Announcement Ticker Bar</label>
-                    <textarea
-                      rows="2"
-                      value={tickerAnnouncement}
-                      onChange={(e) => setTickerAnnouncement(e.target.value)}
-                      placeholder="ADMISSIONS OPEN 2026/27..."
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none resize-none"
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-stone-700 block">Frequently Asked Questions ({faqsList.length})</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const q = window.prompt("Enter new FAQ Question:");
-                          if (!q) return;
-                          const a = window.prompt("Enter FAQ Answer:");
-                          if (!a) return;
-                          const updated = [...faqsList, { question: q, answer: a }];
-                          setFaqsList(updated);
-                          updateFaqs(updated);
-                          showToast("New FAQ added!", "success");
-                        }}
-                        className="text-[11px] font-bold text-[#3D0B16] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3 text-[#B99A63]" />
-                        <span>Add FAQ</span>
-                      </button>
-                    </div>
-
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                      {faqsList.map((faq, idx) => (
-                        <div key={idx} className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-start justify-between gap-2">
-                          <div className="space-y-1">
-                            <p className="font-bold text-stone-900">{faq.question}</p>
-                            <p className="text-stone-500 text-[11px] line-clamp-1">{faq.answer}</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = faqsList.filter((_, i) => i !== idx);
-                              setFaqsList(updated);
-                              updateFaqs(updated);
-                              showToast("FAQ removed", "info");
-                            }}
-                            className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
-                            title="Delete FAQ"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 4: CONTACT, WHATSAPP & SOCIALS */}
-              <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 border-b border-stone-100 pb-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#3D0B16]/10 text-[#3D0B16] flex items-center justify-center font-bold text-sm">4</div>
-                  <div>
-                    <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Direct Contact &amp; Social Links</h4>
-                    <p className="text-[11px] text-stone-500">WhatsApp hotline, phone, email &amp; Instagram handle</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">WhatsApp Direct Number (With Country Code)</label>
-                    <input
-                      type="text"
-                      value={infoForm.whatsappNumber}
-                      onChange={(e) => setInfoForm({ ...infoForm, whatsappNumber: e.target.value })}
-                      placeholder="+919074585672"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Display Direct Phone</label>
-                    <input
-                      type="text"
-                      value={infoForm.directPhone}
-                      onChange={(e) => setInfoForm({ ...infoForm, directPhone: e.target.value })}
-                      placeholder="+91 90745 85672"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-stone-700 block mb-1">Official Academy Email</label>
-                    <input
-                      type="email"
-                      value={infoForm.email}
-                      onChange={(e) => setInfoForm({ ...infoForm, email: e.target.value })}
-                      placeholder="info@malavikasunil.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="font-bold text-stone-700 block mb-1">Instagram URL</label>
-                      <input
-                        type="text"
-                        value={infoForm.instagramUrl}
-                        onChange={(e) => setInfoForm({ ...infoForm, instagramUrl: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-stone-700 block mb-1">Instagram Handle</label>
-                      <input
-                        type="text"
-                        value={infoForm.instagramHandle}
-                        onChange={(e) => setInfoForm({ ...infoForm, instagramHandle: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:border-[#B99A63] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Master Save Bar */}
-            <div className="p-5 rounded-3xl bg-white border border-[#B99A63]/50 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <span className="font-bold text-stone-900 block text-sm">Publish Website Content</span>
-                <span className="text-xs text-stone-500">Updates live website texts, FAQs and contact numbers immediately with zero reload.</span>
+                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                  Course Areas &amp; Unlisted Video Vault
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Publish unlisted syllabus recordings and practice drill videos for enrolled disciples.
+                </p>
               </div>
 
               <button
                 type="button"
-                onClick={() => {
-                  updateAcademyInfo(infoForm);
-                  updateFaqs(faqsList);
-                  if (updateSection) {
-                    updateSection("brand", {
-                      name: infoForm.brandName || academyInfo?.name || "Dr. Malavika M Sunil",
-                      brandTitle: infoForm.brandTitle || academyInfo?.brandTitle || "Classical Dance & Music",
-                      tagline: infoForm.tagline || academyInfo?.tagline,
-                      whatsappNumber: infoForm.whatsappNumber,
-                      directPhone: infoForm.directPhone,
-                      phone: infoForm.directPhone,
-                      email: infoForm.email,
-                      instagramUrl: infoForm.instagramUrl,
-                      instagramHandle: infoForm.instagramHandle
-                    });
-                    updateSection("hero", {
-                      titleAccent: infoForm.heroHeadline || "Your Passion. Your Pace. Your Personal Coach.",
-                      subtitle: infoForm.tagline || "Physician-led classical Bharatanatyam Margam, Carnatic vocal music, and anatomical movement safety mentored directly by Dr. Malavika M. Sunil.",
-                      videoUrl: infoForm.heroVideoUrl || "/videos/performance.mp4"
-                    });
-                    updateSection("ticker", {
-                      announcementText: tickerAnnouncement
-                    });
-                  }
-                  showToast("Website content & media published live! All changes active.", "success");
-                }}
-                className="silk-zari-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] font-bold text-xs sm:text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
+                onClick={() => setIsAddingVideoModal(true)}
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-[#1E050B]" />
-                <span>Save &amp; Publish Website Changes</span>
+                <Plus className="w-4 h-4" />
+                <span>Add Masterclass Video</span>
               </button>
+            </div>
+
+            {/* Course Area Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              {COURSE_OPTIONS.map((area) => (
+                <button
+                  key={area}
+                  onClick={() => setSelectedCourseArea(area)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${
+                    selectedCourseArea === area
+                      ? "bg-[#3D0B16] text-[#D4AF37] shadow-sm"
+                      : "bg-white border border-stone-200 text-stone-600 hover:bg-stone-50"
+                  }`}
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
+
+            {/* Recordings List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(recordings || [])
+                .filter((r) => !selectedCourseArea || r.courseCategory === selectedCourseArea)
+                .map((rec) => (
+                  <div key={rec.id} className="bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-sm flex flex-col justify-between">
+                    <div className="relative aspect-video bg-black">
+                      <iframe
+                        src={rec.embedUrl}
+                        title={rec.title}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="p-5 space-y-2 flex-1 flex flex-col justify-between text-xs">
+                      <div>
+                        <span className="text-[10px] text-[#B99A63] font-bold uppercase">{rec.module}</span>
+                        <h4 className="font-bold text-stone-900 text-sm mt-0.5">{rec.title}</h4>
+                        <p className="text-stone-500 text-[11px] line-clamp-2 mt-1">{rec.description}</p>
+                      </div>
+
+                      <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                        <span className="text-[11px] text-stone-400">{rec.duration}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Delete video "${rec.title}"?`)) {
+                              deleteRecording(rec.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         )}
 
-        {activeTab === "matter" && (
+        {/* STUDENTS DIRECTORY */}
+        {activeTab === "students_dir" && (
+          <div className="space-y-6 text-left">
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                  Enrolled Conservatory Disciples
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Manage active student credentials, course enrollments, and learning progress.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAddingStudentModal(true)}
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Enroll New Disciple</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(studentsList || []).map((student) => (
+                <div key={student.id} className="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-stone-900 text-sm">{student.name}</h4>
+                      <p className="text-xs text-stone-500">{student.email}</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                      Enrolled
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-stone-600 space-y-1">
+                    <p><strong>Discipline:</strong> {student.batchName || student.enrolledCourses?.[0]}</p>
+                    <p><strong>Location:</strong> {student.location || "International"}</p>
+                    <p><strong>Reg ID:</strong> <span className="font-mono text-[#3D0B16] font-bold">{student.registrationNo || student.id}</span></p>
+                  </div>
+
+                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveStudentId && setActiveStudentId(student.id);
+                        navigateTo("student-portal");
+                      }}
+                      className="text-xs font-bold text-[#3D0B16] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>View Portal</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Remove disciple ${student.name}?`)) {
+                          deleteStudent(student.id);
+                        }
+                      }}
+                      className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ADMISSIONS CRM & LEADS */}
+        {activeTab === "enquiries" && (
+          <div className="space-y-6 text-left">
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm">
+              <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                Admissions CRM &amp; Leads Pipeline
+              </h3>
+              <p className="text-xs text-stone-500 mt-1">
+                Prospective disciples who submitted the website booking audition or trial form.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {(enquiries || []).map((enq) => (
+                <div key={enq.id} className="p-5 rounded-2xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-stone-900 text-sm">{enq.name}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#1E050B] font-bold text-[10px]">
+                        {enq.discipline || enq.course}
+                      </span>
+                    </div>
+                    <p className="text-stone-600">{enq.email} &bull; {enq.phone}</p>
+                    {enq.message && <p className="text-stone-500 italic">&ldquo;{enq.message}&rdquo;</p>}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`https://wa.me/${(enq.phone || "").replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(enq.name)}%2C%20Dr.%20Malavika%20from%20DancingRagas.`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-1.5 rounded-xl bg-[#25D366] text-white font-bold text-xs flex items-center gap-1.5"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>WhatsApp</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => deleteEnquiry(enq.id)}
+                      className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* FACULTY RUBRIC DESK */}
+        {activeTab === "assessments" && (
+          <div className="space-y-6 text-left">
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm">
+              <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                Faculty Rubric Desk: 4-Point Biomechanical Evaluations
+              </h3>
+              <p className="text-xs text-stone-500 mt-1">
+                Evaluate student submissions across Biomechanics, Hastha Mudra, Laya Tala, and Anga Shuddhi.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {(studentAssessments || []).map((ass) => (
+                <div key={ass.id} className="p-5 rounded-2xl bg-white border border-stone-200 shadow-sm flex items-center justify-between text-xs">
+                  <div>
+                    <h4 className="font-bold text-stone-900 text-sm">{ass.studentName}</h4>
+                    <p className="text-stone-500">{ass.moduleName} &bull; Score: <strong className="text-[#3D0B16]">{ass.overallScore} / 40</strong></p>
+                    <p className="text-stone-600 text-[11px] mt-1">{ass.clinicalVerdict || ass.facultyNote}</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedAssessment(ass);
+                      setRubricDraft({
+                        biomechanicsScore: ass.scores?.biomechanics || 9.5,
+                        biomechanicsRemarks: ass.remarks?.biomechanics || "Stable knee angle.",
+                        mudraScore: ass.scores?.mudra || 9.0,
+                        mudraRemarks: ass.remarks?.mudra || "Crisp Pataka hand definition.",
+                        layaScore: ass.scores?.laya || 8.5,
+                        layaRemarks: ass.remarks?.laya || "Steady tempo adherence.",
+                        angaScore: ass.scores?.anga || 9.0,
+                        angaRemarks: ass.remarks?.anga || "Spine elongated.",
+                        clinicalNote: ass.clinicalVerdict || "Cleared for next module."
+                      });
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                  >
+                    Grade &amp; Re-evaluate
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* LIVE BROADCAST STUDIO */}
+        {activeTab === "live_studio" && (
           <div className="space-y-6 text-left">
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
               <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                Site Announcements, Contact Info &amp; FAQs
+                Live Broadcast Studio &amp; Google Meet Configuration
               </h3>
-
-              <div className="space-y-2">
-                <label className="font-bold text-stone-700 block text-xs">
-                  Header Marquee Ticker Announcement
-                </label>
-                <textarea
-                  rows={2}
-                  value={tickerAnnouncement}
-                  onChange={(e) => setTickerAnnouncement(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-stone-200 text-xs"
-                />
-              </div>
+              <p className="text-xs text-stone-500">
+                Pre-bind the official Google Meet URL for real-time video classroom sessions.
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">WhatsApp Enrolment Line</label>
+                  <label className="font-bold text-stone-700 block mb-1">Session Title</label>
                   <input
                     type="text"
-                    value={infoForm.whatsappNumber}
-                    onChange={(e) => setInfoForm({ ...infoForm, whatsappNumber: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                    value={liveForm.sessionTitle}
+                    onChange={(e) => setLiveForm({ ...liveForm, sessionTitle: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Direct Phone Hotline</label>
+                  <label className="font-bold text-stone-700 block mb-1">Google Meet URL</label>
                   <input
                     type="text"
-                    value={infoForm.directPhone}
-                    onChange={(e) => setInfoForm({ ...infoForm, directPhone: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                    value={liveForm.meetUrl}
+                    onChange={(e) => setLiveForm({ ...liveForm, meetUrl: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 font-mono text-emerald-800"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Scheduled Day &amp; Time (IST / EST)</label>
+                  <input
+                    type="text"
+                    value={liveForm.scheduledDayTime}
+                    onChange={(e) => setLiveForm({ ...liveForm, scheduledDayTime: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Meeting Passcode</label>
+                  <input
+                    type="text"
+                    value={liveForm.passcode}
+                    onChange={(e) => setLiveForm({ ...liveForm, passcode: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 font-mono"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end">
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                <a
+                  href={liveForm.meetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Launch Google Meet Studio</span>
+                </a>
+
                 <button
                   type="button"
                   onClick={() => {
-                    updateAcademyInfo(infoForm);
-                    showToast("Announcement and contact info saved!", "success");
+                    updateLiveClassConfig(liveForm);
+                    showToast("Live Google Meet classroom configuration saved!", "success");
                   }}
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer"
                 >
-                  Save Announcement &amp; Info
+                  Save Classroom Settings
                 </button>
               </div>
             </div>
@@ -1851,575 +1838,18 @@ export default function AdminDashboard() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          MODAL: ADD UNLISTED VIDEO TO COURSE AREA
+          MODAL: EDIT COURSE & 5-SLIDE PHOTO GALLERY
       ═══════════════════════════════════════════════════════════════ */}
-      {isAddingVideoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-5 text-left my-8">
-            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
-              <div>
-                <span className="text-[10px] font-bold text-[#B99A63] uppercase tracking-wider">
-                  Course Area &bull; Video Vault
-                </span>
-                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                  Add Unlisted Video to {videoForm.courseCategory}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddingVideoModal(false)}
-                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddVideoSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Target Course Area *</label>
-                <select
-                  value={videoForm.courseCategory}
-                  onChange={(e) => setVideoForm({ ...videoForm, courseCategory: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-bold"
-                >
-                  {COURSE_OPTIONS.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Masterclass Session Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={videoForm.title}
-                  onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                  placeholder="e.g. Session 14: Natyarambham & Asamyuta Mudras"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-[#B99A63]"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  YouTube Unlisted or Vimeo Link *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={videoForm.embedUrl}
-                  onChange={(e) => setVideoForm({ ...videoForm, embedUrl: e.target.value })}
-                  placeholder="https://youtu.be/... or https://www.youtube.com/watch?v=..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs font-mono"
-                />
-                <span className="text-[11px] text-stone-500 mt-1 block">
-                  Paste regular YouTube or unlisted link &mdash; automatically converts to embedded player for students.
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-stone-700 block mb-1">Module Name</label>
-                  <input
-                    type="text"
-                    value={videoForm.module}
-                    onChange={(e) => setVideoForm({ ...videoForm, module: e.target.value })}
-                    placeholder="e.g. Module 01: Adavu Biomechanics"
-                    className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-stone-700 block mb-1">Duration</label>
-                  <input
-                    type="text"
-                    value={videoForm.duration}
-                    onChange={(e) => setVideoForm({ ...videoForm, duration: e.target.value })}
-                    placeholder="e.g. 58 mins"
-                    className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Syllabus Topics Covered (One per line)</label>
-                <textarea
-                  rows={2}
-                  value={videoForm.syllabusText}
-                  onChange={(e) => setVideoForm({ ...videoForm, syllabusText: e.target.value })}
-                  placeholder="Aramandi knee alignment\nTatta Adavu 1-8\nTalam tracking"
-                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-mono"
-                />
-              </div>
-
-              {/* Access Scope Restriction */}
-              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <label className="font-bold text-stone-900 block text-xs">
-                  Student Access Scope:
-                </label>
-                <div className="space-y-1.5">
-                  <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
-                    <input
-                      type="radio"
-                      name="accessScope"
-                      checked={videoForm.accessScope === "course_enrolled"}
-                      onChange={() => setVideoForm({ ...videoForm, accessScope: "course_enrolled" })}
-                    />
-                    <span>All students enrolled in &ldquo;{videoForm.courseCategory}&rdquo; (Recommended)</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
-                    <input
-                      type="radio"
-                      name="accessScope"
-                      checked={videoForm.accessScope === "selected_students"}
-                      onChange={() => setVideoForm({ ...videoForm, accessScope: "selected_students" })}
-                    />
-                    <span>Restrict to Specific Selected Students Only</span>
-                  </label>
-                </div>
-
-                {videoForm.accessScope === "selected_students" && (
-                  <div className="pt-2 border-t border-stone-200 space-y-1">
-                    <span className="text-[11px] font-bold text-stone-600 block">Select Authorized Students:</span>
-                    <div className="max-h-32 overflow-y-auto space-y-1 p-2 rounded-xl bg-white border border-stone-200">
-                      {(studentsList || []).map((stu) => {
-                        const isChecked = videoForm.allowedStudentIds.includes(stu.id);
-                        return (
-                          <label key={stu.id} className="flex items-center gap-2 text-[11px] cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setVideoForm({
-                                    ...videoForm,
-                                    allowedStudentIds: [...videoForm.allowedStudentIds, stu.id]
-                                  });
-                                } else {
-                                  setVideoForm({
-                                    ...videoForm,
-                                    allowedStudentIds: videoForm.allowedStudentIds.filter((id) => id !== stu.id)
-                                  });
-                                }
-                              }}
-                            />
-                            <span>{stu.name} ({stu.registrationNo})</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsAddingVideoModal(false)}
-                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
-                >
-                  Publish to Student Portal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          MODAL: ENROLL NEW STUDENT
-      ═══════════════════════════════════════════════════════════════ */}
-      {isAddingStudentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#B99A63]/40 space-y-5 text-left">
-            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
-              <div>
-                <span className="text-[10px] font-bold text-[#B99A63] uppercase tracking-wider">
-                  Student Enrolment
-                </span>
-                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                  Enroll New Student
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddingStudentModal(false)}
-                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddStudentSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Full Student Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Sreya Narayanan"
-                  value={newStudentForm.name}
-                  onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="student@example.com"
-                  value={newStudentForm.email}
-                  onChange={(e) => setNewStudentForm({ ...newStudentForm, email: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-stone-700 block mb-1">Phone / WhatsApp</label>
-                  <input
-                    type="tel"
-                    placeholder="+91 98470..."
-                    value={newStudentForm.phone}
-                    onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-stone-700 block mb-1">Location</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Kerala, India"
-                    value={newStudentForm.location}
-                    onChange={(e) => setNewStudentForm({ ...newStudentForm, location: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1.5">
-                  Select Enrolled Course Area(s) *
-                </label>
-                <div className="space-y-1.5 p-3 rounded-xl bg-stone-50 border border-stone-200">
-                  {COURSE_OPTIONS.map((cName) => {
-                    const isChecked = newStudentForm.enrolledCourses.includes(cName);
-                    return (
-                      <label key={cName} className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setNewStudentForm({
-                                ...newStudentForm,
-                                enrolledCourses: [...newStudentForm.enrolledCourses, cName]
-                              });
-                            } else {
-                              setNewStudentForm({
-                                ...newStudentForm,
-                                enrolledCourses: newStudentForm.enrolledCourses.filter((c) => c !== cName)
-                              });
-                            }
-                          }}
-                        />
-                        <span>{cName}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsAddingStudentModal(false)}
-                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
-                >
-                  Confirm Enrolment
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          MODAL: 4-POINT OFFICIAL RUBRIC EVALUATION
-      ═══════════════════════════════════════════════════════════════ */}
-      {selectedAssessment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl border border-[#B99A63]/40 space-y-5 text-left my-8">
-            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
-              <div>
-                <span className="text-[10px] font-bold text-[#B99A63] uppercase tracking-wider">
-                  Academic Performance Rubric &bull; {selectedAssessment.registrationNo}
-                </span>
-                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                  Grade Submission: {selectedAssessment.studentName}
-                </h3>
-                <p className="text-xs text-stone-500 mt-0.5">{selectedAssessment.title}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedAssessment(null)}
-                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between text-xs">
-              <span className="text-stone-600 font-semibold">Video Rehearsal:</span>
-              <a
-                href={selectedAssessment.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-bold text-[#3B0B14] hover:underline flex items-center gap-1.5"
-              >
-                <Video className="w-3.5 h-3.5" />
-                <span>Open Video Link</span>
-              </a>
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const total =
-                  Number(rubricDraft.biomechanicsScore) +
-                  Number(rubricDraft.mudraScore) +
-                  Number(rubricDraft.layaScore) +
-                  Number(rubricDraft.angaScore);
-                const percent = Math.round((total / 40) * 100);
-                const grade =
-                  percent >= 85 ? "Distinction (90%)" : percent >= 70 ? "First Class (75%)" : "Merit Pass";
-
-                const rubricData = {
-                  biomechanics: {
-                    score: Number(rubricDraft.biomechanicsScore),
-                    maxScore: 10,
-                    label: "Aramandi & Lower-Body Biomechanics",
-                    remarks: rubricDraft.biomechanicsRemarks
-                  },
-                  mudraPrecision: {
-                    score: Number(rubricDraft.mudraScore),
-                    maxScore: 10,
-                    label: "Hasta Mudra Precision",
-                    remarks: rubricDraft.mudraRemarks
-                  },
-                  layaTalam: {
-                    score: Number(rubricDraft.layaScore),
-                    maxScore: 10,
-                    label: "Laya & Talam Synchronization",
-                    remarks: rubricDraft.layaRemarks
-                  },
-                  angaShuddhi: {
-                    score: Number(rubricDraft.angaScore),
-                    maxScore: 10,
-                    label: "Anga Shuddhi (Upper-Body Posture)",
-                    remarks: rubricDraft.angaRemarks
-                  }
-                };
-
-                gradeAssessment(
-                  selectedAssessment.id,
-                  rubricData,
-                  rubricDraft.clinicalNote,
-                  grade,
-                  total
-                );
-                setSelectedAssessment(null);
-              }}
-              className="space-y-4 text-xs"
-            >
-              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-900">
-                    1. Aramandi &amp; Lower-Body Biomechanics (0 - 10)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="10"
-                    required
-                    value={rubricDraft.biomechanicsScore}
-                    onChange={(e) =>
-                      setRubricDraft({ ...rubricDraft, biomechanicsScore: e.target.value })
-                    }
-                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <input
-                  type="text"
-                  value={rubricDraft.biomechanicsRemarks}
-                  onChange={(e) =>
-                    setRubricDraft({ ...rubricDraft, biomechanicsRemarks: e.target.value })
-                  }
-                  placeholder="Knee turnout remarks, patella tracking, foot placement..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
-                />
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-900">
-                    2. Hasta Mudra Precision (0 - 10)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="10"
-                    required
-                    value={rubricDraft.mudraScore}
-                    onChange={(e) =>
-                      setRubricDraft({ ...rubricDraft, mudraScore: e.target.value })
-                    }
-                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <input
-                  type="text"
-                  value={rubricDraft.mudraRemarks}
-                  onChange={(e) =>
-                    setRubricDraft({ ...rubricDraft, mudraRemarks: e.target.value })
-                  }
-                  placeholder="Finger articulation, thumb position, wrist stability..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
-                />
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-900">
-                    3. Laya &amp; Talam Synchronization (0 - 10)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="10"
-                    required
-                    value={rubricDraft.layaScore}
-                    onChange={(e) =>
-                      setRubricDraft({ ...rubricDraft, layaScore: e.target.value })
-                    }
-                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <input
-                  type="text"
-                  value={rubricDraft.layaRemarks}
-                  onChange={(e) =>
-                    setRubricDraft({ ...rubricDraft, layaRemarks: e.target.value })
-                  }
-                  placeholder="Metronome pacing, foot strike on samam, speed transitions..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
-                />
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-900">
-                    4. Anga Shuddhi &bull; Upper-Body Posture (0 - 10)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="10"
-                    required
-                    value={rubricDraft.angaScore}
-                    onChange={(e) =>
-                      setRubricDraft({ ...rubricDraft, angaScore: e.target.value })
-                    }
-                    className="w-20 px-2.5 py-1 text-center font-bold font-mono rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <input
-                  type="text"
-                  value={rubricDraft.angaRemarks}
-                  onChange={(e) =>
-                    setRubricDraft({ ...rubricDraft, angaRemarks: e.target.value })
-                  }
-                  placeholder="Spine elongation, shoulder centering, neck carriage..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-900 block mb-1">
-                  Dr. Malavika&apos;s Biomechanical &amp; Performance Summary (Clinical Verdict)
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={rubricDraft.clinicalNote}
-                  onChange={(e) =>
-                    setRubricDraft({ ...rubricDraft, clinicalNote: e.target.value })
-                  }
-                  placeholder="Enter detailed feedback and module clearance notes..."
-                  className="w-full p-3 rounded-xl border border-stone-200 text-xs focus:outline-none focus:border-[#B99A63]"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
-                <span className="text-xs font-bold text-stone-900">
-                  Total Projected:{" "}
-                  <strong className="text-[#3B0B14] font-mono text-sm">
-                    {Number(rubricDraft.biomechanicsScore) +
-                      Number(rubricDraft.mudraScore) +
-                      Number(rubricDraft.layaScore) +
-                      Number(rubricDraft.angaScore)}{" "}
-                    / 40
-                  </strong>
-                </span>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedAssessment(null)}
-                    className="px-4 py-2 rounded-xl border border-stone-200 text-stone-700 font-bold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs shadow-md cursor-pointer"
-                  >
-                    Publish Assessment to Student Portal
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Course Edit Modal */}
       {(editingCourse || isAddingCourse) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-[#B99A63]/40 space-y-5 text-left my-8">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl border border-[#B99A63]/40 space-y-5 text-left my-8 font-sans">
             <div className="flex items-center justify-between border-b pb-4">
-              <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
-                {editingCourse ? `Edit Course: ${editingCourse.title}` : "Add New Course"}
-              </h3>
+              <div>
+                <span className="text-[10px] font-bold uppercase text-[#B99A63] tracking-wider block">Course Editor</span>
+                <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                  {editingCourse ? `Edit: ${editingCourse.title}` : "Create New Academy Course"}
+                </h3>
+              </div>
               <button
                 type="button"
                 onClick={() => {
@@ -2465,40 +1895,133 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Photo Uploader */}
-              <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/70 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-stone-800 block text-xs">Main Cover Photo</label>
-                  {isUploadingCourseMedia && (
-                    <span className="text-xs text-[#B99A63] font-semibold animate-pulse">
-                      {uploadProgressText}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-stone-900 overflow-hidden shrink-0 border border-stone-200 relative">
+              {/* Main Cover Photo */}
+              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <label className="font-bold text-stone-800 block text-xs">Main Cover Photo</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-stone-900 shrink-0 border border-stone-300">
                     <img src={courseForm.image} alt="Preview" className="w-full h-full object-cover" />
                   </div>
-                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs cursor-pointer shadow-sm">
-                    <UploadCloud className="w-4 h-4 text-[#D4AF37]" />
-                    <span>Upload Photo from Phone / PC</span>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Upload Cover Photo (Supabase)</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            showToast("Uploading course cover to Supabase...", "info");
+                            const comp = await compressImageFile(file, 1600, 0.88);
+                            const res = await uploadMediaToBucket("academy-media", comp.file, "courses");
+                            const finalUrl = res.url || comp.dataUrl;
+                            setCourseForm((prev) => ({ ...prev, image: finalUrl }));
+                            showToast("Course cover updated!", "success");
+                          } catch (err) {
+                            showToast("Failed to upload cover photo", "error");
+                          }
+                        }}
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={courseForm.image}
+                      onChange={(e) => setCourseForm({ ...courseForm, image: e.target.value })}
+                      placeholder="Or enter photo URL"
+                      className="w-full px-2.5 py-1 rounded-lg border border-stone-200 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 5-Slide Photo Gallery per Course */}
+              <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/70 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="font-bold text-stone-800 block text-xs">5-Slide Photo Gallery</label>
+                    <span className="text-[10px] text-stone-500">Carousel slides displayed in course detail view</span>
+                  </div>
+
+                  <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
+                    <Plus className="w-3 h-3" />
+                    <span>Add Slide Photo</span>
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleUploadCourseMedia(e, false)}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          showToast("Uploading slide to Supabase...", "info");
+                          const comp = await compressImageFile(file, 1600, 0.88);
+                          const res = await uploadMediaToBucket("academy-media", comp.file, "courses");
+                          const finalUrl = res.url || comp.dataUrl;
+                          setCourseForm((prev) => ({ ...prev, images: [...(prev.images || []), finalUrl] }));
+                          showToast("Slide added to gallery!", "success");
+                        } catch (err) {
+                          showToast("Failed to upload slide", "error");
+                        }
+                      }}
                     />
                   </label>
+                </div>
+
+                <div className="grid grid-cols-5 gap-2">
+                  {(courseForm.images || []).map((slideUrl, sIdx) => (
+                    <div key={sIdx} className="relative rounded-xl overflow-hidden aspect-square bg-stone-900 border border-stone-300 group">
+                      <img src={slideUrl} alt={`Slide ${sIdx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (courseForm.images || []).filter((_, i) => i !== sIdx);
+                          setCourseForm({ ...courseForm, images: updated });
+                        }}
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
+                        title="Remove slide"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] px-1 rounded font-bold">
+                        #{sIdx + 1}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Description</label>
+                <label className="font-bold text-stone-700 block mb-1">Video Preview / Reel URL</label>
+                <input
+                  type="text"
+                  value={courseForm.videoUrl || ""}
+                  onChange={(e) => setCourseForm({ ...courseForm, videoUrl: e.target.value })}
+                  placeholder="/videos/performance.mp4 or YouTube / Vimeo"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Course Description</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={courseForm.description}
                   onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
                   className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Syllabus Breakdown (1 item per line)</label>
+                <textarea
+                  rows={3}
+                  value={courseForm.syllabusText}
+                  onChange={(e) => setCourseForm({ ...courseForm, syllabusText: e.target.value })}
+                  placeholder="Module 1: Basic Adavus\nModule 2: Hastha Mudras"
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs font-mono"
                 />
               </div>
 
@@ -2515,10 +2038,776 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-white font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-md"
                 >
-                  Save Course
+                  Save Course &amp; Gallery
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: ADD STORY (STUDENT & PARENT REVIEW)
+      ═══════════════════════════════════════════════════════════════ */}
+      {isAddingStoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                Add Student &amp; Parent Story
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddingStoryModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!storyForm.name.trim() || !storyForm.quote.trim()) {
+                  showToast("Name and quote are required.", "error");
+                  return;
+                }
+                const newStory = {
+                  id: "story-" + Date.now(),
+                  ...storyForm
+                };
+                const updated = [newStory, ...storiesList];
+                setStoriesList(updated);
+                updateTestimonials(updated);
+                setIsAddingStoryModal(false);
+                showToast("New student story added successfully!", "success");
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Student / Parent Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Radhika Sundaram"
+                  value={storyForm.name}
+                  onChange={(e) => setStoryForm({ ...storyForm, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Discipline / Role</label>
+                  <input
+                    type="text"
+                    value={storyForm.role}
+                    onChange={(e) => setStoryForm({ ...storyForm, role: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={storyForm.location}
+                    onChange={(e) => setStoryForm({ ...storyForm, location: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Rating</label>
+                <select
+                  value={storyForm.rating}
+                  onChange={(e) => setStoryForm({ ...storyForm, rating: Number(e.target.value) })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
+                >
+                  <option value={5}>5 Stars (Exceptional)</option>
+                  <option value={4}>4 Stars (Very Good)</option>
+                  <option value={3}>3 Stars (Good)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Testimonial Quote *</label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Share the disciple's genuine experience with Dr. Malavika's coaching..."
+                  value={storyForm.quote}
+                  onChange={(e) => setStoryForm({ ...storyForm, quote: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingStoryModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                >
+                  Add Story
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: ADD INSTAGRAM POST / REEL
+      ═══════════════════════════════════════════════════════════════ */}
+      {isAddingInstaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                Add Instagram Post or Reel
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddingInstaModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!instaForm.title.trim()) {
+                  showToast("Title is required", "error");
+                  return;
+                }
+                const newItem = {
+                  id: "insta-" + Date.now(),
+                  ...instaForm
+                };
+                const updated = [newItem, ...instagramList];
+                setInstagramList(updated);
+                updateSection("instagram", updated);
+                setIsAddingInstaModal(false);
+                showToast("Instagram media added to live social wall!", "success");
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Post / Reel Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Live Stage Varnam Recital"
+                  value={instaForm.title}
+                  onChange={(e) => setInstaForm({ ...instaForm, title: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                />
+              </div>
+
+              {/* Photo Upload to Supabase */}
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <label className="font-bold text-stone-800 block">Thumbnail / Photo Media</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-black shrink-0 border border-stone-300">
+                    <img src={instaForm.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>Upload Photo (Supabase)</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleUploadInstaMedia}
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={instaForm.imageUrl}
+                      onChange={(e) => setInstaForm({ ...instaForm, imageUrl: e.target.value })}
+                      placeholder="Or enter image URL"
+                      className="w-full px-2.5 py-1 rounded-lg border border-stone-200 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Media Type</label>
+                  <select
+                    value={instaForm.type}
+                    onChange={(e) => setInstaForm({ ...instaForm, type: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
+                  >
+                    <option value="reel">Reel (Video)</option>
+                    <option value="post">Photo Post</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Category</label>
+                  <select
+                    value={instaForm.category}
+                    onChange={(e) => setInstaForm({ ...instaForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
+                  >
+                    <option value="stage">Stage Shows</option>
+                    <option value="workshops">Workshops</option>
+                    <option value="music">Music &amp; Dance</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Caption</label>
+                <textarea
+                  rows={2}
+                  value={instaForm.caption}
+                  onChange={(e) => setInstaForm({ ...instaForm, caption: e.target.value })}
+                  placeholder="Captivating stage performance in sacred Margam discipline..."
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingInstaModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                >
+                  Add to Feed
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: ADD GALLERY MEDIA ITEM
+      ═══════════════════════════════════════════════════════════════ */}
+      {isAddingGalleryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                Upload Gallery Media
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddingGalleryModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!galleryForm.title.trim()) {
+                  showToast("Title is required", "error");
+                  return;
+                }
+                addGalleryItem(galleryForm);
+                setIsAddingGalleryModal(false);
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Media Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Margam Varnam Live Recital"
+                  value={galleryForm.title}
+                  onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                />
+              </div>
+
+              {/* Upload to Supabase */}
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <label className="font-bold text-stone-800 block">Select File (Photo or Video)</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-black shrink-0 border border-stone-300">
+                    <img src={galleryForm.url} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>Upload File to Supabase</span>
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={handleUploadGalleryMedia}
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={galleryForm.url}
+                      onChange={(e) => setGalleryForm({ ...galleryForm, url: e.target.value })}
+                      placeholder="Or enter media URL"
+                      className="w-full px-2.5 py-1 rounded-lg border border-stone-200 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Category</label>
+                  <select
+                    value={galleryForm.category}
+                    onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
+                  >
+                    <option value="Performances">Performances</option>
+                    <option value="Stage Shows">Stage Shows</option>
+                    <option value="Workshops">Workshops</option>
+                    <option value="Music & Dance">Music &amp; Dance</option>
+                    <option value="Carnatic Vocal">Carnatic Vocal</option>
+                    <option value="Doctor & Dancer">Doctor &amp; Dancer</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Media Type</label>
+                  <select
+                    value={galleryForm.type}
+                    onChange={(e) => setGalleryForm({ ...galleryForm, type: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
+                  >
+                    <option value="image">Photograph</option>
+                    <option value="video">Video Recording</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Caption / Story</label>
+                <textarea
+                  rows={2}
+                  value={galleryForm.caption}
+                  onChange={(e) => setGalleryForm({ ...galleryForm, caption: e.target.value })}
+                  placeholder="Describe the recital, venue or artistic expression..."
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingGalleryModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                >
+                  Publish to Gallery
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: ADD UNLISTED VIDEO TO COURSE AREA
+      ═══════════════════════════════════════════════════════════════ */}
+      {isAddingVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                Add Unlisted Masterclass Video
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddingVideoModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!videoForm.title.trim() || !videoForm.embedUrl.trim()) {
+                  showToast("Title and Video Embed URL are required.", "error");
+                  return;
+                }
+                addRecording({
+                  ...videoForm,
+                  courseCategory: selectedCourseArea
+                });
+                setIsAddingVideoModal(false);
+                showToast("Unlisted video added to course vault!", "success");
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Video Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Araimandi Depth & Lateral Balance Drill"
+                  value={videoForm.title}
+                  onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Target Course Area</label>
+                <input
+                  type="text"
+                  disabled
+                  value={selectedCourseArea}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-stone-100 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Video Embed URL (YouTube Unlisted / Vimeo / MP4) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="https://www.youtube-nocookie.com/embed/..."
+                  value={videoForm.embedUrl}
+                  onChange={(e) => setVideoForm({ ...videoForm, embedUrl: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 font-mono text-emerald-800"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Module Level</label>
+                  <input
+                    type="text"
+                    value={videoForm.module}
+                    onChange={(e) => setVideoForm({ ...videoForm, module: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Duration</label>
+                  <input
+                    type="text"
+                    value={videoForm.duration}
+                    onChange={(e) => setVideoForm({ ...videoForm, duration: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={videoForm.description}
+                  onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingVideoModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                >
+                  Add to Vault
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: ENROLL NEW DISCIPLE
+      ═══════════════════════════════════════════════════════════════ */}
+      {isAddingStudentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                Enroll Conservatory Disciple
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddingStudentModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newStudentForm.name.trim() || !newStudentForm.email.trim()) {
+                  showToast("Name and email are required.", "error");
+                  return;
+                }
+                addStudent({
+                  ...newStudentForm,
+                  batchName: newStudentForm.enrolledCourses[0]
+                });
+                setIsAddingStudentModal(false);
+                showToast("Disciple enrolled successfully!", "success");
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Disciple Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ananya Menon"
+                  value={newStudentForm.name}
+                  onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="student@dancingragas.com"
+                  value={newStudentForm.email}
+                  onChange={(e) => setNewStudentForm({ ...newStudentForm, email: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Phone Number</label>
+                  <input
+                    type="text"
+                    placeholder="+91 98765 43210"
+                    value={newStudentForm.phone}
+                    onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={newStudentForm.location}
+                    onChange={(e) => setNewStudentForm({ ...newStudentForm, location: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Enrolled Discipline</label>
+                <select
+                  value={newStudentForm.enrolledCourses[0]}
+                  onChange={(e) => setNewStudentForm({ ...newStudentForm, enrolledCourses: [e.target.value] })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
+                >
+                  <option value="Bharatanatyam Diploma">Online Bharatanatyam Diploma Course</option>
+                  <option value="Bharatanatyam Non-Diploma">Online Bharatanatyam Non-Diploma Classes</option>
+                  <option value="Carnatic Music">Online Carnatic Music Classes</option>
+                  <option value="Bollywood & Semi-Classical">Online Semi-Classical Bollywood Dance Classes</option>
+                </select>
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingStudentModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                >
+                  Confirm Enrollment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: 4-POINT OFFICIAL RUBRIC EVALUATION
+      ═══════════════════════════════════════════════════════════════ */}
+      {selectedAssessment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans my-8">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div>
+                <span className="text-[10px] font-bold text-[#B99A63] uppercase tracking-wider block">Faculty Evaluation</span>
+                <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                  {selectedAssessment.studentName} &bull; {selectedAssessment.moduleName}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedAssessment(null)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                gradeAssessment(selectedAssessment.id, {
+                  scores: {
+                    biomechanics: Number(rubricDraft.biomechanicsScore),
+                    mudra: Number(rubricDraft.mudraScore),
+                    laya: Number(rubricDraft.layaScore),
+                    anga: Number(rubricDraft.angaScore)
+                  },
+                  remarks: {
+                    biomechanics: rubricDraft.biomechanicsRemarks,
+                    mudra: rubricDraft.mudraRemarks,
+                    laya: rubricDraft.layaRemarks,
+                    anga: rubricDraft.angaRemarks
+                  },
+                  clinicalVerdict: rubricDraft.clinicalNote,
+                  status: "Evaluated"
+                });
+                setSelectedAssessment(null);
+                showToast("Assessment published to disciple's sanctuary!", "success");
+              }}
+              className="space-y-3 text-xs"
+            >
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                <label className="font-bold text-stone-800">1. Biomechanics &amp; Aramandi Posture (0-10)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="10"
+                  required
+                  value={rubricDraft.biomechanicsScore}
+                  onChange={(e) => setRubricDraft({ ...rubricDraft, biomechanicsScore: e.target.value })}
+                  className="w-16 px-2 py-1 text-center font-bold font-mono rounded-lg border border-stone-200"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                <label className="font-bold text-stone-800">2. Hastha Mudra Geometry (0-10)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="10"
+                  required
+                  value={rubricDraft.mudraScore}
+                  onChange={(e) => setRubricDraft({ ...rubricDraft, mudraScore: e.target.value })}
+                  className="w-16 px-2 py-1 text-center font-bold font-mono rounded-lg border border-stone-200"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                <label className="font-bold text-stone-800">3. Laya &amp; Talam Synchronization (0-10)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="10"
+                  required
+                  value={rubricDraft.layaScore}
+                  onChange={(e) => setRubricDraft({ ...rubricDraft, layaScore: e.target.value })}
+                  className="w-16 px-2 py-1 text-center font-bold font-mono rounded-lg border border-stone-200"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                <label className="font-bold text-stone-800">4. Anga Shuddhi Upper-Body (0-10)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="10"
+                  required
+                  value={rubricDraft.angaScore}
+                  onChange={(e) => setRubricDraft({ ...rubricDraft, angaScore: e.target.value })}
+                  className="w-16 px-2 py-1 text-center font-bold font-mono rounded-lg border border-stone-200"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Clinical Biomechanical Verdict &amp; Guidance</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={rubricDraft.clinicalNote}
+                  onChange={(e) => setRubricDraft({ ...rubricDraft, clinicalNote: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                <span className="font-bold text-stone-900">
+                  Total Score:{" "}
+                  <strong className="text-[#3D0B16] font-mono text-sm">
+                    {Number(rubricDraft.biomechanicsScore) +
+                      Number(rubricDraft.mudraScore) +
+                      Number(rubricDraft.layaScore) +
+                      Number(rubricDraft.angaScore)}{" "}
+                    / 40
+                  </strong>
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedAssessment(null)}
+                    className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                  >
+                    Publish to Student Portal
+                  </button>
+                </div>
               </div>
             </form>
           </div>

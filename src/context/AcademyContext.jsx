@@ -730,6 +730,11 @@ export const AcademyProvider = ({ children }) => {
     showToast("Gallery item deleted.", "info");
   };
 
+  const updateGalleryItem = (id, updatedData) => {
+    setGallery((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedData } : item)));
+    showToast("Gallery media updated successfully!", "success");
+  };
+
   return (
     <AcademyContext.Provider
       value={{
@@ -779,7 +784,7 @@ export const AcademyProvider = ({ children }) => {
         addStudent,
         updateStudent,
         deleteStudent,
-        isAdminLoggedIn: isAdminLoggedIn || userRole === "admin",
+        isAdminLoggedIn: isAdminLoggedIn || userRole === "admin" || userRole === "tutor",
         authUser,
         setAuthUser,
         userRole,
@@ -805,6 +810,7 @@ export const AcademyProvider = ({ children }) => {
         deleteTimetableSlot,
         addGalleryItem,
         deleteGalleryItem,
+        updateGalleryItem,
         // Master Site Content & Visual Edit Mode
         siteContent,
         setSiteContent,

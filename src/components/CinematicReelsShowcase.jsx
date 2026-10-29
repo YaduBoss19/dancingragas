@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useAcademy } from "../context/AcademyContext";
 import AnimatedSection from "./AnimatedSection";
 import { playGhungrooChime } from "../utils/talamAudio";
 import {
@@ -1041,6 +1042,8 @@ export default function CinematicReelsShowcase({
   onMeetArtistClick,
   onPhotoClick
 }) {
+  const { siteContent } = useAcademy();
+  const currentWallItems = (siteContent?.instagram && siteContent.instagram.length > 0) ? siteContent.instagram : INSTAGRAM_WALL_ITEMS;
   const [selectedVideo, setSelectedVideo] = useState(PERFORMANCE_ARCHIVE[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All Videos");
@@ -1193,7 +1196,7 @@ export default function CinematicReelsShowcase({
   };
 
   // Filter Instagram wall items
-  const filteredWallItems = INSTAGRAM_WALL_ITEMS.filter((item) => {
+  const filteredWallItems = currentWallItems.filter((item) => {
     if (wallFilter === "workshops") return item.category === "workshops";
     if (wallFilter === "stage") return item.category === "stage";
     if (wallFilter === "music") return item.category === "music";
@@ -1831,7 +1834,7 @@ export default function CinematicReelsShowcase({
                     : "bg-[#1E1B1B] text-slate-400 hover:text-white border border-white/5"
                 }`}
               >
-                All ({INSTAGRAM_WALL_ITEMS.length})
+                All ({currentWallItems.length})
               </button>
 
               <button
