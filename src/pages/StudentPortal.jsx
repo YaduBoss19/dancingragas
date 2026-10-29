@@ -50,6 +50,8 @@ import MargamRoadmapWidget from "../components/MargamRoadmapWidget";
 import TuitionRenewalCard from "../components/TuitionRenewalCard";
 import VirtualStageRecitalsWidget from "../components/VirtualStageRecitalsWidget";
 import TuitionReceiptModal from "../components/TuitionReceiptModal";
+import StudentProfileModal from "../components/StudentProfileModal";
+import { MessageCircle, Camera, Edit2 } from "lucide-react";
 import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
 export default function StudentPortal({ onOpenAuth }) {
@@ -58,6 +60,7 @@ export default function StudentPortal({ onOpenAuth }) {
   const [isShowcaseModalOpen, setIsShowcaseModalOpen] = useState(false);
   const [isAbsenceModalOpen, setIsAbsenceModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [sadhanaStreak, setSadhanaStreak] = useState(14);
   const [practicedToday, setPracticedToday] = useState(false);
   const [activePracticeTool, setActivePracticeTool] = useState("tanpura"); // 'tanpura' | 'talam'
@@ -77,7 +80,9 @@ export default function StudentPortal({ onOpenAuth }) {
     studentsList,
     activeStudentId,
     setActiveStudentId,
-    studyMaterials
+    studyMaterials,
+    liveClassSchedules,
+    updateStudentProfileDetails
   } = useAcademy();
 
   // Active student identity (from studentsList or authUser)
@@ -101,6 +106,12 @@ export default function StudentPortal({ onOpenAuth }) {
       setSelectedCourseArea(currentStudent.enrolledCourses[0] || "Bharatanatyam Diploma");
     }
   }, [currentStudent]);
+
+  // Match scheduled live class with student's active course area
+  const activeLiveSession = (liveClassSchedules || []).find((s) =>
+    s.courseCategory === selectedCourseArea ||
+    (s.batchName && s.batchName.toLowerCase().includes(selectedCourseArea.toLowerCase()))
+  ) || (liveClassSchedules || [])[0] || liveClassConfig;
 
   // Navigation tabs
   const [activeTab, setActiveTab] = useState("curriculum"); // 'curriculum' | 'live_studio' | 'evaluations' | 'documents'
@@ -175,7 +186,7 @@ export default function StudentPortal({ onOpenAuth }) {
   }, []);
 
   useEffect(() => {
-    const target = new Date(liveClassConfig?.targetTimestamp || Date.now() + 2 * 24 * 60 * 60 * 1000).getTime();
+    const target = new Date(activeLiveSession?.targetTimestamp || liveClassConfig?.targetTimestamp || Date.now() + 2 * 24 * 60 * 60 * 1000).getTime();
 
     const interval = setInterval(() => {
       const now = Date.now();
@@ -193,22 +204,22 @@ export default function StudentPortal({ onOpenAuth }) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [liveClassConfig?.targetTimestamp]);
+  }, [activeLiveSession?.targetTimestamp, liveClassConfig?.targetTimestamp]);
 
   const handleAddToGoogleCalendar = () => {
-    const title = encodeURIComponent(`DancingRagas Live: ${liveClassConfig?.sessionTitle || "Bharatanatyam Masterclass"}`);
+    const title = encodeURIComponent(`DancingRagas Live: ${activeLiveSession?.sessionTitle || liveClassConfig?.sessionTitle || "Bharatanatyam Masterclass"}`);
     const details = encodeURIComponent(
-      `Interactive masterclass with Dr. Malavika M. Sunil.\n\nMeeting Link: ${liveClassConfig?.meetUrl || ""}\nMeeting ID: ${liveClassConfig?.meetingId || ""}\nPasscode: ${liveClassConfig?.passcode || ""}`
+      `Interactive masterclass with ${activeLiveSession?.instructor || "Dr. Malavika M. Sunil"}.\n\nMeeting Link: ${activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || ""}\nMeeting ID: ${activeLiveSession?.meetingId || liveClassConfig?.meetingId || ""}\nPasscode: ${activeLiveSession?.passcode || liveClassConfig?.passcode || ""}\nBatch: ${activeLiveSession?.courseCategory || selectedCourse}`
     );
-    const location = encodeURIComponent(liveClassConfig?.meetUrl || "Google Meet Online Studio");
+    const location = encodeURIComponent(activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "Google Meet Online Studio");
     const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`;
     window.open(gcalUrl, "_blank");
     showToast("Opened Google Calendar to save your masterclass!", "info");
   };
 
   const handleDownloadIcs = () => {
-    const eventTitle = liveClassConfig?.sessionTitle || "DancingRagas Masterclass";
-    const eventUrl = liveClassConfig?.meetUrl || "https://meet.google.com";
+    const eventTitle = activeLiveSession?.sessionTitle || liveClassConfig?.sessionTitle || "DancingRagas Masterclass";
+    const eventUrl = activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "https://meet.google.com";
     const icsData = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
@@ -346,21 +357,66 @@ export default function StudentPortal({ onOpenAuth }) {
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.12)_0,transparent_70%)] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/10 pb-6">
-            <div className="flex items-start sm:items-center gap-4">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border-2 border-[#D4AF37]/60 text-[#D4AF37] flex items-center justify-center font-serif-luxury text-2xl font-bold shadow-lg shadow-[#D4AF37]/15 shrink-0">
-                {currentStudent.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+              {/* Disciple Portrait Photo Avatar with Edit Trigger */}
+              <div
+                onClick={() => setIsProfileModalOpen(true)}
+                className="relative group cursor-pointer shrink-0"
+                title="Click to change disciple photo & details"
+              >
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#1E050B] to-[#3D0B16] border-2 border-[#D4AF37] text-[#D4AF37] flex items-center justify-center font-serif-luxury text-2xl font-bold shadow-xl overflow-hidden group-hover:scale-105 transition-all">
+                  {currentStudent.avatarUrl ? (
+                    <img src={currentStudent.avatarUrl} alt={currentStudent.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{currentStudent.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</span>
+                  )}
+                </div>
+                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md group-hover:brightness-110">
+                  <Camera className="w-3.5 h-3.5 text-[#1E050B]" />
+                </div>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5 text-left">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-3 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
                     <ShieldCheck className="w-3 h-3 text-[#D4AF37]" />
-                    <span>Verified Student Member</span>
+                    <span>Verified Disciple Sanad</span>
                   </span>
                   <span className="text-[11px] font-mono text-stone-300">
                     Reg: <strong className="text-white">{currentStudent.registrationNo}</strong>
                   </span>
+                  <button
+                    onClick={() => setIsProfileModalOpen(true)}
+                    className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Edit2 className="w-3 h-3 text-[#D4AF37]" />
+                    <span>Edit Profile</span>
+                  </button>
                 </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold font-serif-luxury tracking-tight text-white">
+                    {currentStudent.name}
+                  </h1>
+
+                  {/* Direct WhatsApp Contact Pill */}
+                  <a
+                    href={`https://wa.me/${(currentStudent.whatsappNumber || currentStudent.phone || "+919847012345").replace(/[^0-9]/g, "")}?text=Hello%20Dr.%20Malavika%2C%20this%20is%20${encodeURIComponent(currentStudent.name)}%20(${currentStudent.registrationNo}).`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-emerald-300 text-xs font-bold transition-all shadow-xs"
+                    title="Direct WhatsApp with Dr. Malavika"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                    <span>WhatsApp: {currentStudent.whatsappNumber || currentStudent.phone || "+91 98470 12345"}</span>
+                  </a>
+                </div>
+
+                <p className="text-xs sm:text-sm text-stone-300">
+                  Enrolled in: <strong className="text-white">{currentStudent.enrolledCourses?.join(" & ")}</strong> &bull; Location: {currentStudent.location || "Online"}
+                </p>
+
+                {/* Prestige Action Ribbons */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
                   <button
                     type="button"
@@ -398,13 +454,6 @@ export default function StudentPortal({ onOpenAuth }) {
                     <span>Absence &amp; Catch-Up</span>
                   </button>
                 </div>
-
-                <h1 className="text-2xl sm:text-3xl font-bold font-serif-luxury tracking-tight text-white">
-                  {currentStudent.name}
-                </h1>
-                <p className="text-xs sm:text-sm text-stone-300">
-                  Enrolled in: <strong className="text-white">{currentStudent.enrolledCourses?.join(" & ")}</strong> &bull; Location: {currentStudent.location || "Online"}
-                </p>
               </div>
             </div>
 
@@ -474,6 +523,77 @@ export default function StudentPortal({ onOpenAuth }) {
             </div>
           </div>
         </AnimatedSection>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            LIVE CLASSROOM GOOGLE MEET CONNECT (SYNCED PER BATCH)
+        ═══════════════════════════════════════════════════════════════ */}
+        <div className="rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#2A0812] to-[#1E050B] border border-[#B99A63]/50 text-white p-6 sm:p-7 shadow-2xl relative overflow-hidden text-left space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
+                  Live Classroom &bull; {selectedCourseArea} Batch
+                </span>
+                <span className="text-xs text-[#D4AF37] font-semibold">
+                  • {activeLiveSession.scheduledDayTime}
+                </span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold font-serif-luxury text-white">
+                {activeLiveSession.sessionTitle || "Weekly Live Masterclass Studio"}
+              </h3>
+              <p className="text-xs text-stone-300">
+                Mentored directly by {activeLiveSession.instructor || "Dr. Malavika M. Sunil (MBBS)"} &bull; Batch: {activeLiveSession.batchName || selectedCourseArea}
+              </p>
+            </div>
+
+            {/* Google Meet Direct Launch Actions */}
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <a
+                href={activeLiveSession.meetUrl || "https://meet.google.com/dnc-ragas-live"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="silk-zari-btn px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2 cursor-pointer tap-bounce"
+              >
+                <Video className="w-4 h-4 text-white" />
+                <span>Join Google Meet Now</span>
+              </a>
+
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`🌸 DancingRagas Live Classroom\n\nClass: ${activeLiveSession.sessionTitle}\nBatch: ${selectedCourseArea}\nTime: ${activeLiveSession.scheduledDayTime}\n\nJoin Google Meet:\n${activeLiveSession.meetUrl || "https://meet.google.com/dnc-ragas-live"}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-3 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-emerald-300 transition-all cursor-pointer shadow-xs"
+                title="Send Meet link to WhatsApp"
+              >
+                <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              </a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-0.5">
+              <span className="text-[10px] uppercase font-bold text-stone-400 block">Class Platform</span>
+              <strong className="text-white text-xs block">Google Meet (HD Video &amp; Audio)</strong>
+              <span className="text-[10px] text-stone-300 font-mono">ID: {activeLiveSession.meetingId || "dnc-ragas-live"}</span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-0.5">
+              <span className="text-[10px] uppercase font-bold text-stone-400 block">Next Live Countdown</span>
+              <div className="flex items-center gap-2 text-xs font-bold text-[#D4AF37]">
+                <span>{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span>
+              </div>
+              <span className="text-[10px] text-emerald-300">Synchronized to {userTimezone}</span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-0.5">
+              <span className="text-[10px] uppercase font-bold text-stone-400 block">Classroom Protocol</span>
+              <p className="text-[11px] text-stone-300 leading-snug">
+                {activeLiveSession.notice || "Ensure ghungroos and traditional practice attire are ready 5 minutes before class."}
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* ═══════════════════════════════════════════════════════════════
             DAILY SADHANA STREAK & PRACTICE COUNTER (CUSTOMER DELIGHT)
@@ -806,16 +926,16 @@ export default function StudentPortal({ onOpenAuth }) {
                     </span>
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-bold font-serif-luxury text-white">
-                    {liveClassConfig?.sessionTitle || "Bharatanatyam Diploma Masterclass"}
+                    {activeLiveSession?.sessionTitle || liveClassConfig?.sessionTitle || "Bharatanatyam Diploma Masterclass"}
                   </h3>
                   <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-xl">
-                    Conducted directly by <strong className="text-white">Dr. Malavika M. Sunil (MBBS)</strong> &bull; Interactive posture correction &amp; rhythm drills.
+                    Conducted directly by <strong className="text-white">{activeLiveSession?.instructor || liveClassConfig?.instructor || "Dr. Malavika M. Sunil (MBBS)"}</strong> &bull; Interactive posture correction &amp; rhythm drills.
                   </p>
                 </div>
 
                 <div className="flex flex-col gap-2 shrink-0">
                   <a
-                    href={`${liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live"}?authuser=${encodeURIComponent(currentStudent.email || "")}`}
+                    href={`${activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live"}?authuser=${encodeURIComponent(currentStudent.email || "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="silk-zari-btn px-8 py-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-xl shadow-[#D4AF37]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0 tap-bounce"
@@ -825,7 +945,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                   <div className="text-[10px] text-stone-300 text-center flex items-center justify-center gap-1">
-                    <span>Passcode: <strong className="text-[#D4AF37] font-mono">{liveClassConfig?.passcode || "RAGAS2026"}</strong></span>
+                    <span>Passcode: <strong className="text-[#D4AF37] font-mono">{activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026"}</strong></span>
                   </div>
                 </div>
               </div>
@@ -865,16 +985,16 @@ export default function StudentPortal({ onOpenAuth }) {
                   </span>
                   <div className="flex items-center justify-between">
                     <span className="text-stone-400">Platform:</span>
-                    <strong className="text-white">{liveClassConfig?.platform || "Google Meet"}</strong>
+                    <strong className="text-white">{activeLiveSession?.platform || liveClassConfig?.platform || "Google Meet"}</strong>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-stone-400">Meeting ID:</span>
                     <button
                       type="button"
-                      onClick={() => handleCopyLink(liveClassConfig?.meetingId || "dnc-ragas-live", "Meeting ID")}
+                      onClick={() => handleCopyLink(activeLiveSession?.meetingId || liveClassConfig?.meetingId || "dnc-ragas-live", "Meeting ID")}
                       className="font-mono text-[#D4AF37] hover:underline flex items-center gap-1 cursor-pointer"
                     >
-                      <span>{liveClassConfig?.meetingId || "dnc-ragas-live"}</span>
+                      <span>{activeLiveSession?.meetingId || liveClassConfig?.meetingId || "dnc-ragas-live"}</span>
                       <Copy className="w-3 h-3" />
                     </button>
                   </div>
@@ -882,10 +1002,10 @@ export default function StudentPortal({ onOpenAuth }) {
                     <span className="text-stone-400">Passcode:</span>
                     <button
                       type="button"
-                      onClick={() => handleCopyLink(liveClassConfig?.passcode || "RAGAS2026", "Passcode")}
+                      onClick={() => handleCopyLink(activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026", "Passcode")}
                       className="font-mono text-[#D4AF37] hover:underline flex items-center gap-1 cursor-pointer"
                     >
-                      <span>{liveClassConfig?.passcode || "RAGAS2026"}</span>
+                      <span>{activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026"}</span>
                       <Copy className="w-3 h-3" />
                     </button>
                   </div>
@@ -1212,6 +1332,18 @@ export default function StudentPortal({ onOpenAuth }) {
           </div>
         </div>
       )}
+      {/* Disciple Profile & WhatsApp Contact Editor */}
+      <StudentProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        student={currentStudent}
+        onSave={(updated) => {
+          if (updateStudentProfileDetails) {
+            updateStudentProfileDetails(currentStudent.id, updated);
+          }
+        }}
+      />
+
       <SanadCertificateModal
         isOpen={isCertificateOpen}
         onClose={() => setIsCertificateOpen(false)}

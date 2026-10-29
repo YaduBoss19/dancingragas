@@ -38,8 +38,61 @@ const STORAGE_KEYS = {
   STUDENT_PROFILE: "dancingragas_academy_student_profile_v2",
   STUDENTS: "dancingragas_academy_students_v3",
   SITE_CONTENT: "dancingragas_academy_site_content_v1",
-  STUDY_MATERIALS: "dancingragas_academy_materials_v1"
+  STUDY_MATERIALS: "dancingragas_academy_materials_v1",
+  LIVE_SCHEDULES: "dancingragas_academy_live_schedules_v1"
 };
+
+
+export const INITIAL_LIVE_SCHEDULES = [
+  {
+    id: "live-sched-1",
+    courseCategory: "Bharatanatyam Diploma",
+    batchName: "Online Bharatanatyam Diploma (Sunday Morning)",
+    sessionTitle: "Bharatanatyam Diploma: Margam Jathiswaram & Adavu Precision",
+    instructor: "Dr. Malavika M. Sunil (MBBS)",
+    scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
+    targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
+    meetUrl: "https://meet.google.com/dnc-ragas-live",
+    meetingId: "dnc-ragas-live",
+    passcode: "RAGAS2026",
+    status: "Confirmed",
+    notice: "Keep ghungroos ready. We will conduct Araimandi knee alignment checks before Jathiswaram Korvai 3.",
+    assignedScope: "all_batch",
+    assignedStudentIds: []
+  },
+  {
+    id: "live-sched-2",
+    courseCategory: "Carnatic Music",
+    batchName: "Carnatic Classical Vocal (Saturday Riyaz)",
+    sessionTitle: "Carnatic Vocal: Geethams & Swaravali Speed Drills",
+    instructor: "Dr. Malavika & Guru Faculty",
+    scheduledDayTime: "Saturday, 06:30 PM IST / 09:00 AM EST",
+    targetTimestamp: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000).toISOString(),
+    meetUrl: "https://meet.google.com/dnc-carnatic-live",
+    meetingId: "dnc-carnatic-live",
+    passcode: "VOCAL2026",
+    status: "Confirmed",
+    notice: "Tune your shruti box to C# (Kattai 1.5). We will practice Mohanam and Kalyani geethams.",
+    assignedScope: "all_batch",
+    assignedStudentIds: []
+  },
+  {
+    id: "live-sched-3",
+    courseCategory: "Bollywood & Semi-Classical",
+    batchName: "Semi-Classical & Folk Dance (Wednesday Batch)",
+    sessionTitle: "Semi-Classical Choreography & Expressive Abhinaya",
+    instructor: "Faculty Choreographer",
+    scheduledDayTime: "Wednesday, 07:00 PM IST / 09:30 AM EST",
+    targetTimestamp: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    meetUrl: "https://meet.google.com/dnc-semi-live",
+    meetingId: "dnc-semi-live",
+    passcode: "DANCE2026",
+    status: "Confirmed",
+    notice: "Focus on footwork rhythm and spinning (Chakkar) balance.",
+    assignedScope: "all_batch",
+    assignedStudentIds: []
+  }
+];
 
 export const AcademyProvider = ({ children }) => {
   // Navigation & URL routing
@@ -159,6 +212,23 @@ export const AcademyProvider = ({ children }) => {
       return INITIAL_RECORDINGS;
     }
   });
+
+  const [liveClassSchedules, setLiveClassSchedules] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.LIVE_SCHEDULES);
+      return saved ? JSON.parse(saved) : INITIAL_LIVE_SCHEDULES;
+    } catch {
+      return INITIAL_LIVE_SCHEDULES;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LIVE_SCHEDULES, JSON.stringify(liveClassSchedules));
+    } catch (e) {
+      console.error("Failed to save liveClassSchedules to localStorage", e);
+    }
+  }, [liveClassSchedules]);
 
   const [liveClassConfig, setLiveClassConfig] = useState(() => {
     try {
@@ -593,6 +663,47 @@ export const AcademyProvider = ({ children }) => {
     showToast("Study material removed from vault.", "info");
   };
 
+  const addLiveClassSchedule = (scheduleData) => {
+    const newSchedule = {
+      id: "live-sched-" + Date.now(),
+      courseCategory: scheduleData.courseCategory || "Bharatanatyam Diploma",
+      batchName: scheduleData.batchName || `${scheduleData.courseCategory} Cohort`,
+      sessionTitle: scheduleData.sessionTitle.trim(),
+      instructor: scheduleData.instructor || "Dr. Malavika M. Sunil (MBBS)",
+      scheduledDayTime: scheduleData.scheduledDayTime || "Upcoming Weekend",
+      targetTimestamp: scheduleData.targetTimestamp || new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      meetUrl: scheduleData.meetUrl || "https://meet.google.com/dnc-ragas-live",
+      meetingId: scheduleData.meetingId || "dnc-ragas-live",
+      passcode: scheduleData.passcode || "RAGAS2026",
+      status: "Confirmed",
+      notice: scheduleData.notice || "Interactive live masterclass conducted directly with Dr. Malavika.",
+      assignedScope: scheduleData.assignedScope || "all_batch",
+      assignedStudentIds: scheduleData.assignedStudentIds || []
+    };
+    setLiveClassSchedules((prev) => [newSchedule, ...prev]);
+    showToast(`Live Class scheduled for "${newSchedule.batchName}"! Reflected in Student Portals.`, "success");
+    return newSchedule;
+  };
+
+  const updateLiveClassSchedule = (id, updatedData) => {
+    setLiveClassSchedules((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updatedData } : s))
+    );
+    showToast("Live class schedule updated!", "success");
+  };
+
+  const deleteLiveClassSchedule = (id) => {
+    setLiveClassSchedules((prev) => prev.filter((s) => s.id !== id));
+    showToast("Scheduled class removed.", "info");
+  };
+
+  const updateStudentProfileDetails = (studentId, updatedFields) => {
+    setStudentsList((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, ...updatedFields } : s))
+    );
+    showToast("Disciple profile and WhatsApp contact saved!", "success");
+  };
+
   const updateLiveClassConfig = (newConfig) => {
     setLiveClassConfig(newConfig);
     showToast("Live class configuration updated successfully!", "success");
@@ -840,6 +951,11 @@ export const AcademyProvider = ({ children }) => {
         deleteRecording,
         liveClassConfig,
         updateLiveClassConfig,
+        liveClassSchedules,
+        addLiveClassSchedule,
+        updateLiveClassSchedule,
+        deleteLiveClassSchedule,
+        updateStudentProfileDetails,
         curriculumModules,
         setCurriculumModules,
         toggleLessonCompletion,
