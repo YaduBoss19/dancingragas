@@ -21,9 +21,10 @@ export function parseVideoUrl(rawUrl = "") {
   // - https://www.youtube.com/watch?v=VIDEO_ID
   // - https://youtu.be/VIDEO_ID
   // - https://youtube.com/shorts/VIDEO_ID
+  // - https://youtube.com/live/VIDEO_ID
   // - https://www.youtube.com/embed/VIDEO_ID
   // - https://m.youtube.com/watch?v=VIDEO_ID
-  const ytRegex = /(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i;
+  const ytRegex = /(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts|live)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i;
   const ytMatch = url.match(ytRegex);
 
   if (ytMatch && ytMatch[1]) {

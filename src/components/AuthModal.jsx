@@ -43,7 +43,7 @@ export default function AuthModal({ isOpen, onClose }) {
     setResetSuccessMessage("");
 
     try {
-      // 1. FORGOT PASSWORD (FOR CONSERVATORY DISCIPLES)
+      // 1. FORGOT PASSWORD (FOR REGISTERED STUDENTS)
       if (authMode === "forgot") {
         if (!email.trim()) {
           setErrorMessage("Please enter your registered student email address or ID.");
@@ -61,25 +61,29 @@ export default function AuthModal({ isOpen, onClose }) {
           return;
         }
 
-        // Look up disciple in registered studentsList
+        // Look up student in registered studentsList
         const normalized = email.trim().toLowerCase();
         const found = (studentsList || []).find(
           (s) => s.email?.toLowerCase() === normalized || s.registrationNo?.toLowerCase() === normalized
         );
 
-        if (found) {
-          const updatedList = studentsList.map((s) =>
-            s.id === found.id ? { ...s, password: newPassword } : s
-          );
-          setStudentsList(updatedList);
-          try {
-            localStorage.setItem("dancingragas_academy_students_v3", JSON.stringify(updatedList));
-          } catch {
-            // Ignore storage failure
-          }
+        if (!found) {
+          setErrorMessage("No student account found with this email or registration ID.");
+          setIsLoading(false);
+          return;
         }
 
-        setResetSuccessMessage("Password reset successfully! You can now log in to the Disciple Sanctuary.");
+        const updatedList = studentsList.map((s) =>
+          s.id === found.id ? { ...s, password: newPassword } : s
+        );
+        setStudentsList(updatedList);
+        try {
+          localStorage.setItem("dancingragas_academy_students_v3", JSON.stringify(updatedList));
+        } catch {
+          // Ignore storage failure
+        }
+
+        setResetSuccessMessage("Password reset successfully! You can now log in to the Student Portal.");
         setPassword(newPassword);
         setTimeout(() => {
           setAuthMode("login");
@@ -99,58 +103,57 @@ export default function AuthModal({ isOpen, onClose }) {
         }
         setAuthUser(user);
         setUserRole("student");
-        showToast("Disciple account created successfully! Welcome to DancingRagas Sanctuary.", "success");
+        showToast("Student account created successfully! Welcome to DancingRagas Academy.", "success");
         onClose();
         navigateTo("student-portal");
         return;
       }
 
-      // 3. FACULTY & GURU DESK AUTHENTICATION
+      // 3. TUTOR PORTAL AUTHENTICATION
       if (authRole === "tutor") {
-        const isGuruKey = password === "tutor123" || password === "guru123" || password === "faculty123";
-        const isGuruEmail = email.toLowerCase().includes("tutor") || email.toLowerCase().includes("guru") || email.toLowerCase().includes("faculty");
+        const isTutorKey = password === "tutor123" || password === "guru123" || password === "faculty123";
 
-        if (!isGuruKey && !isGuruEmail) {
-          setErrorMessage("Invalid Faculty Guru credentials. Passcode key: 'tutor123'");
+        if (!isTutorKey) {
+          setErrorMessage("Invalid Tutor passcode. Default access key: 'tutor123'");
           setIsLoading(false);
           return;
         }
 
         setUserRole("tutor");
         setAuthUser({
-          id: "faculty-guru-01",
-          email: email || "guru@dancingragas.com",
+          id: "tutor-dr-malavika",
+          email: email || "tutor@dancingragas.com",
           role: "tutor",
-          user_metadata: { full_name: "Faculty Guru & Pedagogue", role: "tutor" }
+          user_metadata: { full_name: "Dr. Malavika (Tutor)", role: "tutor" }
         });
-        showToast("Welcome to Faculty & Guru Desk! Academic suite active.", "success");
+        showToast("Welcome to Tutor Portal!", "success");
         onClose();
         navigateTo("admin");
         return;
       }
 
-      // 4. DIRECTORATE SUITE AUTHENTICATION
+      // 4. ADMIN DASHBOARD AUTHENTICATION
       if (authRole === "admin") {
         const ok = loginAdmin ? loginAdmin(password) : (password === "admin123" || password === "admin");
         if (!ok) {
-          setErrorMessage("Invalid Directorate passcode. Default key is 'admin123'");
+          setErrorMessage("Invalid Admin passcode. Default key is 'admin123'");
           setIsLoading(false);
           return;
         }
         setUserRole("admin");
         setAuthUser({
-          id: "director-malavika",
+          id: "admin-malavika",
           email: "info@malavikasunil.com",
           role: "admin",
-          user_metadata: { full_name: "Dr. Malavika M. Sunil (MBBS)", role: "admin" }
+          user_metadata: { full_name: "Dr. Malavika M. Sunil (Admin)", role: "admin" }
         });
-        showToast("Directorate Suite authenticated! Master Studio active.", "success");
+        showToast("Admin authenticated! Dashboard active.", "success");
         onClose();
         navigateTo("admin");
         return;
       }
 
-      // 5. DISCIPLE SANCTUARY SIGN IN
+      // 5. STUDENT PORTAL SIGN IN
       const { user, role, error } = await loginUser(email, password);
       if (error) {
         setErrorMessage(error.message);
@@ -161,8 +164,9 @@ export default function AuthModal({ isOpen, onClose }) {
       const effectiveRole = role || "student";
       setAuthUser(user);
       setUserRole(effectiveRole);
-      showToast("Welcome back to your Disciple Sanctuary!", "success");
+      showToast("Welcome back to your Student Portal!", "success");
       onClose();
+      navigateTo("student-portal");
       navigateTo("student-portal");
     } catch (err) {
       setErrorMessage(err.message || "Authentication error occurred.");
@@ -195,15 +199,15 @@ export default function AuthModal({ isOpen, onClose }) {
           </h3>
           <p className="text-xs text-stone-300 mt-0.5">
             {authMode === "forgot"
-              ? "Self-Service Disciple Credential Recovery"
+              ? "Reset Student Password"
               : authRole === "admin"
-              ? "Dr. Malavika M. Sunil • Academy Directorate Suite"
+              ? "Admin Dashboard • Courses, Website Content & Settings"
               : authRole === "tutor"
-              ? "Teaching Faculty • Biomechanical Rubrics & Masterclass Desk"
-              : "Conservatory Disciples • Curriculum, Unlisted Vaults & Live Classroom"}
+              ? "Tutor Portal • Live Google Meet, Student Videos & PDFs"
+              : "Student Portal • Live Classes, Videos, Notes & Feedback"}
           </p>
 
-          {/* 3 Client Role Selector Tabs */}
+          {/* 3 Simple Roles: Student, Tutor, Admin */}
           {authMode !== "forgot" && (
             <div className="mt-5 grid grid-cols-3 p-1 rounded-2xl bg-black/40 border border-[#B99A63]/30 gap-1">
               <button
@@ -212,14 +216,14 @@ export default function AuthModal({ isOpen, onClose }) {
                   setAuthRole("student");
                   setErrorMessage("");
                 }}
-                className={`py-2 text-[11px] sm:text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "student"
                     ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md shadow-[#D4AF37]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
-                <GraduationCap className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Disciple Sanctuary</span>
+                <GraduationCap className="w-4 h-4 shrink-0" />
+                <span className="truncate">Student</span>
               </button>
 
               <button
@@ -229,14 +233,14 @@ export default function AuthModal({ isOpen, onClose }) {
                   setAuthMode("login");
                   setErrorMessage("");
                 }}
-                className={`py-2 text-[11px] sm:text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "tutor"
                     ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md shadow-[#D4AF37]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
-                <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Faculty Desk</span>
+                <BookOpen className="w-4 h-4 shrink-0" />
+                <span className="truncate">Tutor</span>
               </button>
 
               <button
@@ -246,14 +250,14 @@ export default function AuthModal({ isOpen, onClose }) {
                   setAuthMode("login");
                   setErrorMessage("");
                 }}
-                className={`py-2 text-[11px] sm:text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "admin"
                     ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md shadow-[#D4AF37]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
-                <Shield className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Directorate</span>
+                <Shield className="w-4 h-4 shrink-0" />
+                <span className="truncate">Admin</span>
               </button>
             </div>
           )}
@@ -404,25 +408,25 @@ export default function AuthModal({ isOpen, onClose }) {
                   <div className="p-3.5 rounded-2xl bg-[#3D0B16]/10 border border-[#B99A63]/30 text-xs text-[#3D0B16]">
                     <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#3D0B16] font-serif-luxury">
                       <Shield className="w-4 h-4 text-[#B99A63]" />
-                      <span>Academy Directorate Authentication</span>
+                      <span>Admin Authentication</span>
                     </span>
                     <p className="text-[11px] text-stone-600 leading-relaxed">
-                      Enter the director security passcode to access the Master Website &amp; Media Studio, admissions CRM, and full academic governance.
+                      Enter the admin security passcode to access website content, student directory, courses, and academy settings.
                     </p>
                   </div>
                 ) : authRole === "tutor" ? (
                   <div className="p-3.5 rounded-2xl bg-[#3D0B16]/10 border border-[#B99A63]/30 text-xs text-[#3D0B16]">
                     <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#3D0B16] font-serif-luxury">
                       <BookOpen className="w-4 h-4 text-[#B99A63]" />
-                      <span>Faculty &amp; Guru Desk Access</span>
+                      <span>Tutor Access</span>
                     </span>
                     <p className="text-[11px] text-stone-600 leading-relaxed">
-                      Enter your faculty passcode (e.g. <code>tutor123</code>) or faculty email to review disciple submissions, conduct 4-point biomechanical grading, and host live classes.
+                      Enter your tutor passcode (e.g. <code>tutor123</code>) to schedule Google Meet live classes, review student videos, and upload study PDFs.
                     </p>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">Disciple Registered Email</label>
+                    <label className="block text-xs font-bold text-stone-700 mb-1">Student Registered Email</label>
                     <div className="relative">
                       <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
                       <input
@@ -441,10 +445,10 @@ export default function AuthModal({ isOpen, onClose }) {
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-bold text-stone-700">
                       {authRole === "admin"
-                        ? "Directorate Security Key"
+                        ? "Admin Passcode"
                         : authRole === "tutor"
-                        ? "Faculty Passcode"
-                        : "Disciple Password"}
+                        ? "Tutor Passcode"
+                        : "Student Password"}
                     </label>
                     {authRole === "student" && authMode === "login" && (
                       <button
@@ -466,9 +470,9 @@ export default function AuthModal({ isOpen, onClose }) {
                       required
                       placeholder={
                         authRole === "admin"
-                          ? "Enter director security key (admin123)"
+                          ? "Enter admin passcode (admin123)"
                           : authRole === "tutor"
-                          ? "Enter faculty key (tutor123)"
+                          ? "Enter tutor passcode (tutor123)"
                           : "••••••••"
                       }
                       value={password}
@@ -488,12 +492,12 @@ export default function AuthModal({ isOpen, onClose }) {
                     {isLoading
                       ? "Verifying Credentials..."
                       : authMode === "signup"
-                      ? "Create Disciple Sanctuary Account"
+                      ? "Create Student Account"
                       : authRole === "admin"
-                      ? "Access Directorate Suite"
+                      ? "Enter Admin Dashboard"
                       : authRole === "tutor"
-                      ? "Access Faculty & Guru Desk"
-                      : "Sign In to Disciple Sanctuary"}
+                      ? "Enter Tutor Portal"
+                      : "Sign In to Student Portal"}
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
                 </button>
@@ -510,8 +514,8 @@ export default function AuthModal({ isOpen, onClose }) {
                 className="text-xs text-stone-600 hover:text-[#151515] underline cursor-pointer"
               >
                 {authMode === "login"
-                  ? "Enrolled for a new batch? Create your disciple account"
-                  : "Already enrolled? Sign in to your Disciple Sanctuary"}
+                  ? "New student? Create your student account"
+                  : "Already registered? Sign in to Student Portal"}
               </button>
             </div>
           )}

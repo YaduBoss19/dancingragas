@@ -106,21 +106,21 @@ export default function AdminDashboard() {
   const [workspaceMode, setWorkspaceMode] = useState(isFaculty ? "academic" : "admissions"); // 'academic' | 'admissions'
   const [activeTab, setActiveTab] = useState(isFaculty ? "course_areas" : "site_cms");
 
-  // Academic Tabs (Faculty & Gurus)
+  // Tutor Workspace Tabs (Classes & Students)
   const academicTabs = [
-    { id: "course_areas", label: "Course Areas & Video Vault", count: (recordings || []).length, icon: Film, desc: "Unlisted videos & course access" },
-    { id: "students_dir", label: "Enrolled Disciples Directory", count: (studentsList || []).length, icon: Users, desc: "Disciple roster & course enrollments" },
-    { id: "materials_cms", label: "PDF Notes & Study Vault", count: (studyMaterials || []).length, icon: FileText, desc: "Upload and manage course PDFs & slokas" },
-    { id: "assessments", label: "Faculty Rubric Desk", count: (studentAssessments || []).length, icon: Award, desc: "4-point biomechanical grading" },
-    { id: "live_studio", label: "Live Broadcast Studio", count: null, icon: Video, desc: "Meet link & class countdown" }
+    { id: "live_studio", label: "Live Classes & Google Meet", count: null, icon: Video, desc: "Schedule Google Meet classes by batch" },
+    { id: "course_areas", label: "Course Videos & Lessons", count: (recordings || []).length, icon: Film, desc: "Class recordings & video access" },
+    { id: "students_dir", label: "Students Directory & Courses", count: (studentsList || []).length, icon: Users, desc: "Student list & course enrollments" },
+    { id: "materials_cms", label: "Study Materials & PDFs", count: (studyMaterials || []).length, icon: FileText, desc: "Upload slokas, theory notes & PDFs" },
+    { id: "assessments", label: "Student Submissions & Grading", count: (studentAssessments || []).length, icon: Award, desc: "Review practice videos & provide grades" }
   ];
 
-  // Directorate Tabs (Dr. Malavika Executive Suite)
+  // Admin Workspace Tabs (Website & Academy Settings)
   const admissionsTabs = [
-    { id: "site_cms", label: "Master Website & Media Studio", count: null, icon: Sparkles, desc: "Edit text, photos & videos across the public website" },
-    { id: "courses", label: "Courses & 5-Slide Galleries", count: (courses || []).length, icon: BookOpen, desc: "Create courses, upload 5-slide photo galleries & reels" },
-    { id: "gallery_cms", label: "Performance & Gallery Stream", count: (gallery || []).length, icon: Film, desc: "Manage photos & videos in public gallery" },
-    { id: "enquiries", label: "Admissions CRM & Leads", count: (enquiries || []).length, icon: MessageSquare, desc: "Inquiries pipeline & WhatsApp outreach" }
+    { id: "site_cms", label: "Website Content & Media", count: null, icon: Sparkles, desc: "Edit text, photos & videos across the public website" },
+    { id: "courses", label: "Course Catalog & Galleries", count: (courses || []).length, icon: BookOpen, desc: "Create courses, upload photo galleries & details" },
+    { id: "gallery_cms", label: "Photo & Video Gallery", count: (gallery || []).length, icon: Film, desc: "Manage photos & videos in public gallery" },
+    { id: "enquiries", label: "Student Inquiries & Leads", count: (enquiries || []).length, icon: MessageSquare, desc: "Inquiries pipeline & direct WhatsApp contact" }
   ];
 
   // Selected Course Area for Unlisted Video Management
@@ -658,19 +658,19 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-white tracking-wide font-serif-luxury">
                   {isFaculty ? (
-                    <>DancingRagas <span className="text-[#D4AF37]">Faculty &amp; Guru Desk</span></>
+                    <>DancingRagas <span className="text-[#D4AF37]">Tutor Portal</span></>
                   ) : (
-                    <>DancingRagas <span className="text-[#D4AF37]">Directorate Suite</span></>
+                    <>DancingRagas <span className="text-[#D4AF37]">Admin Dashboard</span></>
                   )}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider">
-                  {isFaculty ? "Faculty Guru Active" : "Director Active"}
+                  {isFaculty ? "Tutor Active" : "Admin Active"}
                 </span>
               </div>
               <p className="text-[11px] text-stone-300">
                 {isFaculty
-                  ? "Teaching Faculty • 4-Point Biomechanical Rubrics & Disciple Vaults"
-                  : "Dr. Malavika M. Sunil (MBBS) • Master Website & Media Studio, Admissions CRM & Governance"}
+                  ? "Tutor Workspace • Live Classes, Student Video Feedback & PDF Notes"
+                  : "Admin Workspace • Website Content, Courses, Student Directory & CRM"}
               </p>
             </div>
           </div>
@@ -682,7 +682,7 @@ export default function AdminDashboard() {
               className="px-3.5 py-1.5 rounded-xl bg-[#3D0B16] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
             >
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>Switch to Disciple Sanctuary</span>
+              <span>Switch to Student Portal</span>
             </button>
 
             <button
@@ -716,38 +716,38 @@ export default function AdminDashboard() {
       <section className="bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] py-8 px-4 sm:px-8 border-b border-[#B99A63]/30">
         <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Disciples</span>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Students</span>
             <span className="text-2xl font-bold font-serif-luxury text-white">{(studentsList || []).length}</span>
-            <span className="text-[10px] text-emerald-400 block mt-1">Active Cohorts</span>
+            <span className="text-[10px] text-emerald-400 block mt-1">Active Students</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
             <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Courses</span>
             <span className="text-2xl font-bold font-serif-luxury text-white">{(courses || []).length}</span>
-            <span className="text-[10px] text-[#D4AF37] block mt-1">Tuition Disciplines</span>
+            <span className="text-[10px] text-[#D4AF37] block mt-1">Available Courses</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Masterclass Vault</span>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Course Videos</span>
             <span className="text-2xl font-bold font-serif-luxury text-white">{(recordings || []).length}</span>
-            <span className="text-[10px] text-sky-400 block mt-1">Unlisted Videos</span>
+            <span className="text-[10px] text-sky-400 block mt-1">Video Lessons</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
-            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Rubric Reviews</span>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Submissions</span>
             <span className="text-2xl font-bold font-serif-luxury text-white">{(studentAssessments || []).length}</span>
             <span className="text-[10px] text-amber-400 block mt-1">Graded Assessments</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20 col-span-2 sm:col-span-1">
-            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Admissions Leads</span>
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Inquiries</span>
             <span className="text-2xl font-bold font-serif-luxury text-[#D4AF37]">{(enquiries || []).length}</span>
-            <span className="text-[10px] text-emerald-400 block mt-1">Inquiry Pipeline</span>
+            <span className="text-[10px] text-emerald-400 block mt-1">New Leads</span>
           </div>
         </div>
       </section>
 
-      {/* WORKSPACE MODE SWITCHER (FOR DIRECTORATE) */}
+      {/* WORKSPACE MODE SWITCHER (FOR ADMIN) */}
       {!isFaculty && (
         <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
           <div className="p-1.5 rounded-2xl bg-stone-200/60 border border-stone-300 max-w-md flex items-center gap-1">
@@ -763,13 +763,13 @@ export default function AdminDashboard() {
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Directorate &amp; Master Studio</span>
+              <span>Admin Workspace</span>
             </button>
 
             <button
               onClick={() => {
                 setWorkspaceMode("academic");
-                setActiveTab("course_areas");
+                setActiveTab("live_studio");
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 workspaceMode === "academic"
@@ -778,7 +778,7 @@ export default function AdminDashboard() {
               }`}
             >
               <Film className="w-3.5 h-3.5" />
-              <span>Academic &amp; Student Cohorts</span>
+              <span>Tutor Workspace</span>
             </button>
           </div>
         </div>
@@ -1724,7 +1724,7 @@ export default function AdminDashboard() {
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                  Enrolled Conservatory Disciples
+                  Enrolled Students Directory
                 </h3>
                 <p className="text-xs text-stone-500">
                   Manage active student credentials, course enrollments, and learning progress.
@@ -1737,7 +1737,7 @@ export default function AdminDashboard() {
                 className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>Enroll New Disciple</span>
+                <span>Enroll New Student</span>
               </button>
             </div>
 
@@ -2003,10 +2003,10 @@ export default function AdminDashboard() {
           <div className="space-y-6 text-left">
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm">
               <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                Faculty Rubric Desk: 4-Point Biomechanical Evaluations
+                Student Submissions &amp; Video Feedback Desk
               </h3>
               <p className="text-xs text-stone-500 mt-1">
-                Evaluate student submissions across Biomechanics, Hastha Mudra, Laya Tala, and Anga Shuddhi.
+                Evaluate student practice videos across Technique, Mudras, Rhythm, and Movement Posture.
               </p>
             </div>
 

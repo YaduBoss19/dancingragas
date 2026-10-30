@@ -66,10 +66,10 @@ export default function StudentProfileModal({
         <div className="flex items-center justify-between border-b border-stone-200 pb-3">
           <div>
             <span className="text-[10px] uppercase font-bold text-[#B99A63] tracking-widest block">
-              Personal Sanctuary Credentials
+              Student Information
             </span>
             <h3 className="text-lg font-bold font-serif-luxury text-[#1E050B]">
-              Edit Disciple Profile &amp; Contact
+              Edit Student Profile &amp; Contact
             </h3>
           </div>
           <button
@@ -92,18 +92,18 @@ export default function StudentProfileModal({
             </div>
 
             <div className="space-y-1">
-              <span className="font-bold text-stone-800 block text-xs">Disciple Portrait Photo</span>
+              <span className="font-bold text-stone-800 block text-xs">Student Profile Photo</span>
               <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-[11px] cursor-pointer transition-all shadow-xs">
                 <Camera className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>{isUploading ? "Compressing..." : "Upload New Photo"}</span>
                 <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
               </label>
-              <p className="text-[10px] text-stone-400">Recommended square headshot for official certificates</p>
+              <p className="text-[10px] text-stone-400">Recommended square headshot for certificates &amp; ID</p>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-700 mb-1">Disciple Full Name *</label>
+            <label className="block text-xs font-bold text-stone-700 mb-1">Student Full Name *</label>
             <div className="relative">
               <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
               <input
