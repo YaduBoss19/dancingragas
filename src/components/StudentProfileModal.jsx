@@ -68,7 +68,7 @@ export default function StudentProfileModal({
             <span className="text-[10px] uppercase font-bold text-[#B99A63] tracking-widest block">
               Student Information
             </span>
-            <h3 className="text-lg font-bold font-serif-luxury text-[#1E050B]">
+            <h3 className="text-lg font-bold font-serif-luxury text-[#0F172A]">
               Edit Student Profile &amp; Contact
             </h3>
           </div>
@@ -83,7 +83,7 @@ export default function StudentProfileModal({
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Avatar / Photo Upload */}
           <div className="flex items-center gap-4 p-3 rounded-2xl bg-white border border-stone-200 shadow-xs">
-            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1E050B] to-[#3D0B16] border-2 border-[#D4AF37] text-[#D4AF37] flex items-center justify-center font-bold text-xl overflow-hidden shrink-0 shadow-md">
+            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0F172A] to-[#1E293B] border-2 border-[#D4AF37] text-[#D4AF37] flex items-center justify-center font-bold text-xl overflow-hidden shrink-0 shadow-md">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
               ) : (
@@ -93,7 +93,7 @@ export default function StudentProfileModal({
 
             <div className="space-y-1">
               <span className="font-bold text-stone-800 block text-xs">Student Profile Photo</span>
-              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-[11px] cursor-pointer transition-all shadow-xs">
+              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-[11px] cursor-pointer transition-all shadow-xs">
                 <Camera className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>{isUploading ? "Compressing..." : "Upload New Photo"}</span>
                 <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
@@ -187,7 +187,7 @@ export default function StudentProfileModal({
             </button>
             <button
               type="submit"
-              className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+              className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
             >
               <Check className="w-3.5 h-3.5" />
               <span>Save Profile &amp; Contact</span>

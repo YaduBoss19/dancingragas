@@ -179,7 +179,7 @@ export default function AuthModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg rounded-3xl bg-[#FAF7F2] border border-[#B99A63]/50 shadow-2xl overflow-hidden text-left font-sans">
         {/* iPhone Deep Burgundy Header bar */}
-        <div className="relative p-6 sm:p-7 bg-gradient-to-b from-[#1E050B] via-[#2D0A14] to-[#1E050B] text-[#F5F0E8] border-b border-[#B99A63]/30">
+        <div className="relative p-6 sm:p-7 bg-gradient-to-b from-[#0F172A] via-[#0B132B] to-[#0F172A] text-[#F5F0E8] border-b border-[#B99A63]/30">
           <button
             onClick={onClose}
             className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
@@ -218,7 +218,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 }}
                 className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "student"
-                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md shadow-[#D4AF37]/20"
+                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md shadow-[#D4AF37]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
@@ -235,7 +235,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 }}
                 className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "tutor"
-                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md shadow-[#D4AF37]/20"
+                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md shadow-[#D4AF37]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
@@ -252,7 +252,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 }}
                 className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "admin"
-                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md shadow-[#D4AF37]/20"
+                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md shadow-[#D4AF37]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
@@ -283,7 +283,7 @@ export default function AuthModal({ isOpen, onClose }) {
             {/* FORGOT PASSWORD FORM (FOR DISCIPLES) */}
             {authMode === "forgot" ? (
               <>
-                <div className="p-3 rounded-xl bg-[#3D0B16]/10 border border-[#B99A63]/30 text-xs text-[#3D0B16]">
+                <div className="p-3 rounded-xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-xs text-[#1E293B]">
                   <p className="font-bold flex items-center gap-1.5 mb-0.5">
                     <KeyRound className="w-3.5 h-3.5 text-[#B99A63]" />
                     <span>Instant Disciple Password Recovery</span>
@@ -339,9 +339,9 @@ export default function AuthModal({ isOpen, onClose }) {
                 </div>
 
                 <button id="auth-modal-forgot-submit-btn" type="submit" disabled={isLoading}
-                  className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce"
+                  className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce"
                 >
-                  <KeyRound className="w-4 h-4 text-[#1E050B]" />
+                  <KeyRound className="w-4 h-4 text-[#0F172A]" />
                   <span>Update Password &amp; Continue</span>
                 </button>
 
@@ -405,8 +405,8 @@ export default function AuthModal({ isOpen, onClose }) {
                 )}
 
                 {authRole === "admin" ? (
-                  <div className="p-3.5 rounded-2xl bg-[#3D0B16]/10 border border-[#B99A63]/30 text-xs text-[#3D0B16]">
-                    <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#3D0B16] font-serif-luxury">
+                  <div className="p-3.5 rounded-2xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-xs text-[#1E293B]">
+                    <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#1E293B] font-serif-luxury">
                       <Shield className="w-4 h-4 text-[#B99A63]" />
                       <span>Admin Authentication</span>
                     </span>
@@ -415,8 +415,8 @@ export default function AuthModal({ isOpen, onClose }) {
                     </p>
                   </div>
                 ) : authRole === "tutor" ? (
-                  <div className="p-3.5 rounded-2xl bg-[#3D0B16]/10 border border-[#B99A63]/30 text-xs text-[#3D0B16]">
-                    <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#3D0B16] font-serif-luxury">
+                  <div className="p-3.5 rounded-2xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-xs text-[#1E293B]">
+                    <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#1E293B] font-serif-luxury">
                       <BookOpen className="w-4 h-4 text-[#B99A63]" />
                       <span>Tutor Access</span>
                     </span>
@@ -457,7 +457,7 @@ export default function AuthModal({ isOpen, onClose }) {
                           setAuthMode("forgot");
                           setErrorMessage("");
                         }}
-                        className="text-[11px] text-[#B99A63] hover:text-[#3D0B16] font-semibold cursor-pointer"
+                        className="text-[11px] text-[#B99A63] hover:text-[#1E293B] font-semibold cursor-pointer"
                       >
                         Forgot password?
                       </button>
@@ -486,7 +486,7 @@ export default function AuthModal({ isOpen, onClose }) {
                   id="auth-modal-submit-btn"
                   type="submit"
                   disabled={isLoading}
-                  className="silk-zari-btn w-full py-3.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] hover:text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce border border-[#B99A63]/40"
+                  className="silk-zari-btn w-full py-3.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] hover:text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce border border-[#B99A63]/40"
                 >
                   <span>
                     {isLoading
@@ -521,7 +521,7 @@ export default function AuthModal({ isOpen, onClose }) {
           )}
 
           {/* Direct Concierge Support */}
-          <div className="p-3 rounded-2xl bg-[#3D0B16]/10 border border-[#B99A63]/30 text-[11px] text-[#3D0B16] flex items-center justify-between gap-3">
+          <div className="p-3 rounded-2xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-[11px] text-[#1E293B] flex items-center justify-between gap-3">
             <div>
               <span className="font-bold block">Need Portal Assistance?</span>
               <span className="text-stone-600">Direct WhatsApp with Dr. Malavika</span>

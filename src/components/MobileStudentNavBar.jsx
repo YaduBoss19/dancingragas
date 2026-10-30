@@ -15,7 +15,7 @@ export default function MobileStudentNavBar({ activeTab, onSelectTab, onOpenProf
   ];
 
   return (
-    <nav aria-label="Mobile Navigation" className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#1E050B]/95 text-[#F5F0E8] border-t border-[#B99A63]/40 backdrop-blur-lg px-2 py-1.5 shadow-2xl flex items-center justify-around">
+    <nav aria-label="Mobile Navigation" className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0F172A]/95 text-[#F5F0E8] border-t border-[#B99A63]/40 backdrop-blur-lg px-2 py-1.5 shadow-2xl flex items-center justify-around">
       {items.map((item) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
@@ -37,12 +37,12 @@ export default function MobileStudentNavBar({ activeTab, onSelectTab, onOpenProf
                 : "text-stone-400 hover:text-stone-200"
             }`}
           >
-            <div className={`p-1 rounded-lg ${isActive ? "bg-[#3D0B16] text-[#D4AF37]" : ""}`}>
+            <div className={`p-1 rounded-lg ${isActive ? "bg-[#1E293B] text-[#D4AF37]" : ""}`}>
               <Icon className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold mt-0.5 tracking-tight">{item.label}</span>
             {item.count != null && item.count > 0 && (
-              <span className="absolute top-0 right-1 w-4 h-4 rounded-full bg-[#D4AF37] text-[#1E050B] text-[9px] font-bold flex items-center justify-center">
+              <span className="absolute top-0 right-1 w-4 h-4 rounded-full bg-[#D4AF37] text-[#0F172A] text-[9px] font-bold flex items-center justify-center">
                 {item.count}
               </span>
             )}

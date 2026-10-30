@@ -141,10 +141,10 @@ export default function TanpuraDroneWidget() {
   }, []);
 
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#2A0812] to-[#1E050B] border border-[#B99A63]/50 text-white p-4 sm:p-5 shadow-xl relative overflow-hidden font-sans">
+    <div className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#162032] to-[#0F172A] border border-[#B99A63]/50 text-white p-4 sm:p-5 shadow-xl relative overflow-hidden font-sans">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#3D0B16] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center shadow-md shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1E293B] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center shadow-md shrink-0">
             <Music className={`w-5 h-5 ${isPlaying ? "animate-pulse text-amber-300" : ""}`} />
           </div>
           <div>
@@ -167,7 +167,7 @@ export default function TanpuraDroneWidget() {
             className={`silk-zari-btn px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer tap-bounce ${
               isPlaying
                 ? "bg-rose-900/80 hover:bg-rose-800 text-white border border-rose-600"
-                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] hover:brightness-105"
+                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] hover:brightness-105"
             }`}
           >
             {isPlaying ? (
@@ -177,7 +177,7 @@ export default function TanpuraDroneWidget() {
               </>
             ) : (
               <>
-                <Volume2 className="w-3.5 h-3.5 text-[#1E050B]" />
+                <Volume2 className="w-3.5 h-3.5 text-[#0F172A]" />
                 <span>Start Tanpura</span>
               </>
             )}
@@ -207,7 +207,7 @@ export default function TanpuraDroneWidget() {
                   onClick={() => setPitch(p)}
                   className={`py-1 rounded-lg font-bold text-[10px] cursor-pointer transition-all ${
                     pitch === p
-                      ? "bg-[#D4AF37] text-[#1E050B] shadow-xs"
+                      ? "bg-[#D4AF37] text-[#0F172A] shadow-xs"
                       : "bg-white/10 text-stone-300 hover:bg-white/20"
                   }`}
                 >
@@ -224,7 +224,7 @@ export default function TanpuraDroneWidget() {
                 type="button"
                 onClick={() => setTuning("Pa")}
                 className={`py-1.5 rounded-xl font-bold text-xs cursor-pointer transition-all ${
-                  tuning === "Pa" ? "bg-[#D4AF37] text-[#1E050B]" : "bg-white/10 text-stone-300 hover:bg-white/20"
+                  tuning === "Pa" ? "bg-[#D4AF37] text-[#0F172A]" : "bg-white/10 text-stone-300 hover:bg-white/20"
                 }`}
               >
                 Pa - Panchama (Default)
@@ -233,7 +233,7 @@ export default function TanpuraDroneWidget() {
                 type="button"
                 onClick={() => setTuning("Ma")}
                 className={`py-1.5 rounded-xl font-bold text-xs cursor-pointer transition-all ${
-                  tuning === "Ma" ? "bg-[#D4AF37] text-[#1E050B]" : "bg-white/10 text-stone-300 hover:bg-white/20"
+                  tuning === "Ma" ? "bg-[#D4AF37] text-[#0F172A]" : "bg-white/10 text-stone-300 hover:bg-white/20"
                 }`}
               >
                 Ma - Madhyama

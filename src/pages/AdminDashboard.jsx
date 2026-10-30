@@ -166,8 +166,8 @@ export default function AdminDashboard() {
     sessionTitle: "Bharatanatyam Diploma: Margam Jathiswaram Precision",
     scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
     targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/dnc-ragas-live",
-    meetingId: "dnc-ragas-live",
+    meetUrl: "https://meet.google.com/new",
+    meetingId: "ragas-live-room",
     passcode: "RAGAS2026",
     instructor: "Dr. Malavika M. Sunil (MBBS)",
     notice: "Keep ghungroos ready. We will conduct Araimandi knee alignment checks."
@@ -204,8 +204,8 @@ export default function AdminDashboard() {
     instructor: "Dr. Malavika M. Sunil (MBBS)",
     scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
     targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/dnc-ragas-live",
-    meetingId: "dnc-ragas-live",
+    meetUrl: "https://meet.google.com/new",
+    meetingId: "ragas-live-room",
     passcode: "RAGAS2026",
     status: "Confirmed",
     notice: "Keep ghungroos ready. We will conduct Araimandi knee alignment checks before Jathiswaram Korvai 3.",
@@ -216,8 +216,8 @@ export default function AdminDashboard() {
   const [liveForm, setLiveForm] = useState({
     sessionTitle: liveClassConfig?.sessionTitle || "Bharatanatyam Diploma: Margam & Adavu Precision",
     platform: liveClassConfig?.platform || "Google Meet",
-    meetUrl: liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live",
-    meetingId: liveClassConfig?.meetingId || "dnc-ragas-live",
+    meetUrl: liveClassConfig?.meetUrl || "https://meet.google.com/new",
+    meetingId: liveClassConfig?.meetingId || "ragas-live-room",
     passcode: liveClassConfig?.passcode || "RAGAS2026",
     scheduledDayTime: liveClassConfig?.scheduledDayTime || "Sunday, 05:00 PM IST / 07:30 AM EST",
     targetTimestamp: liveClassConfig?.targetTimestamp || new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -584,11 +584,11 @@ export default function AdminDashboard() {
   // IF NOT LOGGED IN: Render Luxury Portal Authentication Screen
   if (!isAdminLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-[#1E050B] via-[#3D0B16] to-[#1E050B] relative overflow-hidden font-sans">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-[#0F172A] via-[#1E293B] to-[#0F172A] relative overflow-hidden font-sans">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.08)_0,transparent_70%)] pointer-events-none" />
 
         <div className="relative w-full max-w-md rounded-3xl bg-[#1A1A1A] border border-[#B99A63]/40 shadow-2xl p-8 sm:p-10 text-center space-y-6 backdrop-blur-md">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] mx-auto flex items-center justify-center shadow-lg shadow-[#D4AF37]/10">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1E293B] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] mx-auto flex items-center justify-center shadow-lg shadow-[#D4AF37]/10">
             <Lock className="w-7 h-7" />
           </div>
 
@@ -622,7 +622,7 @@ export default function AdminDashboard() {
 
             <button
               type="submit"
-              className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] font-bold text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
+              className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#0F172A] font-bold text-sm shadow-lg shadow-[#D4AF37]/20 hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
             >
               <span>Authenticate &amp; Enter Portal</span>
               <Sparkles className="w-4 h-4" />
@@ -646,12 +646,12 @@ export default function AdminDashboard() {
   // LOGGED IN WORKSPACE: FACULTY GURU DESK vs DIRECTORATE SUITE
   // ═════════════════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen bg-[#FBF9F5] text-[#151515] font-sans pb-24 text-left">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#151515] font-sans pb-24 text-left">
       {/* APP TOP NAVIGATION BAR */}
-      <header className="sticky top-0 z-40 bg-[#1E050B] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
+      <header className="sticky top-0 z-40 bg-[#0F172A] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1E293B] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
               DR
             </div>
             <div>
@@ -679,7 +679,7 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               onClick={() => navigateTo("student-portal")}
-              className="px-3.5 py-1.5 rounded-xl bg-[#3D0B16] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-xl bg-[#1E293B] hover:bg-[#334155] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
             >
               <GraduationCap className="w-3.5 h-3.5" />
               <span>Switch to Student Portal</span>
@@ -713,7 +713,7 @@ export default function AdminDashboard() {
       </header>
 
       {/* METRICS OVERVIEW BAR */}
-      <section className="bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] py-8 px-4 sm:px-8 border-b border-[#B99A63]/30">
+      <section className="bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] text-[#F5F0E8] py-8 px-4 sm:px-8 border-b border-[#B99A63]/30">
         <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="p-4 rounded-2xl bg-[#1D1D1D]/90 border border-[#B99A63]/20">
             <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Students</span>
@@ -758,7 +758,7 @@ export default function AdminDashboard() {
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 workspaceMode === "admissions"
-                  ? "bg-[#1E050B] text-[#D4AF37] shadow-sm"
+                  ? "bg-[#0F172A] text-[#D4AF37] shadow-sm"
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
@@ -773,7 +773,7 @@ export default function AdminDashboard() {
               }}
               className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 workspaceMode === "academic"
-                  ? "bg-[#1E050B] text-[#D4AF37] shadow-sm"
+                  ? "bg-[#0F172A] text-[#D4AF37] shadow-sm"
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
@@ -796,7 +796,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   isActive
-                    ? "bg-[#1E050B] text-white shadow-md border border-[#B99A63]/50"
+                    ? "bg-[#0F172A] text-white shadow-md border border-[#B99A63]/50"
                     : "bg-white border border-stone-200 text-stone-700 hover:bg-stone-50"
                 }`}
               >
@@ -805,7 +805,7 @@ export default function AdminDashboard() {
                 {tab.count !== null && (
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                      isActive ? "bg-[#D4AF37] text-[#1E050B]" : "bg-stone-100 text-stone-600"
+                      isActive ? "bg-[#D4AF37] text-[#0F172A]" : "bg-stone-100 text-stone-600"
                     }`}
                   >
                     {tab.count}
@@ -825,10 +825,10 @@ export default function AdminDashboard() {
         {activeTab === "site_cms" && (
           <div className="space-y-8 text-left">
             {/* Studio Header Banner */}
-            <div className="p-6 rounded-3xl bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-white border border-[#B99A63]/50 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white border border-[#B99A63]/50 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37] text-[#1E050B] text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37] text-[#0F172A] text-[10px] font-bold uppercase tracking-wider">
                     Academy Directorate Master Studio
                   </span>
                   <span className="text-xs text-stone-300">Complete Zero-Code Website CMS</span>
@@ -845,9 +845,9 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={handlePublishAllSiteContent}
-                  className="silk-zari-btn px-6 py-2.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] text-xs font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
+                  className="silk-zari-btn px-6 py-2.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#0F172A] text-xs font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-[#1E050B]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#0F172A]" />
                   <span>Publish All Changes Live</span>
                 </button>
                 <button
@@ -866,7 +866,7 @@ export default function AdminDashboard() {
               {/* 1. CINEMATIC HERO MEDIA & HEADINGS */}
               <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
                 <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">1</div>
+                  <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-[#D4AF37] flex items-center justify-center font-bold text-sm">1</div>
                   <div>
                     <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Hero Section Media &amp; Headlines</h4>
                     <p className="text-[11px] text-stone-500">Full-bleed ambient video background, poster fallback &amp; pitch</p>
@@ -894,7 +894,7 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                      <label className="silk-zari-btn px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
+                      <label className="silk-zari-btn px-4 py-2 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs">
                         <Video className="w-3.5 h-3.5" />
                         <span>Upload Video File (Supabase)</span>
                         <input
@@ -926,7 +926,7 @@ export default function AdminDashboard() {
                         <img src={heroForm.posterUrl} alt="Hero Poster" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1 space-y-2">
-                        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
+                        <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
                           <Camera className="w-3.5 h-3.5" />
                           <span>Replace Poster (Supabase)</span>
                           <input
@@ -1006,7 +1006,7 @@ export default function AdminDashboard() {
               {/* 2. ABOUT DR. MALAVIKA (PORTRAIT + BIO + PHILOSOPHY) */}
               <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
                 <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">2</div>
+                  <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-[#D4AF37] flex items-center justify-center font-bold text-sm">2</div>
                   <div>
                     <h4 className="font-bold text-stone-900 font-serif-luxury text-base">About Section: Dr. Malavika Profile</h4>
                     <p className="text-[11px] text-stone-500">Stage portrait, medical credentials, bio paragraphs &amp; philosophy</p>
@@ -1022,7 +1022,7 @@ export default function AdminDashboard() {
                         <img src={aboutForm.portraitImage} alt="Dr. Malavika Portrait" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1 space-y-2">
-                        <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                        <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
                           <UploadCloud className="w-4 h-4" />
                           <span>Upload New Stage Portrait (Supabase)</span>
                           <input
@@ -1099,7 +1099,7 @@ export default function AdminDashboard() {
               {/* 3. ACADEMY ANNOUNCEMENTS TICKER & FAQS */}
               <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
                 <div className="flex items-center gap-2.5 border-b border-stone-100 pb-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">3</div>
+                  <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-[#D4AF37] flex items-center justify-center font-bold text-sm">3</div>
                   <div>
                     <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Announcements &amp; FAQs</h4>
                     <p className="text-[11px] text-stone-500">Header scrolling marquee ticker &amp; public admissions questions</p>
@@ -1134,7 +1134,7 @@ export default function AdminDashboard() {
                           updateFaqs(updated);
                           showToast("New FAQ added successfully!", "success");
                         }}
-                        className="px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-[11px] flex items-center gap-1 cursor-pointer"
                       >
                         <Plus className="w-3 h-3" />
                         <span>Add FAQ</span>
@@ -1172,7 +1172,7 @@ export default function AdminDashboard() {
               <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
                 <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">4</div>
+                    <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-[#D4AF37] flex items-center justify-center font-bold text-sm">4</div>
                     <div>
                       <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Student &amp; Parent Stories</h4>
                       <p className="text-[11px] text-stone-500">Verified reviews displayed on the public website</p>
@@ -1192,7 +1192,7 @@ export default function AdminDashboard() {
                       });
                       setIsAddingStoryModal(true);
                     }}
-                    className="px-3.5 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Story</span>
@@ -1240,7 +1240,7 @@ export default function AdminDashboard() {
               <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5 lg:col-span-2">
                 <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-[#3D0B16] text-[#D4AF37] flex items-center justify-center font-bold text-sm">5</div>
+                    <div className="w-8 h-8 rounded-xl bg-[#1E293B] text-[#D4AF37] flex items-center justify-center font-bold text-sm">5</div>
                     <div>
                       <h4 className="font-bold text-stone-900 font-serif-luxury text-base">Instagram Grid &amp; Reels Manager</h4>
                       <p className="text-[11px] text-stone-500">Live reels &amp; stage snapshots displayed in the homepage social wall</p>
@@ -1265,7 +1265,7 @@ export default function AdminDashboard() {
                       });
                       setIsAddingInstaModal(true);
                     }}
-                    className="silk-zari-btn px-4 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="silk-zari-btn px-4 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Instagram Post/Reel</span>
@@ -1292,7 +1292,7 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="pt-2 border-t border-stone-200 flex items-center justify-between">
-                          <label className="text-[11px] font-bold text-[#1E050B] hover:underline cursor-pointer">
+                          <label className="text-[11px] font-bold text-[#0F172A] hover:underline cursor-pointer">
                             Replace Photo
                             <input
                               type="file"
@@ -1338,7 +1338,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* MASTER PUBLISH BAR */}
-            <div className="sticky bottom-4 z-30 p-5 rounded-3xl bg-gradient-to-r from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-white border border-[#D4AF37]/50 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="sticky bottom-4 z-30 p-5 rounded-3xl bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] text-white border border-[#D4AF37]/50 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="font-bold text-white block text-sm font-serif-luxury">
                   Publish Website Content &amp; Media
@@ -1359,9 +1359,9 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={handlePublishAllSiteContent}
-                  className="silk-zari-btn px-8 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#1E050B] font-bold text-xs sm:text-sm shadow-xl hover:brightness-105 transition-all cursor-pointer flex items-center gap-2 tap-bounce"
+                  className="silk-zari-btn px-8 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#0F172A] font-bold text-xs sm:text-sm shadow-xl hover:brightness-105 transition-all cursor-pointer flex items-center gap-2 tap-bounce"
                 >
-                  <Sparkles className="w-4 h-4 text-[#1E050B]" />
+                  <Sparkles className="w-4 h-4 text-[#0F172A]" />
                   <span>Save &amp; Publish Website Changes</span>
                 </button>
               </div>
@@ -1397,7 +1397,7 @@ export default function AdminDashboard() {
                   });
                   setIsAddingGalleryModal(true);
                 }}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Upload New Gallery Media</span>
@@ -1431,7 +1431,7 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-                      <label className="text-[11px] font-bold text-[#1E050B] hover:underline cursor-pointer flex items-center gap-1">
+                      <label className="text-[11px] font-bold text-[#0F172A] hover:underline cursor-pointer flex items-center gap-1">
                         <Camera className="w-3 h-3 text-[#B99A63]" />
                         <span>Replace Media</span>
                         <input
@@ -1493,7 +1493,7 @@ export default function AdminDashboard() {
 
               <button
                 onClick={openAddCourse}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add New Course</span>
@@ -1511,7 +1511,7 @@ export default function AdminDashboard() {
                     <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-white/95 text-stone-900 text-xs font-bold">
                       {course.category}
                     </div>
-                    <div className="absolute top-3 right-3 px-3 py-1 rounded-xl bg-[#3D0B16] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold shadow-md">
+                    <div className="absolute top-3 right-3 px-3 py-1 rounded-xl bg-[#1E293B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold shadow-md">
                       {course.fee}
                     </div>
                   </div>
@@ -1574,7 +1574,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => setIsAddingVideoModal(true)}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Masterclass Video</span>
@@ -1589,7 +1589,7 @@ export default function AdminDashboard() {
                   onClick={() => setSelectedCourseArea(area)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${
                     selectedCourseArea === area
-                      ? "bg-[#3D0B16] text-[#D4AF37] shadow-sm"
+                      ? "bg-[#1E293B] text-[#D4AF37] shadow-sm"
                       : "bg-white border border-stone-200 text-stone-600 hover:bg-stone-50"
                   }`}
                 >
@@ -1734,7 +1734,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => setIsAddingStudentModal(true)}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Enroll New Student</span>
@@ -1766,7 +1766,7 @@ export default function AdminDashboard() {
                         ).map((courseName) => (
                           <span
                             key={courseName}
-                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1E050B]/10 text-[#1E050B] text-[11px] font-bold border border-[#B99A63]/30"
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#0F172A]/10 text-[#0F172A] text-[11px] font-bold border border-[#B99A63]/30"
                           >
                             <span>{courseName}</span>
                             <button
@@ -1808,7 +1808,7 @@ export default function AdminDashboard() {
 
                     <div className="pt-1 flex items-center justify-between text-[11px] text-stone-500">
                       <span>Location: <strong>{student.location || "International"}</strong></span>
-                      <span>Reg: <strong className="font-mono text-[#3D0B16]">{student.registrationNo || student.id}</strong></span>
+                      <span>Reg: <strong className="font-mono text-[#1E293B]">{student.registrationNo || student.id}</strong></span>
                     </div>
                   </div>
 
@@ -1819,7 +1819,7 @@ export default function AdminDashboard() {
                         setActiveStudentId && setActiveStudentId(student.id);
                         navigateTo("student-portal");
                       }}
-                      className="text-xs font-bold text-[#3D0B16] hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-xs font-bold text-[#1E293B] hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Portal</span>
@@ -1870,7 +1870,7 @@ export default function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => setIsAddingMaterialModal(true)}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Upload New PDF Document</span>
@@ -1891,7 +1891,7 @@ export default function AdminDashboard() {
                         </span>
                         <span className="text-[10px] text-stone-400">&bull; {doc.size}</span>
                       </div>
-                      <span className="px-2 py-0.5 rounded-md bg-[#1E050B]/10 text-[#1E050B] text-[9px] font-bold">
+                      <span className="px-2 py-0.5 rounded-md bg-[#0F172A]/10 text-[#0F172A] text-[9px] font-bold">
                         {doc.courseCategory || "General"}
                       </span>
                     </div>
@@ -1965,7 +1965,7 @@ export default function AdminDashboard() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-stone-900 text-sm">{enq.name}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#1E050B] font-bold text-[10px]">
+                      <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#0F172A] font-bold text-[10px]">
                         {enq.discipline || enq.course}
                       </span>
                     </div>
@@ -2015,7 +2015,7 @@ export default function AdminDashboard() {
                 <div key={ass.id} className="p-5 rounded-2xl bg-white border border-stone-200 shadow-sm flex items-center justify-between text-xs">
                   <div>
                     <h4 className="font-bold text-stone-900 text-sm">{ass.studentName}</h4>
-                    <p className="text-stone-500">{ass.moduleName} &bull; Score: <strong className="text-[#3D0B16]">{ass.overallScore} / 40</strong></p>
+                    <p className="text-stone-500">{ass.moduleName} &bull; Score: <strong className="text-[#1E293B]">{ass.overallScore} / 40</strong></p>
                     <p className="text-stone-600 text-[11px] mt-1">{ass.clinicalVerdict || ass.facultyNote}</p>
                   </div>
 
@@ -2035,7 +2035,7 @@ export default function AdminDashboard() {
                         clinicalNote: ass.clinicalVerdict || "Cleared for next module."
                       });
                     }}
-                    className="px-4 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                    className="px-4 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
                   >
                     Grade &amp; Re-evaluate
                   </button>
@@ -2049,7 +2049,7 @@ export default function AdminDashboard() {
         {activeTab === "live_studio" && (
           <div className="space-y-6 text-left">
             {/* Header banner */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#2A0812] to-[#1E050B] text-[#F5F0E8] border border-[#B99A63]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#162032] to-[#0F172A] text-[#F5F0E8] border border-[#B99A63]/40 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
@@ -2077,8 +2077,8 @@ export default function AdminDashboard() {
                       instructor: "Dr. Malavika M. Sunil (MBBS)",
                       scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
                       targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-                      meetUrl: "https://meet.google.com/dnc-ragas-live",
-                      meetingId: "dnc-ragas-live",
+                      meetUrl: "https://meet.google.com/new",
+                      meetingId: "ragas-live-room",
                       passcode: "RAGAS2026",
                       status: "Confirmed",
                       notice: "Keep ghungroos ready. We will conduct Araimandi knee alignment checks before Jathiswaram Korvai 3.",
@@ -2093,7 +2093,7 @@ export default function AdminDashboard() {
                 </button>
 
                 <a
-                  href={liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live"}
+                  href={liveClassConfig?.meetUrl || "https://meet.google.com/new"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30 transition-all flex items-center gap-2 cursor-pointer"
@@ -2134,7 +2134,7 @@ export default function AdminDashboard() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1">
-                          <span className="px-2.5 py-0.5 rounded-full bg-[#1E050B] text-[#D4AF37] border border-[#B99A63]/40 text-[10px] font-bold uppercase tracking-wider">
+                          <span className="px-2.5 py-0.5 rounded-full bg-[#0F172A] text-[#D4AF37] border border-[#B99A63]/40 text-[10px] font-bold uppercase tracking-wider">
                             {sched.courseCategory}
                           </span>
                           <h5 className="text-lg font-bold text-stone-900 font-serif-luxury mt-1">
@@ -2168,7 +2168,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-stone-500 font-medium">Meeting Passcode:</span>
-                          <code className="px-2 py-0.5 rounded bg-white border border-stone-200 font-mono text-[#1E050B] font-bold">
+                          <code className="px-2 py-0.5 rounded bg-white border border-stone-200 font-mono text-[#0F172A] font-bold">
                             {sched.passcode}
                           </code>
                         </div>
@@ -2303,7 +2303,7 @@ export default function AdminDashboard() {
                     updateLiveClassConfig(liveForm);
                     showToast("Live Google Meet classroom configuration saved!", "success");
                   }}
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs cursor-pointer"
                 >
                   Save Classroom Settings
                 </button>
@@ -2419,7 +2419,19 @@ export default function AdminDashboard() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="font-bold text-stone-700 block mb-1">Google Meet URL</label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="font-bold text-stone-700">Google Meet URL</label>
+                          <a
+                            href="https://meet.google.com/new"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] font-bold text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer"
+                            title="Opens Google Meet to start an instant meeting"
+                          >
+                            <span>Start live room</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
                         <input
                           type="url"
                           value={batchScheduleForm.meetUrl}
@@ -2432,10 +2444,11 @@ export default function AdminDashboard() {
                               meetingId: idMatch ? idMatch[1] : batchScheduleForm.meetingId
                             });
                           }}
-                          placeholder="https://meet.google.com/dnc-ragas-live"
+                          placeholder="https://meet.google.com/new"
                           className="w-full p-2.5 rounded-xl border border-stone-300 font-mono text-emerald-800"
                           required
                         />
+                        <p className="text-[10px] text-stone-500 mt-1">Tip: Click 'Start live room' to create a Google Meet call, copy the link and paste it here.</p>
                       </div>
 
                       <div>
@@ -2444,7 +2457,7 @@ export default function AdminDashboard() {
                           type="text"
                           value={batchScheduleForm.meetingId}
                           onChange={(e) => setBatchScheduleForm({ ...batchScheduleForm, meetingId: e.target.value })}
-                          placeholder="dnc-ragas-live"
+                          placeholder="ragas-live-room"
                           className="w-full p-2.5 rounded-xl border border-stone-300 font-mono"
                           required
                         />
@@ -2551,7 +2564,7 @@ export default function AdminDashboard() {
                     <img src={courseForm.image} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 space-y-1.5">
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
                       <Camera className="w-3.5 h-3.5" />
                       <span>Upload Cover Photo (Supabase)</span>
                       <input
@@ -2593,7 +2606,7 @@ export default function AdminDashboard() {
                     <span className="text-[10px] text-stone-500">Carousel slides displayed in course detail view</span>
                   </div>
 
-                  <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
+                  <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
                     <Plus className="w-3 h-3" />
                     <span>Add Slide Photo</span>
                     <input
@@ -2686,7 +2699,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-md"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-md"
                 >
                   Save Course &amp; Gallery
                 </button>
@@ -2802,7 +2815,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
                 >
                   Add Story
                 </button>
@@ -2870,7 +2883,7 @@ export default function AdminDashboard() {
                     <img src={instaForm.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 space-y-1.5">
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
                       <Camera className="w-3.5 h-3.5" />
                       <span>Upload Photo (Supabase)</span>
                       <input
@@ -2938,7 +2951,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
                 >
                   Add to Feed
                 </button>
@@ -2999,7 +3012,7 @@ export default function AdminDashboard() {
                     <img src={galleryForm.url} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 space-y-1.5">
-                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
                       <UploadCloud className="w-3.5 h-3.5" />
                       <span>Upload File to Supabase</span>
                       <input
@@ -3071,7 +3084,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
                 >
                   Publish to Gallery
                 </button>
@@ -3192,7 +3205,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
                 >
                   Add to Vault
                 </button>
@@ -3307,7 +3320,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
                 >
                   Confirm Enrollment
                 </button>
@@ -3420,7 +3433,7 @@ export default function AdminDashboard() {
                       showToast(`File "${file.name}" attached (${sizeMb})!`, "success");
                     }
                   }}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs bg-stone-50 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#1E050B] file:text-[#D4AF37] cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs bg-stone-50 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0F172A] file:text-[#D4AF37] cursor-pointer"
                 />
               </div>
 
@@ -3445,7 +3458,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-5 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold shadow-md hover:brightness-105 transition-all cursor-pointer"
+                  className="silk-zari-btn px-5 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold shadow-md hover:brightness-105 transition-all cursor-pointer"
                 >
                   Publish to Disciple Sanctuary
                 </button>
@@ -3571,7 +3584,7 @@ export default function AdminDashboard() {
               <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
                 <span className="font-bold text-stone-900">
                   Total Score:{" "}
-                  <strong className="text-[#3D0B16] font-mono text-sm">
+                  <strong className="text-[#1E293B] font-mono text-sm">
                     {Number(rubricDraft.biomechanicsScore) +
                       Number(rubricDraft.mudraScore) +
                       Number(rubricDraft.layaScore) +
@@ -3590,7 +3603,7 @@ export default function AdminDashboard() {
                   </button>
                   <button
                     type="submit"
-                    className="silk-zari-btn px-6 py-2 rounded-xl bg-[#1E050B] text-[#D4AF37] font-bold text-xs"
+                    className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
                   >
                     Publish to Student Portal
                   </button>

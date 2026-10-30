@@ -276,14 +276,14 @@ export default function StudentPortal({ onOpenAuth }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBF9F5] text-[#151515] font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#151515] font-sans">
       {/* ═══════════════════════════════════════════════════════════════
           DEDICATED PORTAL APP TOP NAVIGATION (NO MARKETING HEADER)
       ═══════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#1E050B] via-[#2D0A14] to-[#1E050B] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#0F172A] via-[#0B132B] to-[#0F172A] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3B0B14] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1E293B] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
               DR
             </div>
             <div>
@@ -322,7 +322,7 @@ export default function StudentPortal({ onOpenAuth }) {
 
             <button
               onClick={() => navigateTo("admin")}
-              className="px-3.5 py-1.5 rounded-xl bg-[#3B0B14] hover:bg-[#4E0E1B] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs"
+              className="px-3.5 py-1.5 rounded-xl bg-[#1E293B] hover:bg-[#334155] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs"
               title="Open Tutor / Director Portal"
             >
               Tutor Portal
@@ -363,7 +363,7 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         <AnimatedSection
           animation="fade-up"
-          className="rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] border border-[#B99A63]/40 shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left"
+          className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-[#F5F0E8] border border-[#B99A63]/40 shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left"
         >
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.12)_0,transparent_70%)] pointer-events-none" />
 
@@ -375,15 +375,15 @@ export default function StudentPortal({ onOpenAuth }) {
                 className="relative group cursor-pointer shrink-0"
                 title="Click to change disciple photo & details"
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#1E050B] to-[#3D0B16] border-2 border-[#D4AF37] text-[#D4AF37] flex items-center justify-center font-serif-luxury text-2xl font-bold shadow-xl overflow-hidden group-hover:scale-105 transition-all">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#0F172A] to-[#1E293B] border-2 border-[#D4AF37] text-[#D4AF37] flex items-center justify-center font-serif-luxury text-2xl font-bold shadow-xl overflow-hidden group-hover:scale-105 transition-all">
                   {currentStudent.avatarUrl ? (
                     <img src={currentStudent.avatarUrl} alt={currentStudent.name} className="w-full h-full object-cover" />
                   ) : (
                     <span>{currentStudent.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</span>
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md group-hover:brightness-110">
-                  <Camera className="w-3.5 h-3.5 text-[#1E050B]" />
+                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md group-hover:brightness-110">
+                  <Camera className="w-3.5 h-3.5 text-[#0F172A]" />
                 </div>
               </div>
 
@@ -432,9 +432,9 @@ export default function StudentPortal({ onOpenAuth }) {
                   <button
                     type="button"
                     onClick={() => setIsCertificateOpen(true)}
-                    className="silk-zari-btn px-3 py-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] text-[10px] font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                    className="silk-zari-btn px-3 py-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] text-[10px] font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1 cursor-pointer tap-bounce"
                   >
-                    <Award className="w-3 h-3 text-[#1E050B]" />
+                    <Award className="w-3 h-3 text-[#0F172A]" />
                     <span>View Certificate</span>
                   </button>
 
@@ -538,7 +538,7 @@ export default function StudentPortal({ onOpenAuth }) {
         {/* ═══════════════════════════════════════════════════════════════
             LIVE CLASSROOM GOOGLE MEET CONNECT (SYNCED PER BATCH)
         ═══════════════════════════════════════════════════════════════ */}
-        <div className="rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#2A0812] to-[#1E050B] border border-[#B99A63]/50 text-white p-6 sm:p-7 shadow-2xl relative overflow-hidden text-left space-y-4">
+        <div className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#162032] to-[#0F172A] border border-[#B99A63]/50 text-white p-6 sm:p-7 shadow-2xl relative overflow-hidden text-left space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -558,10 +558,10 @@ export default function StudentPortal({ onOpenAuth }) {
               </p>
             </div>
 
-            {/* Google Meet Direct Launch Actions */}
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {/* Google Meet & Instant Classroom Direct Launch */}
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
               <a
-                href={activeLiveSession.meetUrl || "https://meet.google.com/dnc-ragas-live"}
+                href={activeLiveSession.meetUrl || "https://meet.google.com/new"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="silk-zari-btn px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2 cursor-pointer tap-bounce"
@@ -571,7 +571,19 @@ export default function StudentPortal({ onOpenAuth }) {
               </a>
 
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`🌸 DancingRagas Live Classroom\n\nClass: ${activeLiveSession.sessionTitle}\nBatch: ${selectedCourseArea}\nTime: ${activeLiveSession.scheduledDayTime}\n\nJoin Google Meet:\n${activeLiveSession.meetUrl || "https://meet.google.com/dnc-ragas-live"}`)}`}
+                href={`https://meet.jit.si/DancingRagas-Classroom-${encodeURIComponent((selectedCourseArea || "Academy").replace(/[^a-zA-Z0-9]/g, ""))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-[#D4AF37] border border-[#D4AF37]/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                title="Alternative instant video classroom (Zero login required)"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span className="hidden sm:inline">Instant Web Classroom</span>
+                <span className="sm:hidden">Web Room</span>
+              </a>
+
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`🌸 DancingRagas Live Classroom\n\nClass: ${activeLiveSession.sessionTitle}\nBatch: ${selectedCourseArea}\nTime: ${activeLiveSession.scheduledDayTime}\n\nJoin Google Meet:\n${activeLiveSession.meetUrl || "https://meet.google.com/new"}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-emerald-300 transition-all cursor-pointer shadow-xs"
@@ -586,7 +598,7 @@ export default function StudentPortal({ onOpenAuth }) {
             <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-0.5">
               <span className="text-[10px] uppercase font-bold text-stone-400 block">Class Platform</span>
               <strong className="text-white text-xs block">Google Meet (HD Video &amp; Audio)</strong>
-              <span className="text-[10px] text-stone-300 font-mono">ID: {activeLiveSession.meetingId || "dnc-ragas-live"}</span>
+              <span className="text-[10px] text-stone-300 font-mono">ID: {activeLiveSession.meetingId || "ragas-live-room"}</span>
             </div>
 
             <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-0.5">
@@ -609,10 +621,10 @@ export default function StudentPortal({ onOpenAuth }) {
         {/* ═══════════════════════════════════════════════════════════════
             DAILY PRACTICE TRACKER (ACADEMY RIYAZ)
         ═══════════════════════════════════════════════════════════════ */}
-        <div className="rounded-2xl bg-gradient-to-r from-[#1E050B] via-[#2E0913] to-[#1E050B] border border-[#B99A63]/40 p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg text-left">
+        <div className="rounded-2xl bg-gradient-to-r from-[#0F172A] via-[#162032] to-[#0F172A] border border-[#B99A63]/40 p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg text-left">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#D4AF37] text-[#1E050B] flex items-center justify-center font-bold shadow-md shrink-0">
-              <Flame className="w-6 h-6 text-[#1E050B] fill-[#1E050B]" />
+            <div className="w-11 h-11 rounded-2xl bg-[#D4AF37] text-[#0F172A] flex items-center justify-center font-bold shadow-md shrink-0">
+              <Flame className="w-6 h-6 text-[#0F172A] fill-[#0F172A]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -647,7 +659,7 @@ export default function StudentPortal({ onOpenAuth }) {
             className={`silk-zari-btn px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer tap-bounce shrink-0 self-start sm:self-auto ${
               practicedToday
                 ? "bg-emerald-900/60 text-emerald-200 border border-emerald-500/40"
-                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] hover:brightness-105"
+                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] hover:brightness-105"
             }`}
           >
             <CheckCircle className="w-3.5 h-3.5" />
@@ -664,7 +676,7 @@ export default function StudentPortal({ onOpenAuth }) {
               onClick={() => setActivePracticeTool("tanpura")}
               className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activePracticeTool === "tanpura"
-                  ? "bg-[#1E050B] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
+                  ? "bg-[#0F172A] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
                   : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200"
               }`}
             >
@@ -675,7 +687,7 @@ export default function StudentPortal({ onOpenAuth }) {
               onClick={() => setActivePracticeTool("talam")}
               className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activePracticeTool === "talam"
-                  ? "bg-[#1E050B] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
+                  ? "bg-[#0F172A] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
                   : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200"
               }`}
             >
@@ -882,7 +894,7 @@ export default function StudentPortal({ onOpenAuth }) {
                         <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-[11px] text-stone-500">
-                              <span className="font-bold text-[#3B0B14]">{rec.module || rec.courseCategory}</span>
+                              <span className="font-bold text-[#1E293B]">{rec.module || rec.courseCategory}</span>
                               <span>{rec.date}</span>
                             </div>
                             <h4 className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2">
@@ -927,7 +939,7 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "live_studio" && (
           <div className="space-y-8 text-left">
-            <div className="rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#3D0B16] to-[#1E050B] text-[#F5F0E8] border border-[#B99A63]/50 shadow-2xl p-6 sm:p-10 relative overflow-hidden space-y-6">
+            <div className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-[#F5F0E8] border border-[#B99A63]/50 shadow-2xl p-6 sm:p-10 relative overflow-hidden space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -946,15 +958,26 @@ export default function StudentPortal({ onOpenAuth }) {
 
                 <div className="flex flex-col gap-2 shrink-0">
                   <a
-                    href={`${activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "https://meet.google.com/dnc-ragas-live"}?authuser=${encodeURIComponent(currentStudent.email || "")}`}
+                    href={activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "https://meet.google.com/new"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="silk-zari-btn px-8 py-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-xl shadow-[#D4AF37]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0 tap-bounce"
+                    className="silk-zari-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-xl shadow-[#D4AF37]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0 tap-bounce"
                   >
                     <Video className="w-5 h-5" />
                     <span>Join Google Meet ({currentStudent.name.split(" ")[0]})</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
+
+                  <a
+                    href={`https://meet.jit.si/DancingRagas-Classroom-${encodeURIComponent((selectedCourseArea || "Academy").replace(/[^a-zA-Z0-9]/g, ""))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-[#D4AF37] border border-[#D4AF37]/30 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>Instant Web Classroom (Zero Setup)</span>
+                  </a>
+
                   <div className="text-[10px] text-stone-300 text-center flex items-center justify-center gap-1">
                     <span>Passcode: <strong className="text-[#D4AF37] font-mono">{activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026"}</strong></span>
                   </div>
@@ -1002,10 +1025,10 @@ export default function StudentPortal({ onOpenAuth }) {
                     <span className="text-stone-400">Meeting ID:</span>
                     <button
                       type="button"
-                      onClick={() => handleCopyLink(activeLiveSession?.meetingId || liveClassConfig?.meetingId || "dnc-ragas-live", "Meeting ID")}
+                      onClick={() => handleCopyLink(activeLiveSession?.meetingId || liveClassConfig?.meetingId || "ragas-live-room", "Meeting ID")}
                       className="font-mono text-[#D4AF37] hover:underline flex items-center gap-1 cursor-pointer"
                     >
-                      <span>{activeLiveSession?.meetingId || liveClassConfig?.meetingId || "dnc-ragas-live"}</span>
+                      <span>{activeLiveSession?.meetingId || liveClassConfig?.meetingId || "ragas-live-room"}</span>
                       <Copy className="w-3 h-3" />
                     </button>
                   </div>
@@ -1065,7 +1088,7 @@ export default function StudentPortal({ onOpenAuth }) {
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#3B0B14] text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#1E293B] text-[10px] font-bold uppercase tracking-wider">
                     Medical &amp; Artistic Evaluation
                   </span>
                   <span className="text-xs text-stone-500">Evaluated by Dr. Malavika M. Sunil (MBBS)</span>
@@ -1142,7 +1165,7 @@ export default function StudentPortal({ onOpenAuth }) {
                           Official 4-Criterion Evaluation Breakdown:
                         </span>
                         <span className="text-sm font-bold text-stone-900 font-serif-luxury">
-                          Score: <strong className="text-[#3B0B14]">{ass.totalScore}</strong> / {ass.maxTotal}
+                          Score: <strong className="text-[#1E293B]">{ass.totalScore}</strong> / {ass.maxTotal}
                         </span>
                       </div>
 
@@ -1154,7 +1177,7 @@ export default function StudentPortal({ onOpenAuth }) {
                           >
                             <div className="flex items-center justify-between">
                               <span className="font-bold text-stone-900">{item.label}</span>
-                              <span className="px-2 py-0.5 rounded bg-white font-mono font-bold text-[#3B0B14] border border-stone-200">
+                              <span className="px-2 py-0.5 rounded bg-white font-mono font-bold text-[#1E293B] border border-stone-200">
                                 {item.score} / {item.maxScore}
                               </span>
                             </div>
@@ -1167,7 +1190,7 @@ export default function StudentPortal({ onOpenAuth }) {
 
                       {ass.clinicalNote && (
                         <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#B99A63]/30 space-y-1 text-xs">
-                          <strong className="text-[#3B0B14] font-bold block text-xs">
+                          <strong className="text-[#1E293B] font-bold block text-xs">
                             Dr. Malavika&apos;s Biomechanical &amp; Performance Summary:
                           </strong>
                           <p className="text-stone-700 leading-relaxed italic font-serif-luxury text-sm">
@@ -1215,7 +1238,7 @@ export default function StudentPortal({ onOpenAuth }) {
                       </span>
                       <span className="text-[10px] text-stone-400">&bull; {doc.size}</span>
                       {doc.courseCategory && (
-                        <span className="px-2 py-0.5 rounded-md bg-[#1E050B]/10 text-[#1E050B] text-[9px] font-bold">
+                        <span className="px-2 py-0.5 rounded-md bg-[#0F172A]/10 text-[#0F172A] text-[9px] font-bold">
                           {doc.courseCategory}
                         </span>
                       )}

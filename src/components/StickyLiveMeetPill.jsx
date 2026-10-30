@@ -9,7 +9,7 @@ export default function StickyLiveMeetPill({ liveSession, studentEmail, studentN
   if (!liveSession || !liveSession.meetUrl) return null;
 
   return (
-    <div className="sticky top-[58px] z-30 bg-gradient-to-r from-[#2A0812] via-[#1E050B] to-[#2A0812] border-b border-[#D4AF37]/40 text-[#F5F0E8] py-2 px-4 shadow-lg backdrop-blur-md">
+    <div className="sticky top-[58px] z-30 bg-gradient-to-r from-[#162032] via-[#0F172A] to-[#162032] border-b border-[#D4AF37]/40 text-[#F5F0E8] py-2 px-4 shadow-lg backdrop-blur-md">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
         <div className="flex items-center gap-2.5 truncate">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
@@ -26,13 +26,24 @@ export default function StickyLiveMeetPill({ liveSession, studentEmail, studentN
 
         <div className="flex items-center gap-2 shrink-0">
           <a
-            href={`${liveSession.meetUrl}?authuser=${encodeURIComponent(studentEmail || "")}`}
+            href={liveSession.meetUrl.includes("http") ? liveSession.meetUrl : `https://${liveSession.meetUrl}`}
             target="_blank"
             rel="noopener noreferrer"
             className="silk-zari-btn px-4 py-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-xs shadow-md hover:brightness-105 transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
           >
             <Video className="w-3.5 h-3.5" />
             <span>Join Google Meet</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+
+          <a
+            href={`https://meet.jit.si/DancingRagas-Classroom-${encodeURIComponent((liveSession.courseCategory || "Academy").replace(/[^a-zA-Z0-9]/g, ""))}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-[#D4AF37] border border-[#D4AF37]/30 text-xs font-bold items-center gap-1.5 transition-all cursor-pointer"
+            title="Alternative zero-setup video classroom (works with no Google login)"
+          >
+            <span>Web Classroom</span>
             <ExternalLink className="w-3 h-3" />
           </a>
 

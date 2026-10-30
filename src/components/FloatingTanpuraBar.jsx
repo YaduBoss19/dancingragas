@@ -138,14 +138,14 @@ export default function FloatingTanpuraBar() {
     <aside aria-label="Persistent Tanpura Drone" className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 font-sans select-none">
       {/* Minimized Pill or Expanded Bar */}
       {!isOpen ? (
-        <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-full bg-[#1E050B]/95 text-[#D4AF37] border border-[#B99A63]/60 shadow-2xl backdrop-blur-md">
+        <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-full bg-[#0F172A]/95 text-[#D4AF37] border border-[#B99A63]/60 shadow-2xl backdrop-blur-md">
           <button
             type="button"
             onClick={toggleDrone}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
               isPlaying
                 ? "bg-rose-900/80 text-white animate-pulse"
-                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] shadow-md"
+                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md"
             }`}
             title={isPlaying ? "Stop Tanpura Drone" : "Start Tanpura Drone"}
           >
@@ -165,10 +165,10 @@ export default function FloatingTanpuraBar() {
           </button>
         </div>
       ) : (
-        <div className="w-72 sm:w-80 rounded-3xl bg-gradient-to-br from-[#1E050B] via-[#2A0812] to-[#1E050B] border border-[#B99A63]/60 text-white p-5 shadow-2xl backdrop-blur-xl space-y-3.5 text-left animate-in fade-in zoom-in-95">
+        <div className="w-72 sm:w-80 rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#162032] to-[#0F172A] border border-[#B99A63]/60 text-white p-5 shadow-2xl backdrop-blur-xl space-y-3.5 text-left animate-in fade-in zoom-in-95">
           <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#D4AF37] text-[#1E050B] flex items-center justify-center font-bold">
+              <div className="w-7 h-7 rounded-lg bg-[#D4AF37] text-[#0F172A] flex items-center justify-center font-bold">
                 <Music className="w-4 h-4" />
               </div>
               <div>
@@ -196,7 +196,7 @@ export default function FloatingTanpuraBar() {
                     type="button"
                     onClick={() => setPitch(p)}
                     className={`px-2 py-0.5 rounded-md text-[10px] font-bold cursor-pointer ${
-                      pitch === p ? "bg-[#D4AF37] text-[#1E050B]" : "bg-white/10 text-stone-300"
+                      pitch === p ? "bg-[#D4AF37] text-[#0F172A]" : "bg-white/10 text-stone-300"
                     }`}
                   >
                     {p}
@@ -212,7 +212,7 @@ export default function FloatingTanpuraBar() {
                   type="button"
                   onClick={() => setTuning("Pa")}
                   className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold cursor-pointer ${
-                    tuning === "Pa" ? "bg-[#D4AF37] text-[#1E050B]" : "bg-white/10 text-stone-300"
+                    tuning === "Pa" ? "bg-[#D4AF37] text-[#0F172A]" : "bg-white/10 text-stone-300"
                   }`}
                 >
                   Pa (5th)
@@ -221,7 +221,7 @@ export default function FloatingTanpuraBar() {
                   type="button"
                   onClick={() => setTuning("Ma")}
                   className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold cursor-pointer ${
-                    tuning === "Ma" ? "bg-[#D4AF37] text-[#1E050B]" : "bg-white/10 text-stone-300"
+                    tuning === "Ma" ? "bg-[#D4AF37] text-[#0F172A]" : "bg-white/10 text-stone-300"
                   }`}
                 >
                   Ma (4th)
@@ -249,7 +249,7 @@ export default function FloatingTanpuraBar() {
             className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce ${
               isPlaying
                 ? "bg-rose-900/80 hover:bg-rose-800 text-white border border-rose-600"
-                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#1E050B] hover:brightness-105"
+                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] hover:brightness-105"
             }`}
           >
             {isPlaying ? (
@@ -259,7 +259,7 @@ export default function FloatingTanpuraBar() {
               </>
             ) : (
               <>
-                <Volume2 className="w-4 h-4 text-[#1E050B]" />
+                <Volume2 className="w-4 h-4 text-[#0F172A]" />
                 <span>Start Tanpura Drone</span>
               </>
             )}
