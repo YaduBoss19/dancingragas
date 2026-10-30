@@ -51,6 +51,9 @@ import TuitionRenewalCard from "../components/TuitionRenewalCard";
 import VirtualStageRecitalsWidget from "../components/VirtualStageRecitalsWidget";
 import TuitionReceiptModal from "../components/TuitionReceiptModal";
 import StudentProfileModal from "../components/StudentProfileModal";
+import FloatingTanpuraBar from "../components/FloatingTanpuraBar";
+import MobileStudentNavBar from "../components/MobileStudentNavBar";
+import StickyLiveMeetPill from "../components/StickyLiveMeetPill";
 import { MessageCircle, Camera, Edit2 } from "lucide-react";
 import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
@@ -341,6 +344,14 @@ export default function StudentPortal({ onOpenAuth }) {
           </div>
         </div>
       </header>
+
+      {/* Sticky Quick-Join Live Class Banner Pill */}
+      <StickyLiveMeetPill
+        liveSession={activeLiveSession}
+        studentEmail={currentStudent.email}
+        studentName={currentStudent.name}
+        onCopyLink={handleCopyLink}
+      />
 
       {/* ═══════════════════════════════════════════════════════════════
           MAIN CONSERVATORY DASHBOARD CONTENT
@@ -1380,11 +1391,26 @@ export default function StudentPortal({ onOpenAuth }) {
         }}
       />
 
-      {/* Official Tuition Sanad & Fee Receipt */}
+      {/* Official Tuition Fee Receipt */}
       <TuitionReceiptModal
         isOpen={isReceiptModalOpen}
         onClose={() => setIsReceiptModalOpen(false)}
         student={currentStudent}
+      />
+
+      {/* Persistent Floating Tanpura Audio Bar */}
+      <FloatingTanpuraBar />
+
+      {/* Mobile App Bottom Navigation Bar */}
+      <MobileStudentNavBar
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
+        counts={{
+          videos: (authorizedRecordings || []).length,
+          docs: (studyMaterials || []).length,
+          feedback: (studentAssessments || []).length
+        }}
       />
     </div>
   );

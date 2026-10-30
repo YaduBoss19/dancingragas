@@ -2180,13 +2180,28 @@ export default function AdminDashboard() {
                         )}
                       </div>
 
-                      {/* Enrolled Disciples preview */}
-                      <div className="pt-2 flex items-center justify-between text-xs text-stone-600">
+                      {/* Enrolled Students preview & WhatsApp Broadcast */}
+                      <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-stone-600">
                         <span className="flex items-center gap-1.5 text-[11px]">
                           <Users className="w-3.5 h-3.5 text-[#B99A63]" />
-                          <span><strong>{enrolledDisciples.length}</strong> disciples automatically connected</span>
+                          <span><strong>{enrolledDisciples.length}</strong> students connected</span>
                         </span>
+
                         <div className="flex items-center gap-2">
+                          {/* 1-Click WhatsApp Batch Broadcast Generator */}
+                          <a
+                            href={`https://wa.me/?text=${encodeURIComponent(
+                              `🌸 *DancingRagas Live Class Announcement* 🌸\n\n📌 *Batch:* ${sched.courseCategory}\n🎵 *Class:* ${sched.sessionTitle}\n👩‍🏫 *Instructor:* ${sched.instructor}\n⏰ *Time:* ${sched.scheduledDayTime}\n\n🔗 *Google Meet:* ${sched.meetUrl}\n🔑 *Passcode:* ${sched.passcode}\n\n📝 *Notice:* ${sched.notice || "Please be ready 5 minutes early."}`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1.5 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#128C7E] font-bold text-[11px] flex items-center gap-1 border border-[#25D366]/30 cursor-pointer"
+                            title="Share schedule to batch WhatsApp group"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                            <span>WhatsApp Batch</span>
+                          </a>
+
                           <button
                             type="button"
                             onClick={() => {
