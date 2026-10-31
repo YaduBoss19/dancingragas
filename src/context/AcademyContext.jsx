@@ -16,6 +16,7 @@ import {
   INITIAL_STUDY_MATERIALS,
   INITIAL_STUDENTS,
   COURSE_AREAS,
+  INITIAL_YOUTUBE_SHORTS,
   INITIAL_SITE_CONTENT
 } from "../data/initialData";
 
@@ -285,6 +286,43 @@ export function AcademyProvider({ children }) {
       return INITIAL_STUDENTS;
     }
   });
+
+  
+  const [youtubeShorts, setYoutubeShorts] = useState(() => {
+    try {
+      const saved = localStorage.getItem("dancingragas_youtube_shorts");
+      return saved ? JSON.parse(saved) : INITIAL_YOUTUBE_SHORTS;
+    } catch {
+      return INITIAL_YOUTUBE_SHORTS;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("dancingragas_youtube_shorts", JSON.stringify(youtubeShorts));
+    } catch {}
+  }, [youtubeShorts]);
+
+  const addYouTubeShort = (shortData) => {
+    const newShort = {
+      id: "yt-short-" + Date.now(),
+      title: shortData.title.trim(),
+      performer: shortData.performer?.trim() || "DancingRagas Disciple",
+      batch: shortData.batch || "Bharatanatyam Diploma",
+      embedUrl: shortData.embedUrl?.trim() || "",
+      thumbnail: shortData.thumbnail || "/images/stage_shows/stage_01.jpg",
+      views: "1.2k",
+      date: "New Recital"
+    };
+    setYoutubeShorts((prev) => [newShort, ...prev]);
+    showToast(`YouTube Short "${newShort.title}" added to showcase reel!`, "success");
+    return newShort;
+  };
+
+  const deleteYouTubeShort = (id) => {
+    setYoutubeShorts((prev) => prev.filter((s) => s.id !== id));
+    showToast("YouTube Short removed from showcase reel.", "info");
+  };
 
   const [studyMaterials, setStudyMaterials] = useState(() => {
     try {
@@ -1228,6 +1266,10 @@ export function AcademyProvider({ children }) {
         updateStudentProfileDetails,
         curriculumModules,
         setCurriculumModules,
+        youtubeShorts,
+        setYoutubeShorts,
+        addYouTubeShort,
+        deleteYouTubeShort,
         toggleLessonCompletion,
         addCurriculumModule,
         updateCurriculumModule,

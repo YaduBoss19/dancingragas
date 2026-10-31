@@ -1,3 +1,4 @@
+import WhatsAppIcon from "./WhatsAppIcon";
 import React, { useState } from "react";
 import {
   X,
@@ -98,6 +99,20 @@ export default function AbsenceCatchupModal({
               <p className="text-xs text-emerald-800 leading-relaxed max-w-md mx-auto">
                 Thank you for notifying us! Dr. Malavika and the faculty team have been informed. Your attendance streak is protected, and the full class recording will be ready in your vault immediately after the live batch completes.
               </p>
+              <div className="pt-2">
+                <a
+                  href={`https://wa.me/919074585672?text=${encodeURIComponent(
+                    `🌸 Namaste Dr. Malavika,\n\nThis is to notify that ${studentName} will be unable to attend class on ${absenceDate}.\nReason: ${reason}${notes ? `\nNotes: ${notes}` : ""}\n\nPlease excuse this planned absence. Thank you!`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold transition-all shadow-md cursor-pointer tap-bounce"
+                >
+                  <WhatsAppIcon className="w-4 h-4 text-white" />
+                  <span>Also Notify Dr. Malavika on WhatsApp</span>
+                </a>
+              </div>
+
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="text-xs text-emerald-900 font-bold underline cursor-pointer"

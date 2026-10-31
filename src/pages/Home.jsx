@@ -5,6 +5,7 @@ import CinematicReelsShowcase from "../components/CinematicReelsShowcase";
 import GoldParticlesCanvas from "../components/GoldParticlesCanvas";
 import CuratorMasterProfile from "../components/CuratorMasterProfile";
 import InteractiveServiceCards from "../components/InteractiveServiceCards";
+import YouTubeShortsReel from "../components/YouTubeShortsReel";
 import SacredMandalaScroll from "../components/SacredMandalaScroll";
 import StageSpotlightOverlay from "../components/StageSpotlightOverlay";
 import AnnouncementsTicker from "../components/AnnouncementsTicker";

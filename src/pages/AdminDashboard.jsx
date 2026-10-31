@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import WhatsAppIcon from "../components/WhatsAppIcon";
 import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
+import YouTubeShortsReel from "../components/YouTubeShortsReel";
 import TuitionReceiptModal from "../components/TuitionReceiptModal";
 import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
@@ -2331,6 +2332,124 @@ export default function AdminDashboard() {
                       <span>Reg: <strong className="font-mono text-[#1E293B]">{student.registrationNo || student.id}</strong></span>
                     </div>
                   </div>
+
+{/* ═══════════════════════════════════════════════════════════════
+                    STUDENT ACCESS KEY & DIPLOMA CERTIFICATE CONTROL BAR
+                ═══════════════════════════════════════════════════════════════ */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50/80 via-white to-amber-50/80 border border-amber-200 text-xs space-y-2.5">
+                  {/* Access Key Row */}
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                      <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Student Access Key:</span>
+                    </span>
+                    <code className="px-2 py-0.5 rounded-md bg-white border border-amber-300 font-mono font-bold text-stone-900">
+                      {student.accessKey || student.password || "ragas2026"}
+                    </code>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newKey = window.prompt(`Enter new access key for ${student.name}:`, student.accessKey || "ragas2026");
+                        if (newKey && newKey.trim()) {
+                          if (newKey.trim().length < 4) {
+                            alert("Access key must be at least 4 characters.");
+                            return;
+                          }
+                          updateStudentAccessKey(student.id, newKey.trim());
+                        }
+                      }}
+                      className="flex-1 py-1 px-2 rounded-lg bg-amber-100/90 hover:bg-amber-200 text-amber-950 text-[11px] font-bold text-center transition-colors cursor-pointer"
+                    >
+                      Edit Key
+                    </button>
+                    <a
+                      href={`mailto:${student.email}?subject=${encodeURIComponent("Your DancingRagas Student Portal Access Key")}&body=${encodeURIComponent(`Dear ${student.name},\n\nHere is your private login access key to the DancingRagas Student Sanctuary:\n\nPortal: https://dancingragas.vercel.app\nUsername: ${student.email}\nAccess Key: ${student.accessKey || student.password || "ragas2026"}\n\nWith warmth,\nDr. Malavika M. Sunil`)}`}
+                      className="py-1 px-2.5 rounded-lg bg-white border border-amber-300 hover:bg-stone-50 text-stone-700 text-[11px] font-bold flex items-center gap-1 transition-colors"
+                      title="Email Access Key to Disciple"
+                    >
+                      <Mail className="w-3 h-3 text-amber-700" />
+                      <span>Email</span>
+                    </a>
+                    <a
+                      href={`https://wa.me/${(student.phone || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`🌸 Namaste ${student.name},\n\nHere is your private access key to the DancingRagas Student Sanctuary:\n\n🔗 Portal: https://dancingragas.vercel.app\n✉️ Username: ${student.email}\n🔑 Access Key: ${student.accessKey || student.password || "ragas2026"}\n\nWith warmth,\nDr. Malavika M. Sunil`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-1 px-2.5 rounded-lg bg-[#25D366] text-white hover:brightness-105 text-[11px] font-bold flex items-center gap-1 transition-all"
+                      title="Send Access Key via WhatsApp"
+                    >
+                      <WhatsAppIcon className="w-3 h-3 text-white" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+
+                  {/* 🏆 PROMINENT CERTIFICATE ENABLER TOGGLE */}
+                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Award className={`w-4 h-4 ${student.certificateEnabled ? "text-emerald-600" : "text-stone-400"}`} />
+                      <div>
+                        <span className="font-bold text-[11px] text-stone-800 block">
+                          Diploma Sanad Certificate:
+                        </span>
+                        <span className={`text-[10px] font-semibold ${student.certificateEnabled ? "text-emerald-700" : "text-stone-500"}`}>
+                          {student.certificateEnabled ? "✓ UNLOCKED in Student Portal" : "🔒 LOCKED (Hidden from Student)"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newStatus = !student.certificateEnabled;
+                        updateStudent(student.id, { certificateEnabled: newStatus });
+                        showToast(
+                          newStatus
+                            ? `Sanad Certificate UNLOCKED for ${student.name}! Now visible in their Student Portal.`
+                            : `Sanad Certificate locked for ${student.name}.`,
+                          newStatus ? "success" : "info"
+                        );
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                        student.certificateEnabled
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                          : "bg-gradient-to-r from-[#260A22] to-[#3D1035] text-[#E8B896] hover:brightness-110"
+                      }`}
+                      title="Click to toggle whether this student can see and download their Sanad Certificate"
+                    >
+                      {student.certificateEnabled ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3 text-white" />
+                          <span>Active (Lock)</span>
+                        </>
+                      ) : (
+                        <>
+                          <Award className="w-3 h-3 text-[#E8B896]" />
+                          <span>Enable Cert</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Physician Wellness Advice row */}
+                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-[11px] text-stone-700">
+                      <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+                      <span className="font-semibold">Physician Wellness Advice:</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWellnessStudentTarget(student);
+                        setWellnessTextInput(student.wellnessAdvice || "");
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>{student.wellnessAdvice ? "✓ Edit Advice" : "+ Add Advice"}</span>
+                    </button>
+                  </div>
+                </div>
 
                   <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
                     <button

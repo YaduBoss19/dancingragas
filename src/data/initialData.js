@@ -1856,3 +1856,55 @@ export const INITIAL_SITE_CONTENT = {
     copyrightNotice: "Dr. Malavika M. Sunil. All rights reserved. Private Dance & Music Coaching."
   }
 };
+export const INITIAL_YOUTUBE_SHORTS = [
+  {
+    id: "yt-short-1",
+    title: "Aramandi Balance & Footwork Precision",
+    performer: "Dr. Malavika M. Sunil",
+    batch: "Bharatanatyam Diploma",
+    embedUrl: "https://www.youtube.com/shorts/3jz_K3MvV1M",
+    thumbnail: "/images/stage_shows/stage_01.jpg",
+    views: "24.5k",
+    date: "Latest Showcase"
+  },
+  {
+    id: "yt-short-2",
+    title: "Alarippu Speed Variations & Korvai",
+    performer: "Senior Disciple Cohort",
+    batch: "Bharatanatyam Diploma",
+    embedUrl: "https://www.youtube.com/shorts/5v0gL1oP6Xw",
+    thumbnail: "/images/stage_shows/stage_02.jpg",
+    views: "18.2k",
+    date: "Recital Drill"
+  },
+  {
+    id: "yt-short-3",
+    title: "Carnatic Geetham in Mohanam Raga",
+    performer: "Dr. Malavika & Disciples",
+    batch: "Carnatic Vocal Music",
+    embedUrl: "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+    thumbnail: "/images/workshops/workshop_02.jpg",
+    views: "31.0k",
+    date: "Vocal Masterclass"
+  },
+  {
+    id: "yt-short-4",
+    title: "Chakkar Spin Balance & Ghungroo Beats",
+    performer: "Ananya Menon & Pooja",
+    batch: "Semi-Classical & Bollywood",
+    embedUrl: "https://www.youtube.com/shorts/kJQP7kiw5Fk",
+    thumbnail: "/images/stage_shows/stage_03.jpg",
+    views: "15.7k",
+    date: "Student Showcase"
+  },
+  {
+    id: "yt-short-5",
+    title: "Hastha Mudras & Asamyutta Shlokas",
+    performer: "Junior Disciples Batch",
+    batch: "Bharatanatyam Diploma",
+    embedUrl: "https://www.youtube.com/shorts/3jz_K3MvV1M",
+    thumbnail: "/images/workshops/workshop_01.jpg",
+    views: "22.8k",
+    date: "Foundation Drill"
+  }
+];

@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import WhatsAppIcon from "../components/WhatsAppIcon";
 import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
+import YouTubeShortsReel from "../components/YouTubeShortsReel";
 import TanpuraDroneWidget from "../components/TanpuraDroneWidget";
 import SollukattuRhythmWidget from "../components/SollukattuRhythmWidget";
 import SanadCertificateModal from "../components/SanadCertificateModal";
@@ -62,6 +63,7 @@ import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
 export default function StudentPortal({ onOpenAuth }) {
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [isCertLockedNoticeOpen, setIsCertLockedNoticeOpen] = useState(false);
   const [isWellnessModalOpen, setIsWellnessModalOpen] = useState(false);
   const [isShowcaseModalOpen, setIsShowcaseModalOpen] = useState(false);
   const [isAbsenceModalOpen, setIsAbsenceModalOpen] = useState(false);
@@ -1659,6 +1661,48 @@ export default function StudentPortal({ onOpenAuth }) {
           }
         }}
       />
+
+      
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: CERTIFICATE IN PROGRESS / LOCKED NOTICE
+      ═══════════════════════════════════════════════════════════════ */}
+      {isCertLockedNoticeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center mx-auto">
+              <Award className="w-7 h-7 text-[#C9956A]" />
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-[#C9956A]">
+                Diploma Sanad Status
+              </span>
+              <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                Certificate in Progress
+              </h3>
+            </div>
+
+            <p className="text-xs text-stone-600 leading-relaxed max-w-sm mx-auto">
+              Dr. Malavika will unlock your official Diploma Sanad upon satisfactory completion of your term syllabus modules and performance assessments.
+            </p>
+
+            <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200 text-[11px] text-stone-500 space-y-1">
+              <span className="font-bold text-stone-700 block">Current Disciple Status:</span>
+              <span>Enrolled &bull; Syllabus Ongoing &bull; {currentStudent.progress || 35}% Complete</span>
+            </div>
+
+            <div className="pt-2 flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsCertLockedNoticeOpen(false)}
+                className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#260A22] text-[#E8B896] hover:text-white text-xs font-bold shadow-md cursor-pointer"
+              >
+                Continue Practice
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <SanadCertificateModal
         isOpen={isCertificateOpen}
