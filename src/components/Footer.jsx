@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
 import WhatsAppIcon from "./WhatsAppIcon";
+import YouTubeIcon from "./YouTubeIcon";
 import {
   Phone,
   Mail,
@@ -116,6 +117,47 @@ export default function Footer() {
               Founded & personally directed by <strong>Dr. Malavika M. Sunil</strong> (CCRT Scholar, Bharatanatyam disciple of 21 years, Carnatic vocalist, and physician). Dedicated to providing mindful, anatomical, and expressive classical training worldwide.
             </p>
 
+            {/* Official Social Media Connection Pills */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 pb-1">
+              {/* WhatsApp */}
+              <a
+                href="https://wa.me/919074585672"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/40 text-[#25D366] text-xs font-bold transition-all shadow-xs"
+                title="Connect on WhatsApp"
+              >
+                <WhatsAppIcon className="w-3.5 h-3.5" />
+                <span>WhatsApp</span>
+              </a>
+
+              {/* Instagram */}
+              <a
+                href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E1306C]/15 hover:bg-[#E1306C]/25 border border-[#E1306C]/40 text-[#f56040] text-xs font-bold transition-all shadow-xs"
+                title="Follow on Instagram"
+              >
+                <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center text-[7px] text-white font-bold">
+                  ig
+                </span>
+                <span>Instagram</span>
+              </a>
+
+              {/* YouTube */}
+              <a
+                href="https://www.youtube.com/@dancingragasbymalavika"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF0000]/15 hover:bg-[#FF0000]/25 border border-[#FF0000]/40 text-rose-400 text-xs font-bold transition-all shadow-xs"
+                title="Subscribe on YouTube"
+              >
+                <YouTubeIcon className="w-4 h-4" />
+                <span>YouTube</span>
+              </a>
+            </div>
+
             <div className="flex flex-wrap gap-2 pt-1">
               <span className="px-3 py-1 rounded-lg bg-[#1f1f1f] border border-[#A9A49D]/20 text-[11px] font-semibold text-[#B99A63] flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5 text-[#B99A63]" /> CCRT National Scholar
@@ -207,15 +249,40 @@ export default function Footer() {
               </button>
             </form>
 
-            <div className="space-y-1.5 text-xs text-slate-400">
+            <div className="space-y-2 text-xs text-slate-400">
+              {/* WhatsApp */}
               <a
                 href={`https://wa.me/${academyInfo.whatsappNumber.replace(/[^0-9]/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
               >
-                <WhatsAppIcon className="w-3.5 h-3.5 shrink-0" />
-                <span>+91 90745 85672 (Admissions Enquiry)</span>
+                <WhatsAppIcon className="w-4 h-4 shrink-0 text-[#25D366]" />
+                <span className="font-semibold text-stone-300">WhatsApp: +91 90745 85672</span>
+              </a>
+
+              {/* Instagram */}
+              <a
+                href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-pink-400 transition-colors"
+              >
+                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center shrink-0 text-[8px] text-white font-bold">
+                  ig
+                </span>
+                <span className="font-semibold text-stone-300">Instagram: @dancingragasbymalavika</span>
+              </a>
+
+              {/* YouTube */}
+              <a
+                href="https://www.youtube.com/@dancingragasbymalavika"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-rose-400 transition-colors"
+              >
+                <YouTubeIcon className="w-4 h-4 shrink-0" />
+                <span className="font-semibold text-stone-300">YouTube: @dancingragasbymalavika</span>
               </a>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-[#B99A63] shrink-0" />
@@ -246,7 +313,40 @@ export default function Footer() {
             © {CURRENT_YEAR} Dr. Malavika M. Sunil. All rights reserved. Private Dance & Music Coaching.
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            {/* Social Icons Strip */}
+            <div className="flex items-center gap-3">
+              <a
+                href="https://wa.me/919074585672"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-stone-400 hover:text-[#25D366] transition-colors p-1"
+                title="WhatsApp"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+              </a>
+              <a
+                href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-stone-400 hover:text-pink-400 transition-colors p-1"
+                title="Instagram"
+              >
+                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] inline-flex items-center justify-center text-[8px] text-white font-bold">
+                  ig
+                </span>
+              </a>
+              <a
+                href="https://www.youtube.com/@dancingragasbymalavika"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-stone-400 hover:text-rose-500 transition-colors p-1"
+                title="YouTube"
+              >
+                <YouTubeIcon className="w-4 h-4" />
+              </a>
+            </div>
+
             <span className="flex items-center gap-1 text-slate-400">
               Move. Learn. Master. with <Heart className="w-3 h-3 text-[#B99A63] fill-[#B99A63]" />
             </span>

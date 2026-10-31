@@ -2236,6 +2236,11 @@ export default function AdminDashboard() {
                 });
               })()}
             </div>
+
+            {/* ── ACADEMY YOUTUBE SHORTS REEL (DIRECTLY BELOW COURSE MODULES) ── */}
+            <div className="pt-6 border-t border-stone-200">
+              <YouTubeShortsReel />
+            </div>
           </div>
         )}
 
@@ -2430,6 +2435,43 @@ export default function AdminDashboard() {
                         </>
                       )}
                     </button>
+                  </div>
+
+                  {/* Individual Student Showcase (YouTube Shorts Recital Link) */}
+                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-[11px] text-stone-700 min-w-0">
+                      <Heart className={`w-3.5 h-3.5 shrink-0 ${student.showcaseVideoUrl ? "text-rose-600 fill-rose-600" : "text-stone-400"}`} />
+                      <span className="font-semibold truncate">Showcase Recital:</span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowcaseStudentTarget(student);
+                          setShowcaseUrlInput(student.showcaseVideoUrl || "");
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                          student.showcaseVideoUrl
+                            ? "bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200"
+                            : "bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200"
+                        }`}
+                        title="Add or update YouTube Shorts recital video for this student"
+                      >
+                        <span>{student.showcaseVideoUrl ? "✓ Edit Link" : "+ Add Link"}</span>
+                      </button>
+
+                      {student.showcaseVideoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewShowcaseUrl(student.showcaseVideoUrl)}
+                          className="px-2 py-1 rounded-lg bg-[#260A22] text-[#E8B896] hover:text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer shadow-xs"
+                          title="Watch disciple recital video"
+                        >
+                          <Play className="w-2.5 h-2.5 fill-current" />
+                          <span>Watch</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Physician Wellness Advice row */}

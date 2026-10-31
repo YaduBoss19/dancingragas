@@ -107,13 +107,13 @@ export default function YouTubeShortsReel({ className = "" }) {
         {/* Horizontal Scrolling Shorts Track */}
         <div
           ref={scrollContainerRef}
-          className="flex items-stretch gap-4 overflow-x-auto pb-4 pt-1 snap-x scroll-smooth no-scrollbar"
+          className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scroll-smooth touch-pan-x no-scrollbar"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {(youtubeShorts || []).map((short, idx) => (
             <div
               key={short.id || idx}
-              className="relative shrink-0 w-56 sm:w-64 rounded-3xl overflow-hidden bg-gradient-to-b from-[#260A22] to-[#150515] border border-[#DFAC88]/30 shadow-lg group transition-all duration-300 hover:scale-[1.02] hover:border-[#DFAC88] cursor-pointer snap-start flex flex-col justify-between"
+              className="relative shrink-0 w-44 sm:w-56 md:w-64 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-b from-[#260A22] to-[#150515] border border-[#DFAC88]/30 shadow-lg group transition-all duration-300 hover:scale-[1.02] hover:border-[#DFAC88] cursor-pointer snap-start flex flex-col justify-between"
               onClick={() => setActiveVideo(short)}
             >
               {/* Aspect Ratio 9:16 Video Thumbnail Container */}

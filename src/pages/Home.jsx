@@ -232,6 +232,9 @@ export default function Home() {
       ───────────────────────────────────────────────────────────── */}
       <InteractiveServiceCards onSelectServiceForBooking={selectServiceForBooking} />
 
+      {/* ── YOUTUBE SHORTS & RECITAL SHOWCASE REEL (RIGHT BELOW COURSES) ── */}
+      <YouTubeShortsReel className="bg-[#FAF7F2] border-y border-[#DFAC88]/20 my-6 sm:my-10" />
+
       {/* ─────────────────────────────────────────────────────────────
           4B. UPCOMING EVENTS & MASTERCLASSES
       ───────────────────────────────────────────────────────────── */}

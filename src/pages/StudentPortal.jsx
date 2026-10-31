@@ -539,45 +539,80 @@ export default function StudentPortal({ onOpenAuth }) {
                   Enrolled in: <strong className="text-white">{currentStudent.enrolledCourses?.join(" & ")}</strong> &bull; Location: {currentStudent.location || "Online"}
                 </p>
 
-                {/* Academy Quick Actions */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  {/* View Certificate: ONLY visible when tutor enables it for this student or if previewing as tutor/admin */}
-                  {(currentStudent.certificateEnabled || userRole === "tutor" || userRole === "admin") && (
-                    <button
-                      type="button"
-                      onClick={() => setIsCertificateOpen(true)}
-                      className="silk-zari-btn px-3 py-1 rounded-full bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#0F172A] text-[10px] font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1 cursor-pointer tap-bounce"
-                    >
-                      <Award className="w-3 h-3 text-[#0F172A]" />
-                      <span>View Certificate</span>
-                    </button>
-                  )}
+                {/* Academy Quick Actions with Helpful Subtitles - Mobile Responsive 2x2 Grid / Desktop Flex */}
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pt-2 w-full sm:w-auto">
+                  {/* 1. View Certificate: Unlocked or Gentle Progress Notice */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (currentStudent.certificateEnabled || userRole === "tutor" || userRole === "admin") {
+                        setIsCertificateOpen(true);
+                      } else {
+                        setIsCertLockedNoticeOpen(true);
+                      }
+                    }}
+                    className={`w-full sm:w-auto px-3.5 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all flex items-center gap-2 cursor-pointer tap-bounce text-left ${
+                      currentStudent.certificateEnabled
+                        ? "bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#260A22]"
+                        : "bg-white/10 hover:bg-white/15 border border-white/20 text-stone-200"
+                    }`}
+                    title="Official Sanad Diploma Certificate"
+                  >
+                    <Award className={`w-4 h-4 shrink-0 ${currentStudent.certificateEnabled ? "text-[#260A22]" : "text-amber-400"}`} />
+                    <div className="leading-tight min-w-0 truncate">
+                      <span className="block font-bold truncate">Certificate</span>
+                      <span className="text-[9px] opacity-75 font-normal block truncate">
+                        {currentStudent.certificateEnabled ? "Official Sanad" : "On Completion"}
+                      </span>
+                    </div>
+                  </button>
 
+                  {/* 2. Physician Wellness Advice */}
                   <button
                     type="button"
                     onClick={() => setIsWellnessModalOpen(true)}
-                    className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                    className="w-full sm:w-auto px-3.5 py-2 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/30 text-[11px] font-bold transition-all flex items-center gap-2 cursor-pointer tap-bounce text-left"
+                    title="Personalized anatomy & posture guidance from Dr. Malavika (MBBS)"
                   >
-                    <Stethoscope className="w-3 h-3 text-emerald-300" />
-                    <span>Wellness Advice</span>
+                    <Stethoscope className="w-4 h-4 text-emerald-300 shrink-0" />
+                    <div className="leading-tight min-w-0 truncate">
+                      <span className="block font-bold truncate">Wellness Advice</span>
+                      <span className="text-[9px] text-emerald-300/80 font-normal block truncate">Doctor's Care</span>
+                    </div>
                   </button>
 
+                  {/* 3. Individual Showcase Recital (In Every Profile) */}
                   <button
                     type="button"
                     onClick={() => setIsShowcaseModalOpen(true)}
-                    className="px-3 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-200 hover:bg-rose-500/30 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                    className={`w-full sm:w-auto px-3.5 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all flex items-center gap-2 cursor-pointer tap-bounce text-left ${
+                      currentStudent.showcaseVideoUrl
+                        ? "bg-rose-500/25 border border-rose-400/50 text-rose-200 hover:bg-rose-500/35"
+                        : "bg-white/10 hover:bg-white/15 border border-white/20 text-stone-200"
+                    }`}
+                    title="Your Individual Showcase Recital Video & YouTube Shorts"
                   >
-                    <Heart className="w-3 h-3 text-rose-300" />
-                    <span>Student Showcase</span>
+                    <Heart className={`w-4 h-4 shrink-0 ${currentStudent.showcaseVideoUrl ? "text-rose-400 fill-rose-400" : "text-stone-400"}`} />
+                    <div className="leading-tight min-w-0 truncate">
+                      <span className="block font-bold truncate">My Showcase</span>
+                      <span className="text-[9px] text-rose-300/80 font-normal block truncate">
+                        {currentStudent.showcaseVideoUrl ? "Recital Video" : "Shorts Reel"}
+                      </span>
+                    </div>
                   </button>
 
+                  {/* 4. Report Absence */}
                   <button
                     type="button"
                     onClick={() => setIsAbsenceModalOpen(true)}
-                    className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-stone-200 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                    className="w-full sm:w-auto px-3.5 py-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-stone-200 text-[11px] font-bold transition-all flex items-center gap-2 cursor-pointer tap-bounce text-left"
+                    title="Notify tutor of upcoming school exams or travel"
                   >
-                    <Calendar className="w-3 h-3 text-[#C9956A]" />
-                    <span>Report Absence</span>
+                    <Calendar className="w-4 h-4 text-[#C9956A] shrink-0" />
+                    <div className="leading-tight min-w-0 truncate">
+                      <span className="block font-bold truncate">Report Absence</span>
+                      <span className="text-[9px] text-stone-400 font-normal block truncate">Submit Leave</span>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -1192,6 +1227,11 @@ export default function StudentPortal({ onOpenAuth }) {
                   })}
                 </div>
               )}
+
+              {/* ── YOUTUBE SHORTS REEL (DIRECTLY BELOW COURSE CURRICULUM) ── */}
+              <div className="pt-6 border-t border-stone-200">
+                <YouTubeShortsReel />
+              </div>
             </div>
           </div>
         )}

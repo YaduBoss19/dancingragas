@@ -3,6 +3,7 @@ import { useAcademy } from "../context/AcademyContext";
 import AnimatedSection from "../components/AnimatedSection";
 import DiplomaGoldSeal from "../components/DiplomaGoldSeal";
 import GoldDivider from "../components/GoldDivider";
+import YouTubeShortsReel from "../components/YouTubeShortsReel";
 import {
   Sparkles,
   Search,
@@ -344,6 +345,9 @@ export default function Courses() {
           </div>
         )}
       </section>
+
+      {/* ── YOUTUBE SHORTS REEL (BELOW COURSES) ── */}
+      <YouTubeShortsReel className="bg-[#FAF7F2] border-y border-[#DFAC88]/20 my-8" />
 
       <GoldDivider />
 
