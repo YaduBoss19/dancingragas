@@ -17,11 +17,18 @@ export default function PhysicianWellnessReportModal({
   onClose,
   studentName = "Ananya Menon",
   registrationNo = "DR-DIP-2026-084",
-  batchName = "Online Bharatanatyam Diploma Course"
+  batchName = "Online Bharatanatyam Diploma Course",
+  wellnessAdvice,
+  student
 }) {
   const printRef = useRef(null);
 
   if (!isOpen) return null;
+
+  const personalAdvice =
+    wellnessAdvice ||
+    student?.wellnessAdvice ||
+    "The disciple exhibits excellent anatomical alignment during rigorous rhythmic stamping. Continue maintaining quadriceps engagement and practice daily 90-second static Araimandi holds to reinforce joint longevity.";
 
   const handlePrint = () => {
     window.print();
@@ -118,14 +125,14 @@ export default function PhysicianWellnessReportModal({
             </div>
           </div>
 
-          {/* Physician's Overall Clinical Impression */}
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs space-y-1.5">
-            <div className="flex items-center gap-2 text-emerald-900 font-bold">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Clinical Posture &amp; Ergonomics Impression: Cleared for High-Intensity Margam</span>
+          {/* Physician's Overall Clinical Impression & Tutor Written Guidance */}
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs space-y-2">
+            <div className="flex items-center gap-2 text-emerald-950 font-bold">
+              <Stethoscope className="w-4 h-4 text-emerald-700" />
+              <span>Personalized Clinical Guidance from Dr. Malavika (MBBS)</span>
             </div>
-            <p className="text-emerald-800 text-[11.5px] leading-relaxed">
-              "The disciple exhibits excellent anatomical alignment during rigorous rhythmic stamping. The risk of patellar tendinitis or lumbar fatigue is extremely low due to consistent core stabilization and symmetrical knee kinematics. Continued longitudinal practice is strongly recommended."
+            <p className="text-emerald-900 text-xs sm:text-[13px] leading-relaxed italic bg-white/70 p-3 rounded-xl border border-emerald-200/80 font-medium">
+              "{personalAdvice}"
             </p>
           </div>
 

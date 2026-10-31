@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { MessageCircle, Sparkles, X } from "lucide-react";
+import { X } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
 
@@ -30,47 +31,41 @@ export default function FloatingConciergePill() {
     <div className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="relative group">
         {/* Glow ambient background */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#D4AF37]/40 via-emerald-500/30 to-[#B99A63]/40 rounded-full blur-xs opacity-75 group-hover:opacity-100 transition duration-300 pointer-events-none" />
+        <div className="absolute -inset-1 bg-[#25D366]/30 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-300 pointer-events-none" />
 
-        {/* Concierge Pill Button */}
+        {/* Concierge Pill Button with authentic WhatsApp branding */}
         <button
           type="button"
           onClick={handleOpenWhatsApp}
-          className="relative flex items-center gap-2.5 sm:gap-3 py-2 px-3 sm:py-2.5 sm:px-4 rounded-full bg-[#151515] hover:bg-[#1C1817] text-[#F5F0E8] border border-[#B99A63]/60 shadow-2xl transition-all duration-300 hover:scale-[1.03] active:scale-95 cursor-pointer tap-bounce select-none"
+          className="relative flex items-center gap-2.5 sm:gap-3 py-2 px-3 sm:py-2.5 sm:px-4 rounded-full bg-[#260A22] hover:bg-[#3D1035] text-[#FBF7F5] border border-[#25D366]/60 shadow-2xl transition-all duration-300 hover:scale-[1.03] active:scale-95 cursor-pointer tap-bounce select-none"
           title="Chat directly with Dr. Malavika on WhatsApp"
-          aria-label="Chat with Dr. Malavika on WhatsApp"
+          aria-label="Admission Enquiries on WhatsApp"
         >
-          {/* Avatar with live presence ring */}
+          {/* Avatar with authentic WhatsApp Icon badge */}
           <div className="relative shrink-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-[#D4AF37]/70 bg-[#25060C] flex items-center justify-center shadow-xs">
-              <img
-                src="/images/teachers/dr_malavika_portrait.jpg"
-                alt="Dr. Malavika M. Sunil"
-                className="w-full h-full object-cover object-top"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-              <Sparkles className="w-4 h-4 text-[#D4AF37] absolute" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-[#25D366] bg-[#25D366] flex items-center justify-center shadow-md">
+              <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
 
             {/* Active Online Pulse Dot */}
             <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#25D366] border-2 border-[#151515]" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#25D366] border-2 border-[#260A22]" />
             </span>
           </div>
 
           {/* Text Content */}
           <div className="text-left flex flex-col justify-center">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs sm:text-sm font-bold text-[#F5F0E8] font-serif-luxury tracking-wide">
-                Chat with Dr. Malavika
+              <span className="text-xs sm:text-sm font-bold text-white font-serif-luxury tracking-wide">
+                Enquire on WhatsApp
               </span>
-              <MessageCircle className="w-3.5 h-3.5 text-[#25D366] fill-[#25D366] shrink-0" />
+              <span className="px-1.5 py-0.2 rounded bg-[#25D366]/20 text-[#25D366] text-[9px] font-bold">
+                Online
+              </span>
             </div>
-            <span className="text-[10px] text-[#D4AF37] font-medium hidden sm:block">
-              Admissions &amp; Trial Queries • Active
+            <span className="text-[10px] text-rose-200/80 font-medium hidden sm:block">
+              Admissions &amp; Trial Classes &bull; Instant Reply
             </span>
           </div>
         </button>

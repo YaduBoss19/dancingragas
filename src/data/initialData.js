@@ -1240,7 +1240,32 @@ export const INITIAL_STUDENT_PROFILE = {
 
 export const CURRICULUM_MODULES = [
   {
+    id: "mod-bolly-1",
+    courseCategory: "Bollywood & Semi-Classical",
+    moduleNumber: "Module 01",
+    title: "Semi-Classical Footwork & Expressive Lyrical Abhinaya",
+    description: "Kathak-inspired spins (Chakkars), fluid torso waves, and expressive mudras for film & stage choreographies.",
+    progressPercent: 40,
+    status: "In Progress",
+    lessons: [
+      {
+        id: "rec-bolly-1",
+        title: "Kathak-Inspired Chakkars & Graceful Hand Swings",
+        duration: "24 mins",
+        date: "Term Week 1",
+        category: "Bollywood & Semi-Classical",
+        embedUrl: "https://www.youtube-nocookie.com/embed/gL6X3P78QxI",
+        completed: true,
+        topics: ["8-count spinning technique", "Center of gravity balance", "Semi-classical wrist flourishes"],
+        notesPdf: "Chakkar_Spin_Alignment_Guide.pdf",
+        pdfTitle: "Chakkar Spin Balance & Rhythm Sheet",
+        pdfUrl: "#"
+      }
+    ]
+  },
+  {
     id: "mod-1",
+    courseCategory: "Bharatanatyam Diploma",
     moduleNumber: "Module 01",
     title: "Foundational Adavu Biomechanics & Aramandi Posture",
     description: "Core footwork drills, joint protection, knee turnout angles, and Tatta & Natta Adavus in three speeds.",
@@ -1273,6 +1298,7 @@ export const CURRICULUM_MODULES = [
   },
   {
     id: "mod-2",
+    courseCategory: "Bharatanatyam Diploma",
     moduleNumber: "Module 02",
     title: "Natyashastra Hastas, Bhedas & Symbolic Gestures",
     description: "28 Asamyuta Hastas (single hand), 24 Samyuta Hastas (double hand), and Viniyoga slokas from Abhinaya Darpana.",
@@ -1305,7 +1331,8 @@ export const CURRICULUM_MODULES = [
   },
   {
     id: "mod-3",
-    moduleNumber: "Module 03",
+    courseCategory: "Carnatic Music",
+    moduleNumber: "Module 01",
     title: "Tala, Laya & Rhythmic Synchronization (Carnatic Metre)",
     description: "Understanding Adi Tala, Rupaka Tala, Jathi patterns, and rhythmic synchrony between cymbals and ankle bells.",
     progressPercent: 30,
@@ -1337,7 +1364,8 @@ export const CURRICULUM_MODULES = [
   },
   {
     id: "mod-4",
-    moduleNumber: "Module 04",
+    courseCategory: "Bharatanatyam Diploma",
+    moduleNumber: "Module 03",
     title: "Margam Repertoire: Alarippu (Tisra Ekam) & Exam Piece",
     description: "Comprehensive step-by-step masterclass of the inaugural invocatory dance of the classical Margam.",
     progressPercent: 0,
@@ -1596,48 +1624,72 @@ export const INITIAL_STUDENTS = [
     registrationNo: "DR-DIP-2026-084",
     name: "Ananya Menon",
     email: "ananya.menon@example.com",
+    accessKey: "ragas2026",
+    password: "ragas2026",
     phone: "+91 98470 12345",
+    whatsappNumber: "+91 98470 12345",
     location: "Kochi, Kerala",
     enrolledCourses: ["Bharatanatyam Diploma"],
     enrolledDate: "Aug 15, 2026",
     status: "Active",
-    attendance: 94
+    attendance: 94,
+    progress: 68,
+    level: "Intermediate",
+    batchName: "Online Bharatanatyam Diploma"
   },
   {
     id: "stu-2",
     registrationNo: "DR-VOC-2026-022",
     name: "Pooja Ramesh",
     email: "pooja.ramesh@example.com",
+    accessKey: "pooja123",
+    password: "pooja123",
     phone: "+91 97451 54321",
+    whatsappNumber: "+91 97451 54321",
     location: "Bengaluru, Karnataka",
     enrolledCourses: ["Carnatic Music"],
     enrolledDate: "Sep 01, 2026",
     status: "Active",
-    attendance: 88
+    attendance: 88,
+    progress: 42,
+    level: "Beginner",
+    batchName: "Carnatic Classical Vocal"
   },
   {
     id: "stu-3",
     registrationNo: "DR-BOL-2026-015",
     name: "Praveshika",
     email: "praveshika@example.com",
+    accessKey: "praveshika123",
+    password: "praveshika123",
     phone: "+91 94471 98765",
+    whatsappNumber: "+91 94471 98765",
     location: "Andhra Pradesh / Georgia",
     enrolledCourses: ["Bollywood & Semi-Classical"],
     enrolledDate: "Jul 10, 2026",
     status: "Active",
-    attendance: 96
+    attendance: 96,
+    progress: 85,
+    level: "Advanced",
+    batchName: "Semi-Classical & Folk Dance"
   },
   {
     id: "stu-4",
     registrationNo: "DR-NDIP-2026-031",
     name: "Jyothirmai",
     email: "jyothirmai@example.com",
+    accessKey: "jyothi123",
+    password: "jyothi123",
     phone: "+91 99460 24680",
+    whatsappNumber: "+91 99460 24680",
     location: "Tamil Nadu",
     enrolledCourses: ["Bharatanatyam Non-Diploma"],
     enrolledDate: "Oct 05, 2026",
     status: "Active",
-    attendance: 90
+    attendance: 90,
+    progress: 25,
+    level: "Beginner",
+    batchName: "Bharatanatyam Non-Diploma"
   }
 ];
 

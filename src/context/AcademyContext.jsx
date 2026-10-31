@@ -84,8 +84,8 @@ export const INITIAL_LIVE_SCHEDULES = [
     instructor: "Faculty Choreographer",
     scheduledDayTime: "Wednesday, 07:00 PM IST / 09:30 AM EST",
     targetTimestamp: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/dnc-semi-live",
-    meetingId: "dnc-semi-live",
+    meetUrl: "https://meet.google.com/new",
+    meetingId: "semi-classical-live-room",
     passcode: "DANCE2026",
     status: "Confirmed",
     notice: "Focus on footwork rhythm and spinning (Chakkar) balance.",
@@ -94,7 +94,7 @@ export const INITIAL_LIVE_SCHEDULES = [
   }
 ];
 
-export const AcademyProvider = ({ children }) => {
+export function AcademyProvider({ children }) {
   // Navigation & URL routing
   const getInitialPage = () => {
     if (typeof window === "undefined") return "home";
@@ -216,7 +216,14 @@ export const AcademyProvider = ({ children }) => {
   const [liveClassSchedules, setLiveClassSchedules] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.LIVE_SCHEDULES);
-      return saved ? JSON.parse(saved) : INITIAL_LIVE_SCHEDULES;
+      const parsed = saved ? JSON.parse(saved) : INITIAL_LIVE_SCHEDULES;
+      // Sanitize any stale dummy/broken meet URLs that Google Meet rejects
+      return parsed.map((item) => {
+        if (!item.meetUrl || item.meetUrl.includes("dnc-") || item.meetUrl.includes("ragas-live-room")) {
+          return { ...item, meetUrl: "https://meet.google.com/new" };
+        }
+        return item;
+      });
     } catch {
       return INITIAL_LIVE_SCHEDULES;
     }
@@ -233,7 +240,11 @@ export const AcademyProvider = ({ children }) => {
   const [liveClassConfig, setLiveClassConfig] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.LIVE_CLASS);
-      return saved ? JSON.parse(saved) : INITIAL_LIVE_CLASS;
+      const parsed = saved ? JSON.parse(saved) : INITIAL_LIVE_CLASS;
+      if (!parsed.meetUrl || parsed.meetUrl.includes("dnc-") || parsed.meetUrl.includes("ragas-live")) {
+        return { ...parsed, meetUrl: "https://meet.google.com/new" };
+      }
+      return parsed;
     } catch {
       return INITIAL_LIVE_CLASS;
     }
@@ -339,15 +350,37 @@ export const AcademyProvider = ({ children }) => {
     }
   }, [authUser, userRole]);
 
+  const updateStudentAccessKey = (studentId, newKey) => {
+    setStudentsList((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, accessKey: newKey, password: newKey } : s))
+    );
+    showToast("Student access key updated successfully!", "success");
+  };
+
   const handleLogout = () => {
     setAuthUser(null);
     setUserRole("guest");
     setIsAdminLoggedIn(false);
-    localStorage.removeItem(STORAGE_KEYS.AUTH);
-    localStorage.removeItem("dancingragas_auth_user_v1");
-    localStorage.removeItem("dancingragas_auth_role_v1");
-    showToast("You have been signed out successfully.", "info");
+    setActiveStudentId(null);
+    setIsAuthModalOpen(false);
+    try {
+      localStorage.removeItem(STORAGE_KEYS.AUTH);
+      localStorage.removeItem("dancingragas_auth_user_v1");
+      localStorage.removeItem("dancingragas_auth_role_v1");
+      localStorage.removeItem("dancingragas_current_page");
+      localStorage.removeItem("dancingragas_active_student_id");
+      localStorage.removeItem("dancingragas_academy_admin_auth_v2");
+    } catch (e) {
+      console.error("Storage clear error", e);
+    }
+    if (typeof window !== "undefined") {
+      try {
+        window.history.pushState({ page: "home" }, "", "/");
+      } catch {}
+    }
     setCurrentPage("home");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    showToast("You have been signed out. Welcome to the DancingRagas website.", "info");
   };
 
   // Persist to localStorage
@@ -600,7 +633,44 @@ export const AcademyProvider = ({ children }) => {
     setStudentsList((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...updatedData } : s))
     );
-    showToast("Student profile and course enrolment updated!", "success");
+    showToast("Student profile updated successfully!", "success");
+  };
+
+  const reportStudentAbsence = (studentId, absenceData) => {
+    const newAbsence = {
+      id: "abs-" + Date.now(),
+      date: absenceData.date,
+      reason: absenceData.reason,
+      notes: absenceData.notes || "",
+      reportedAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      status: "Logged"
+    };
+    setStudentsList((prev) =>
+      prev.map((s) => {
+        if (s.id === studentId) {
+          const currentAbsences = s.reportedAbsences || [];
+          return { ...s, reportedAbsences: [newAbsence, ...currentAbsences] };
+        }
+        return s;
+      })
+    );
+    showToast(`Absence recorded for ${absenceData.date}. Dr. Malavika has been notified!`, "success");
+    return newAbsence;
+  };
+
+  const acknowledgeStudentAbsence = (studentId, absenceId) => {
+    setStudentsList((prev) =>
+      prev.map((s) => {
+        if (s.id === studentId) {
+          const updated = (s.reportedAbsences || []).map((a) =>
+            a.id === absenceId ? { ...a, status: "Acknowledged" } : a
+          );
+          return { ...s, reportedAbsences: updated };
+        }
+        return s;
+      })
+    );
+    showToast("Absence acknowledged. Student attendance streak protected.", "info");
   };
 
   const deleteStudent = (id) => {
@@ -673,7 +743,7 @@ export const AcademyProvider = ({ children }) => {
       scheduledDayTime: scheduleData.scheduledDayTime || "Upcoming Weekend",
       targetTimestamp: scheduleData.targetTimestamp || new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
       meetUrl: scheduleData.meetUrl || "https://meet.google.com/new",
-      meetingId: scheduleData.meetingId || "dnc-ragas-live",
+      meetingId: scheduleData.meetingId || "ragas-live-room",
       passcode: scheduleData.passcode || "RAGAS2026",
       status: "Confirmed",
       notice: scheduleData.notice || "Interactive live masterclass conducted directly with Dr. Malavika.",
@@ -683,6 +753,45 @@ export const AcademyProvider = ({ children }) => {
     setLiveClassSchedules((prev) => [newSchedule, ...prev]);
     showToast(`Live Class scheduled for "${newSchedule.batchName}"! Reflected in Student Portals.`, "success");
     return newSchedule;
+  };
+
+  const recordBatchAttendance = (batchName, sessionDate, attendanceRecords, sessionNotes) => {
+    setStudentsList((prev) =>
+      prev.map((student) => {
+        if (attendanceRecords[student.id] !== undefined) {
+          const isPresent = Boolean(attendanceRecords[student.id]);
+          const currentLogs = student.attendanceLogs || [];
+          const newLogs = [
+            {
+              id: "att-" + Date.now() + "-" + student.id,
+              date: sessionDate || new Date().toISOString().split("T")[0],
+              batch: batchName,
+              present: isPresent,
+              notes: sessionNotes || ""
+            },
+            ...currentLogs
+          ];
+          const totalLogged = newLogs.length;
+          const totalPresent = newLogs.filter((l) => l.present).length;
+          const newAttendancePct = Math.round((totalPresent / totalLogged) * 100);
+
+          return {
+            ...student,
+            attendance: newAttendancePct,
+            attendanceLogs: newLogs
+          };
+        }
+        return student;
+      })
+    );
+    showToast(`Attendance recorded for ${Object.keys(attendanceRecords).length} students!`, "success");
+  };
+
+  const updateStudentProgress = (studentId, progressPct, level) => {
+    setStudentsList((prev) =>
+      prev.map((s) => (s.id === studentId ? { ...s, progress: progressPct, level: level || s.level } : s))
+    );
+    showToast("Student syllabus progress updated!", "success");
   };
 
   const updateLiveClassSchedule = (id, updatedData) => {
@@ -751,6 +860,170 @@ export const AcademyProvider = ({ children }) => {
     showToast("Academic & biomechanical assessment published to student portal!", "success");
   };
 
+
+  const addCurriculumModule = (courseCategory, moduleData) => {
+    const newModule = {
+      id: "mod-" + Date.now(),
+      moduleNumber: moduleData.moduleNumber || `Module 0${curriculumModules.length + 1}`,
+      title: moduleData.title.trim(),
+      description: moduleData.description || "",
+      courseCategory: courseCategory || "Bharatanatyam Diploma",
+      progressPercent: 0,
+      status: "Upcoming",
+      lessons: []
+    };
+    setCurriculumModules((prev) => [...prev, newModule]);
+    showToast(`New module "${newModule.title}" added to curriculum!`, "success");
+    return newModule;
+  };
+
+  const updateCurriculumModule = (moduleId, updatedData) => {
+    setCurriculumModules((prev) =>
+      prev.map((mod) => (mod.id === moduleId ? { ...mod, ...updatedData } : mod))
+    );
+    showToast("Course module updated successfully!", "success");
+  };
+
+  const deleteCurriculumModule = (moduleId) => {
+    setCurriculumModules((prev) => prev.filter((mod) => mod.id !== moduleId));
+    showToast("Module removed from curriculum.", "info");
+  };
+
+  const addLessonToModule = (moduleId, lessonData) => {
+    const newLesson = {
+      id: "rec-" + Date.now(),
+      title: lessonData.title.trim(),
+      duration: lessonData.duration || "25 mins",
+      embedUrl: lessonData.embedUrl || "",
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      completed: false,
+      topics: Array.isArray(lessonData.topics)
+        ? lessonData.topics
+        : (lessonData.topics || "").split(",").map((t) => t.trim()).filter(Boolean),
+      notesPdf: lessonData.notesPdf || "",
+      pdfUrl: lessonData.pdfUrl || "",
+      pdfTitle: lessonData.pdfTitle || lessonData.notesPdf || ""
+    };
+
+    setCurriculumModules((prev) =>
+      prev.map((mod) => {
+        if (mod.id !== moduleId) return mod;
+        const updatedLessons = [...(mod.lessons || []), newLesson];
+        return {
+          ...mod,
+          lessons: updatedLessons
+        };
+      })
+    );
+
+    // Keep recordings list in sync for any legacy components
+    setRecordings((prev) => [
+      {
+        id: newLesson.id,
+        title: newLesson.title,
+        duration: newLesson.duration,
+        embedUrl: newLesson.embedUrl,
+        module: moduleId,
+        courseCategory: lessonData.courseCategory || "Bharatanatyam Diploma",
+        description: (newLesson.topics || []).join(", ")
+      },
+      ...prev
+    ]);
+
+    showToast(`Video lesson "${newLesson.title}" added to module!`, "success");
+    return newLesson;
+  };
+
+  const updateLessonInModule = (moduleId, lessonId, updatedData) => {
+    setCurriculumModules((prev) =>
+      prev.map((mod) => {
+        if (mod.id !== moduleId) return mod;
+        const updatedLessons = (mod.lessons || []).map((l) =>
+          l.id === lessonId ? { ...l, ...updatedData } : l
+        );
+        return { ...mod, lessons: updatedLessons };
+      })
+    );
+    showToast("Lesson details updated!", "success");
+  };
+
+  const deleteLessonFromModule = (moduleId, lessonId) => {
+    setCurriculumModules((prev) =>
+      prev.map((mod) => {
+        if (mod.id !== moduleId) return mod;
+        return {
+          ...mod,
+          lessons: (mod.lessons || []).filter((l) => l.id !== lessonId)
+        };
+      })
+    );
+    showToast("Video lesson removed from module.", "info");
+  };
+
+  const moveLessonBetweenModules = (sourceModuleId, targetModuleId, lessonId) => {
+    if (sourceModuleId === targetModuleId) return;
+    setCurriculumModules((prev) => {
+      let movedLesson = null;
+      const afterRemoval = prev.map((mod) => {
+        if (mod.id !== sourceModuleId) return mod;
+        const found = (mod.lessons || []).find((l) => l.id === lessonId);
+        if (found) movedLesson = found;
+        return {
+          ...mod,
+          lessons: (mod.lessons || []).filter((l) => l.id !== lessonId)
+        };
+      });
+      if (!movedLesson) return prev;
+      return afterRemoval.map((mod) => {
+        if (mod.id !== targetModuleId) return mod;
+        return {
+          ...mod,
+          lessons: [...(mod.lessons || []), movedLesson]
+        };
+      });
+    });
+    showToast("Video moved to selected module!", "success");
+  };
+
+  const reorderLessonInModule = (moduleId, lessonId, direction) => {
+    setCurriculumModules((prev) =>
+      prev.map((mod) => {
+        if (mod.id !== moduleId) return mod;
+        const lessons = [...(mod.lessons || [])];
+        const idx = lessons.findIndex((l) => l.id === lessonId);
+        if (idx === -1) return mod;
+        const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+        if (targetIdx < 0 || targetIdx >= lessons.length) return mod;
+        const [moved] = lessons.splice(idx, 1);
+        lessons.splice(targetIdx, 0, moved);
+        return { ...mod, lessons };
+      })
+    );
+    showToast(`Lesson moved ${direction}!`, "info");
+  };
+
+  const attachPdfToLesson = (moduleId, lessonId, pdfData) => {
+    setCurriculumModules((prev) =>
+      prev.map((mod) => {
+        if (mod.id !== moduleId) return mod;
+        return {
+          ...mod,
+          lessons: (mod.lessons || []).map((l) =>
+            l.id === lessonId
+              ? {
+                  ...l,
+                  notesPdf: pdfData.notesPdf || pdfData.title || "Lesson_Notes.pdf",
+                  pdfUrl: pdfData.pdfUrl || pdfData.fileUrl || "#",
+                  pdfTitle: pdfData.pdfTitle || pdfData.title || "Curriculum Notes"
+                }
+              : l
+          )
+        };
+      })
+    );
+    showToast("PDF notes attached below video lesson!", "success");
+  };
+
   const toggleLessonCompletion = (moduleId, lessonId) => {
     setCurriculumModules((prev) =>
       prev.map((mod) => {
@@ -783,10 +1056,7 @@ export const AcademyProvider = ({ children }) => {
   };
 
   const logoutAdmin = () => {
-    setIsAdminLoggedIn(false);
-    localStorage.removeItem(STORAGE_KEYS.AUTH);
-    showToast("You have been signed out of Admin Dashboard.", "info");
-    setCurrentPage("home");
+    handleLogout();
   };
 
   // Reset to factory defaults
@@ -959,6 +1229,15 @@ export const AcademyProvider = ({ children }) => {
         curriculumModules,
         setCurriculumModules,
         toggleLessonCompletion,
+        addCurriculumModule,
+        updateCurriculumModule,
+        deleteCurriculumModule,
+        addLessonToModule,
+        updateLessonInModule,
+        deleteLessonFromModule,
+        moveLessonBetweenModules,
+        reorderLessonInModule,
+        attachPdfToLesson,
         studentAssessments,
         setStudentAssessments,
         submitStudentAssessment,
@@ -977,7 +1256,13 @@ export const AcademyProvider = ({ children }) => {
         studyMaterials,
         addStudyMaterial,
         deleteStudyMaterial,
-        isAdminLoggedIn: isAdminLoggedIn || userRole === "admin" || userRole === "tutor",
+        recordBatchAttendance,
+        updateStudentProgress,
+        updateStudentAccessKey,
+        reportStudentAbsence,
+        acknowledgeStudentAbsence,
+        isAdminLoggedIn: userRole === "admin" || userRole === "tutor",
+        setIsAdminLoggedIn,
         authUser,
         setAuthUser,
         userRole,
@@ -1019,7 +1304,7 @@ export const AcademyProvider = ({ children }) => {
 };
 
 // oxlint-disable-next-line react/only-export-components
-export const useAcademy = () => {
+export function useAcademy() {
   const context = useContext(AcademyContext);
   if (!context) {
     throw new Error("useAcademy must be used within an AcademyProvider");

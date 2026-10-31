@@ -6,10 +6,10 @@
     --font-serif: 'Cormorant Garamond', Georgia, serif;
     --font-cinzel: 'Cinzel', serif;
     --font-body: 'Plus Jakarta Sans', sans-serif;
-    --color-charcoal: #151515;
-    --color-ivory: #F5F0E8;
-    --color-gold: #B99A63;
-    --color-stone: #A9A49D;
+    --color-charcoal: #260A22;
+    --color-ivory: #FBF7F5;
+    --color-gold: #C9956A;
+    --color-stone: #A5929B;
   }
   
   html {
@@ -21,8 +21,8 @@
   }
 
   body {
-    background-color: #F5F0E8;
-    color: #151515;
+    background-color: #FBF7F5;
+    color: #260A22;
     overflow-x: hidden;
     width: 100%;
     position: relative;
@@ -64,14 +64,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #151515;
+  background: #260A22;
 }
 ::-webkit-scrollbar-thumb {
-  background: #B99A63;
+  background: #C9956A;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #D4AF37;
+  background: #DFAC88;
 }
 
 /* Strictly hide scrollbars for all horizontal carousels, swipe tracks, and scrollbar-none containers */
@@ -92,65 +92,65 @@
   scrollbar-width: none !important;
 }
 
-/* ─── PREMIUM BRAND PALETTE UTILITIES ────────────────────── */
-.bg-charcoal       { background-color: #151515; }
-.text-charcoal     { color: #151515; }
-.bg-warm-ivory     { background-color: #F5F0E8; }
-.text-warm-ivory   { color: #F5F0E8; }
-.bg-muted-gold     { background-color: #B99A63; }
-.text-muted-gold   { color: #B99A63; }
-.border-muted-gold { border-color: rgba(185, 154, 99, 0.4); }
-.border-stone-grey { border-color: rgba(169, 164, 157, 0.25); }
-.text-stone-grey   { color: #767069; }
+/* ─── PREMIUM BRAND PALETTE UTILITIES (MAUVE ROSE & ROSE GOLD) ─── */
+.bg-charcoal       { background-color: #260A22; }
+.text-charcoal     { color: #260A22; }
+.bg-warm-ivory     { background-color: #FBF7F5; }
+.text-warm-ivory   { color: #FBF7F5; }
+.bg-muted-gold     { background-color: #C9956A; }
+.text-muted-gold   { color: #C9956A; }
+.border-muted-gold { border-color: rgba(201, 149, 106, 0.4); }
+.border-stone-grey { border-color: rgba(165, 146, 155, 0.25); }
+.text-stone-grey   { color: #7A6973; }
 
-/* Deep Burgundy Tones */
-.bg-burgundy         { background-color: #3B0B14; }
-.bg-burgundy-dark    { background-color: #24050B; }
-.bg-burgundy-light   { background-color: #4A0E17; }
-.text-burgundy       { color: #3B0B14; }
-.text-burgundy-light { color: #58111D; }
-.border-burgundy     { border-color: rgba(59, 11, 20, 0.35); }
-.border-burgundy-gold { border-color: rgba(185, 154, 99, 0.5); }
+/* Deep Mauve Tones */
+.bg-burgundy         { background-color: #3D1035; }
+.bg-burgundy-dark    { background-color: #260A22; }
+.bg-burgundy-light   { background-color: #561A4B; }
+.text-burgundy       { color: #3D1035; }
+.text-burgundy-light { color: #561A4B; }
+.border-burgundy     { border-color: rgba(61, 16, 53, 0.35); }
+.border-burgundy-gold { border-color: rgba(201, 149, 106, 0.5); }
 
 .bg-gradient-burgundy {
-  background: linear-gradient(135deg, #3B0B14 0%, #1a0409 100%);
+  background: linear-gradient(135deg, #3D1035 0%, #1c0619 100%);
 }
 .bg-gradient-hero-dark {
-  background: radial-gradient(circle at 70% 30%, #4A0E17 0%, #20040A 40%, #151515 90%);
+  background: radial-gradient(circle at 70% 30%, #561A4B 0%, #260A22 40%, #150917 90%);
 }
 
 .btn-gold {
-  background-color: #B99A63;
-  color: #151515;
+  background-color: #C9956A;
+  color: #1c0619;
   font-weight: 700;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-gold:hover {
-  background-color: #cca86d;
+  background-color: #DFAC88;
   transform: translateY(-1px);
 }
 
 .btn-charcoal {
-  background-color: #151515;
-  color: #F5F0E8;
+  background-color: #260A22;
+  color: #FBF7F5;
   font-weight: 700;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-charcoal:hover {
-  background-color: #272727;
+  background-color: #3D1035;
   transform: translateY(-1px);
 }
 
 .btn-burgundy {
-  background-color: #3B0B14;
-  color: #F5F0E8;
+  background-color: #3D1035;
+  color: #FBF7F5;
   font-weight: 700;
-  border: 1px solid rgba(185, 154, 99, 0.4);
+  border: 1px solid rgba(201, 149, 106, 0.4);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-burgundy:hover {
-  background-color: #4A0E17;
-  border-color: #B99A63;
+  background-color: #561A4B;
+  border-color: #C9956A;
   transform: translateY(-1px);
 }
 
@@ -209,10 +209,10 @@
 /* Museum-grade gold matting frame */
 .museum-frame {
   position: relative;
-  border: 2px solid #B99A63;
+  border: 2px solid #C9956A;
   padding: 8px;
-  background: #151515;
-  box-shadow: 0 20px 45px -10px rgba(21, 21, 21, 0.35), 0 0 0 1px rgba(185, 154, 99, 0.3);
+  background: #260A22;
+  box-shadow: 0 20px 45px -10px rgba(38, 10, 34, 0.35), 0 0 0 1px rgba(201, 149, 106, 0.3);
   border-radius: 1.75rem;
 }
 
@@ -220,13 +220,13 @@
   position: relative;
   overflow: hidden;
   border-radius: 1.35rem;
-  border: 1px solid rgba(185, 154, 99, 0.45);
+  border: 1px solid rgba(201, 149, 106, 0.45);
 }
 
 .card-photo-frame {
   position: relative;
   overflow: hidden;
-  border: 1.5px solid rgba(185, 154, 99, 0.35);
+  border: 1.5px solid rgba(201, 149, 106, 0.35);
   border-radius: 1.25rem;
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2), 0 12px 24px -8px rgba(0, 0, 0, 0.2);
 }
@@ -236,23 +236,23 @@
 }
 
 .gold-foil-text {
-  background: linear-gradient(135deg, #d4af37 0%, #fff2b2 28%, #b38728 55%, #fbed96 82%, #8b6508 100%);
+  background: linear-gradient(135deg, #e8b896 0%, #fdf0ea 28%, #c9956a 55%, #f6d1bc 82%, #a86f4a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .bg-gold-metallic {
-  background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 35%, #b38728 70%, #fbf5b7 100%);
+  background: linear-gradient(135deg, #c9956a 0%, #fdf0ea 35%, #b57a53 70%, #f6d1bc 100%);
 }
 
 .gold-border-subtle {
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  border: 1px solid rgba(201, 149, 106, 0.35);
 }
 
 .gold-border-beam {
-  border: 1px solid rgba(212, 175, 55, 0.5);
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);
+  border: 1px solid rgba(201, 149, 106, 0.5);
+  box-shadow: 0 0 20px rgba(201, 149, 106, 0.25);
 }
 
 .stage-spotlight {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
-import { Sparkles, ChevronRight, GraduationCap, Shield, User } from "lucide-react";
+import { ChevronRight, GraduationCap, Shield, User, LogOut } from "lucide-react";
 import { EditableText, EditableMedia } from "./LiveVisualEditor";
 
 export default function Navbar() {
-  const { currentPage, navigateTo, authUser, userRole, setIsAuthModalOpen, siteContent } = useAcademy();
+  const { currentPage, navigateTo, authUser, userRole, setIsAuthModalOpen, handleLogout, siteContent } = useAcademy();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -68,10 +68,10 @@ export default function Navbar() {
     }
   };
 
-  const handlePortalClick = () => {
+  const handleLoginClick = () => {
     playGhungrooChime();
     setMobileMenuOpen(false);
-    if (userRole === "admin") {
+    if (userRole === "tutor" || userRole === "admin") {
       navigateTo("admin");
     } else if (userRole === "student") {
       navigateTo("student-portal");
@@ -86,8 +86,8 @@ export default function Navbar() {
       <nav
         className={`w-full transition-all duration-300 ${
           scrolled
-            ? "bg-[#F5F0E8]/98 text-[#151515] backdrop-blur-md shadow-xs py-2.5 sm:py-3 border-b border-[#B99A63]/30"
-            : "bg-[#F5F0E8]/95 text-[#151515] backdrop-blur-md py-3 sm:py-4 border-b border-[#A9A49D]/15"
+            ? "bg-[#FBF7F5]/98 text-[#260A22] backdrop-blur-md shadow-xs py-2.5 sm:py-3 border-b border-[#C9956A]/30"
+            : "bg-[#FBF7F5]/95 text-[#260A22] backdrop-blur-md py-3 sm:py-4 border-b border-[#A5929B]/15"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex items-center justify-between gap-4">
@@ -112,7 +112,7 @@ export default function Navbar() {
                   section="brand"
                   field="name"
                   defaultValue="Dr. Malavika M Sunil"
-                  className="font-bold text-sm sm:text-base md:text-lg lg:text-xl tracking-tight font-serif-luxury text-[#151515] leading-tight block whitespace-nowrap"
+                  className="font-bold text-sm sm:text-base md:text-lg lg:text-xl tracking-tight font-serif-luxury text-[#260A22] leading-tight block whitespace-nowrap"
                 />
               </div>
               <EditableText
@@ -120,7 +120,7 @@ export default function Navbar() {
                 section="brand"
                 field="brandTitle"
                 defaultValue="Classical Dance &amp; Music"
-                className="text-[8px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-[0.2em] text-[#B99A63] uppercase mt-0.5 leading-none whitespace-nowrap block"
+                className="text-[8px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-[0.2em] text-[#C9956A] uppercase mt-0.5 leading-none whitespace-nowrap block"
               />
             </div>
           </button>
@@ -135,54 +135,104 @@ export default function Navbar() {
                   onClick={() => handleNavClick(link)}
                   className={`relative px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-200 cursor-pointer ${
                     isActive
-                      ? "text-[#151515] font-bold bg-[#B99A63]/15"
-                      : "text-stone-700 hover:text-[#151515] hover:bg-stone-200/40"
+                      ? "text-[#260A22] font-bold bg-[#C9956A]/15"
+                      : "text-stone-700 hover:text-[#260A22] hover:bg-[#C9956A]/10"
                   }`}
                 >
                   <span>{link.label}</span>
                   {isActive && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#B99A63] rounded-full" />
+                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#C9956A] rounded-full" />
                   )}
                 </button>
               );
             })}
           </div>
 
-          {/* Right Action: Clean Portal Access Pill (iPhone Deep Burgundy & Gold) */}
-          <div className="hidden lg:flex items-center gap-3">
-            <button
-              onClick={handlePortalClick}
-              className="group px-4 py-2 rounded-full border border-[#B99A63]/60 bg-[#1E050B] hover:bg-[#3D0B16] text-[#D4AF37] hover:text-white text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-md shadow-[#1E050B]/20 flex items-center gap-2 cursor-pointer tap-bounce"
-            >
-              {userRole === "admin" ? (
-                <>
-                  <Shield className="w-3.5 h-3.5 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-                  <span>Director Suite</span>
-                </>
-              ) : userRole === "student" ? (
-                <>
-                  <GraduationCap className="w-3.5 h-3.5 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-                  <span>Student Sanctuary</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37] group-hover:scale-110 transition-transform" />
-                  <span>Portal Access</span>
-                </>
-              )}
-            </button>
+          {/* Right Action: Clean Log In & Portal Access */}
+          <div className="hidden lg:flex items-center gap-2.5">
+            {userRole === "student" ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigateTo("student-portal")}
+                  className="px-4 py-2 rounded-full border border-[#C9956A]/60 bg-[#260A22] hover:bg-[#3D1035] text-[#E8B896] hover:text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md flex items-center gap-2 cursor-pointer tap-bounce"
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-[#E8B896]" />
+                  <span>Student Portal</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 rounded-full border border-stone-300 hover:border-rose-400 bg-white hover:bg-rose-50 text-stone-700 hover:text-rose-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  title="Sign Out of Academy"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                  <span className="hidden xl:inline">Sign Out</span>
+                </button>
+              </div>
+            ) : userRole === "tutor" || userRole === "admin" ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigateTo("admin")}
+                  className="px-4 py-2 rounded-full border border-[#C9956A]/60 bg-[#260A22] hover:bg-[#3D1035] text-[#E8B896] hover:text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md flex items-center gap-2 cursor-pointer tap-bounce"
+                >
+                  <Shield className="w-3.5 h-3.5 text-[#E8B896]" />
+                  <span>Tutor Portal</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 rounded-full border border-stone-300 hover:border-rose-400 bg-white hover:bg-rose-50 text-stone-700 hover:text-rose-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  title="Sign Out of Academy"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                  <span className="hidden xl:inline">Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  playGhungrooChime();
+                  setIsAuthModalOpen(true);
+                }}
+                className="group px-5 py-2.5 rounded-full border border-[#C9956A]/60 bg-[#260A22] hover:bg-[#3D1035] text-[#E8B896] hover:text-white text-xs font-bold tracking-wider uppercase transition-all duration-300 shadow-md shadow-[#260A22]/20 flex items-center gap-2 cursor-pointer tap-bounce"
+              >
+                <User className="w-3.5 h-3.5 text-[#E8B896] group-hover:scale-110 transition-transform" />
+                <span>Log In</span>
+              </button>
+            )}
           </div>
 
-          {/* Mobile Right: Discreet Portal Icon + Clean Hamburger */}
+          {/* Mobile Right: Discreet Log In / Portal Icon + Clean Hamburger */}
           <div className="flex items-center gap-2 lg:hidden shrink-0">
-            <button
-              onClick={handlePortalClick}
-              className="p-2 rounded-full border border-[#B99A63]/40 bg-white/70 text-stone-800 text-xs font-bold tap-bounce"
-              title="Portal Access"
-              aria-label="Portal Access"
-            >
-              <User className="w-4 h-4 text-[#B99A63]" />
-            </button>
+            {userRole === "student" ? (
+              <button
+                onClick={() => navigateTo("student-portal")}
+                className="px-3 py-1.5 rounded-full border border-[#C9956A]/40 bg-[#260A22] text-[#E8B896] text-xs font-bold flex items-center gap-1 tap-bounce"
+                title="Student Portal"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-[#E8B896]" />
+                <span>Portal</span>
+              </button>
+            ) : userRole === "tutor" || userRole === "admin" ? (
+              <button
+                onClick={() => navigateTo("admin")}
+                className="px-3 py-1.5 rounded-full border border-[#C9956A]/40 bg-[#260A22] text-[#E8B896] text-xs font-bold flex items-center gap-1 tap-bounce"
+                title="Tutor Portal"
+              >
+                <Shield className="w-3.5 h-3.5 text-[#E8B896]" />
+                <span>Tutor</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  playGhungrooChime();
+                  setIsAuthModalOpen(true);
+                }}
+                className="px-3.5 py-1.5 rounded-full border border-[#C9956A]/60 bg-[#260A22] text-[#E8B896] text-xs font-bold flex items-center gap-1.5 tap-bounce shadow-xs"
+                title="Log In"
+              >
+                <User className="w-3.5 h-3.5 text-[#E8B896]" />
+                <span>Log In</span>
+              </button>
+            )}
 
             {/* Smooth Hamburger Button */}
             <button
@@ -239,27 +289,65 @@ export default function Navbar() {
                 })}
 
                 <div className="pt-4 mt-2 border-t border-[#A9A49D]/20 space-y-2">
-                  <button
-                    onClick={handlePortalClick}
-                    className="w-full py-3.5 rounded-2xl bg-[#151515] text-[#D4AF37] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer tap-bounce shadow-md"
-                  >
-                    {userRole === "admin" ? (
-                      <>
-                        <Shield className="w-4 h-4 text-[#D4AF37]" />
-                        <span>Open Director Suite</span>
-                      </>
-                    ) : userRole === "student" ? (
-                      <>
-                        <GraduationCap className="w-4 h-4 text-[#D4AF37]" />
-                        <span>Open Student Sanctuary</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-                        <span>Portal Access (Student / Director)</span>
-                      </>
-                    )}
-                  </button>
+                  {userRole === "student" ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigateTo("student-portal");
+                        }}
+                        className="w-full py-3.5 rounded-2xl bg-[#260A22] text-[#E8B896] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer tap-bounce shadow-md"
+                      >
+                        <GraduationCap className="w-4 h-4 text-[#E8B896]" />
+                        <span>Go to Student Portal</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full py-2.5 rounded-xl border border-stone-300 text-rose-700 bg-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </>
+                  ) : userRole === "tutor" || userRole === "admin" ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          navigateTo("admin");
+                        }}
+                        className="w-full py-3.5 rounded-2xl bg-[#260A22] text-[#E8B896] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer tap-bounce shadow-md"
+                      >
+                        <Shield className="w-4 h-4 text-[#E8B896]" />
+                        <span>Open Tutor Portal</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full py-2.5 rounded-xl border border-stone-300 text-rose-700 bg-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        playGhungrooChime();
+                        setIsAuthModalOpen(true);
+                      }}
+                      className="w-full py-3.5 rounded-2xl bg-[#260A22] text-[#E8B896] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer tap-bounce shadow-md"
+                    >
+                      <User className="w-4 h-4 text-[#E8B896]" />
+                      <span>Log In (Student / Tutor)</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

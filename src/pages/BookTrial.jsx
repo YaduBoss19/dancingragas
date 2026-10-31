@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import AnimatedSection from "../components/AnimatedSection";
+import WhatsAppIcon from "../components/WhatsAppIcon";
 import {
   Sparkles,
   CheckCircle2,
@@ -103,7 +104,7 @@ export default function BookTrial() {
       <section className="relative pt-12 sm:pt-16 pb-12 sm:pb-16 bg-gradient-to-b from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] text-center border-b border-[#B99A63]/30">
         <AnimatedSection animation="fade-up" className="max-w-4xl mx-auto px-4 sm:px-8 space-y-4">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37] bg-white/5 px-4 py-1.5 rounded-full border border-[#B99A63]/40 inline-flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+            
             <span>Selective Mentorship • Admissions 2026/27</span>
           </span>
           <h1 className="text-3xl xs:text-4xl sm:text-5xl font-bold font-serif-luxury tracking-tight text-white">
@@ -163,9 +164,9 @@ export default function BookTrial() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <button
                 onClick={openWhatsAppConfirmation}
-                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer tap-bounce"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer tap-bounce"
               >
-                <MessageCircle className="w-4 h-4" />
+                <WhatsAppIcon className="w-5 h-5 text-white" />
                 <span>Confirm on WhatsApp</span>
               </button>
 
@@ -188,7 +189,7 @@ export default function BookTrial() {
             <AnimatedSection animation="slide-left" className="lg:col-span-5 space-y-6 text-left">
               <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#151515] via-[#2A080E] to-[#151515] text-[#F5F0E8] shadow-2xl space-y-5 border border-[#B99A63]/40">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B99A63]/20 border border-[#B99A63]/40 text-xs font-bold text-[#D4AF37]">
-                  <Sparkles className="w-3.5 h-3.5" /> What to Expect
+                  What to Expect
                 </div>
 
                 <h3 className="text-xl sm:text-2xl font-bold tracking-tight font-serif-luxury text-white">
@@ -231,10 +232,10 @@ export default function BookTrial() {
                 <button
                   type="button"
                   onClick={openWhatsAppConfirmation}
-                  className="px-4 py-2 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold text-xs hover:bg-emerald-100 transition-colors flex items-center gap-1.5 shrink-0 tap-bounce cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[#25D366] text-white font-bold text-xs hover:bg-[#20ba59] transition-colors flex items-center gap-2 shrink-0 tap-bounce cursor-pointer shadow-sm"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
-                  <span>WhatsApp</span>
+                  <WhatsAppIcon className="w-4 h-4 text-white" />
+                  <span>Chat on WhatsApp</span>
                 </button>
               </div>
             </AnimatedSection>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import AnimatedSection from "../components/AnimatedSection";
+import WhatsAppIcon from "../components/WhatsAppIcon";
 import {
   MapPin,
   Phone,
@@ -94,8 +95,8 @@ export default function ContactUs() {
           {/* Card 1: WhatsApp */}
           <AnimatedSection delay={0} className="p-6 rounded-3xl bg-emerald-50 border border-emerald-200 shadow-sm text-left flex flex-col justify-between hover-lift">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mb-4 shadow-md shadow-emerald-500/20">
-                <MessageCircle className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-[#25D366] text-white flex items-center justify-center mb-4 shadow-md shadow-emerald-500/20">
+                <WhatsAppIcon className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">WhatsApp Chat</h3>
               <p className="text-xs text-slate-600 leading-relaxed mb-4">
@@ -104,10 +105,10 @@ export default function ContactUs() {
             </div>
             <button
               onClick={openWhatsApp}
-              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm tap-bounce"
+              className="w-full py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm tap-bounce"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
-              <span>Chat: +91 90745 85672</span>
+              <WhatsAppIcon className="w-4 h-4 text-white" />
+              <span>Chat on WhatsApp</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
           </AnimatedSection>

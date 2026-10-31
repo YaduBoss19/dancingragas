@@ -41,8 +41,12 @@ import {
   Star,
   Camera,
   Play,
-  ArrowRight
+  ArrowRight,
+  KeyRound,
+  Stethoscope,
+  Heart
 } from "lucide-react";
+import WhatsAppIcon from "../components/WhatsAppIcon";
 import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
 import TuitionReceiptModal from "../components/TuitionReceiptModal";
 import { formatVideoEmbedUrl } from "../utils/videoUtils";
@@ -88,6 +92,10 @@ export default function AdminDashboard() {
     gradeAssessment,
     studentsList,
     addStudent,
+    updateStudent,
+    acknowledgeStudentAbsence,
+    updateStudentAccessKey,
+    updateStudentProgress,
     deleteStudent,
     addStudentToCourse,
     removeStudentFromCourse,
@@ -103,6 +111,19 @@ export default function AdminDashboard() {
   const isFaculty = userRole === "tutor";
 
   const [passwordInput, setPasswordInput] = useState("");
+  // Passcode change modal state
+  const [isChangePasscodeModalOpen, setIsChangePasscodeModalOpen] = useState(false);
+  const [newDashboardPasscode, setNewDashboardPasscode] = useState("");
+
+  // Student Wellness Advice Modal State
+  const [wellnessStudentTarget, setWellnessStudentTarget] = useState(null);
+  const [wellnessTextInput, setWellnessTextInput] = useState("");
+
+  // Student Showcase Link Modal State
+  const [showcaseStudentTarget, setShowcaseStudentTarget] = useState(null);
+  const [showcaseUrlInput, setShowcaseUrlInput] = useState("");
+  const [previewShowcaseUrl, setPreviewShowcaseUrl] = useState(null);
+
   const [workspaceMode, setWorkspaceMode] = useState(isFaculty ? "academic" : "admissions"); // 'academic' | 'admissions'
   const [activeTab, setActiveTab] = useState(isFaculty ? "course_areas" : "site_cms");
 
@@ -1430,7 +1451,159 @@ export default function AdminDashboard() {
                       <p className="text-stone-500 text-[11px] line-clamp-2 mt-1">{item.caption}</p>
                     </div>
 
-                    <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                    {/* ═══════════════════════════════════════════════════════════════
+                    STUDENT PORTAL ACCESS KEY ROW (TUTOR ISSUES KEY TO STUDENT)
+                ═══════════════════════════════════════════════════════════════ */}
+                <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/70 text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                      <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Student Access Key:</span>
+                    </div>
+                    <code className="px-2 py-0.5 rounded-md bg-white border border-amber-300 font-mono font-bold text-stone-900">
+                      {student.accessKey || student.password || "ragas2026"}
+                    </code>
+                  </div>
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newKey = window.prompt(`Enter new access key for ${student.name}:`, student.accessKey || "ragas2026");
+                        if (newKey && newKey.trim()) {
+                          if (newKey.trim().length < 4) {
+                            alert("Access key must be at least 4 characters.");
+                            return;
+                          }
+                          updateStudentAccessKey(student.id, newKey.trim());
+                        }
+                      }}
+                      className="flex-1 py-1 px-2 rounded-lg bg-amber-100/80 hover:bg-amber-200 text-amber-950 text-[11px] font-bold text-center transition-colors cursor-pointer"
+                    >
+                      Edit Key
+                    </button>
+                    <a
+                      href={`mailto:${student.email}?subject=${encodeURIComponent("Your DancingRagas Student Portal Access Key")}&body=${encodeURIComponent(`Dear ${student.name},\n\nHere is your private login access key to the DancingRagas Student Sanctuary:\n\nPortal: https://dancingragas.vercel.app\nUsername: ${student.email}\nAccess Key: ${student.accessKey || student.password || "ragas2026"}\n\nWith warmth,\nDr. Malavika M. Sunil`)}`}
+                      className="py-1 px-2.5 rounded-lg bg-white border border-amber-300 hover:bg-stone-50 text-stone-700 text-[11px] font-bold flex items-center gap-1 transition-colors"
+                      title="Email Access Key to Disciple"
+                    >
+                      <Mail className="w-3 h-3 text-amber-700" />
+                      <span>Email</span>
+                    </a>
+                    <a
+                      href={`https://wa.me/${(student.phone || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`🌸 Namaste ${student.name},\n\nHere is your private access key to the DancingRagas Student Sanctuary:\n\n🔗 Portal: https://dancingragas.vercel.app\n✉️ Username: ${student.email}\n🔑 Access Key: ${student.accessKey || student.password || "ragas2026"}\n\nWith warmth,\nDr. Malavika M. Sunil`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-1 px-2.5 rounded-lg bg-[#25D366] text-white hover:brightness-105 text-[11px] font-bold flex items-center gap-1 transition-all"
+                      title="Send Access Key via WhatsApp"
+                    >
+                      <WhatsAppIcon className="w-3 h-3 text-white" />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+
+                {/* ═══════════════════════════════════════════════════════════════
+                    FOUR TUTOR DISCIPLE CONTROLS (CERTIFICATE, WELLNESS, SHOWCASE, ABSENCE)
+                ═══════════════════════════════════════════════════════════════ */}
+                <div className="space-y-2 pt-1 border-t border-stone-100">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block">
+                    Tutor Disciple Controls
+                  </span>
+                  
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {/* Control 1: View Certificate Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newStatus = !student.certificateEnabled;
+                        updateStudent(student.id, { certificateEnabled: newStatus });
+                        showToast(
+                          newStatus
+                            ? `Sanad Certificate unlocked for ${student.name}! Visible in their Student Portal.`
+                            : `Sanad Certificate hidden for ${student.name}.`,
+                          "info"
+                        );
+                      }}
+                      className={`py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        student.certificateEnabled
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-300"
+                          : "bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200"
+                      }`}
+                      title="Control whether student can view their Sanad Certificate in Student Portal"
+                    >
+                      <Award className={`w-3.5 h-3.5 ${student.certificateEnabled ? "text-emerald-600" : "text-stone-400"}`} />
+                      <span>{student.certificateEnabled ? "✓ Cert Active" : "Enable Cert"}</span>
+                    </button>
+
+                    {/* Control 2: Physician Wellness Advice */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWellnessStudentTarget(student);
+                        setWellnessTextInput(student.wellnessAdvice || "");
+                      }}
+                      className={`py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        student.wellnessAdvice
+                          ? "bg-teal-50 text-teal-800 border border-teal-300"
+                          : "bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200"
+                      }`}
+                      title="Write personalized doctor anatomical advice for this student"
+                    >
+                      <Stethoscope className={`w-3.5 h-3.5 ${student.wellnessAdvice ? "text-teal-600" : "text-stone-400"}`} />
+                      <span>{student.wellnessAdvice ? "✓ Edit Wellness" : "+ Wellness"}</span>
+                    </button>
+                  </div>
+
+                  {/* Control 3: Student Showcase (YouTube Shorts Link + Preview Player) */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowcaseStudentTarget(student);
+                        setShowcaseUrlInput(student.showcaseVideoUrl || "");
+                      }}
+                      className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        student.showcaseVideoUrl
+                          ? "bg-rose-50 text-rose-800 border border-rose-300"
+                          : "bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200"
+                      }`}
+                      title="Add or update YouTube Shorts link for this student recital"
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${student.showcaseVideoUrl ? "text-rose-600 fill-rose-600" : "text-stone-400"}`} />
+                      <span className="truncate">{student.showcaseVideoUrl ? "✓ Edit Showcase" : "+ Showcase (YouTube Shorts)"}</span>
+                    </button>
+
+                    {student.showcaseVideoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setPreviewShowcaseUrl(student.showcaseVideoUrl)}
+                        className="py-1.5 px-2.5 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
+                        title="Watch Disciple Showcase Recital Video"
+                      >
+                        <Play className="w-3 h-3 fill-current" />
+                        <span>Watch</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Control 4: Absence Notices summary badge */}
+                  {(student.reportedAbsences || []).length > 0 && (
+                    <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-[11px] flex items-center justify-between text-amber-900">
+                      <span className="flex items-center gap-1 font-semibold">
+                        <Calendar className="w-3.5 h-3.5 text-amber-700" />
+                        <span>{(student.reportedAbsences || []).length} Absence Notice(s)</span>
+                      </span>
+                      <span className="text-[10px] text-amber-700 font-bold underline cursor-pointer" onClick={() => {
+                        const el = document.getElementById("student-absences-desk");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }}>
+                        Review &darr;
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
                       <label className="text-[11px] font-bold text-[#0F172A] hover:underline cursor-pointer flex items-center gap-1">
                         <Camera className="w-3 h-3 text-[#B99A63]" />
                         <span>Replace Media</span>
@@ -1848,6 +2021,71 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+            {/* ═══════════════════════════════════════════════════════════════
+                REPORTED STUDENT ABSENCES & LEAVE REQUESTS DESK (ACCESSIBLE TO TUTOR)
+            ═══════════════════════════════════════════════════════════════ */}
+            <div id="student-absences-desk" className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4 mt-6">
+              <div className="flex items-center justify-between border-b pb-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-[#C9956A]" />
+                  <div>
+                    <h4 className="font-bold text-base font-serif-luxury text-stone-900">
+                      Reported Student Absences &amp; Leave Notices
+                    </h4>
+                    <p className="text-xs text-stone-500">
+                      Absences submitted by disciples from their student portal for Dr. Malavika to review.
+                    </p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200">
+                  {((studentsList || []).flatMap((s) => s.reportedAbsences || [])).length} Total Absence Notices
+                </span>
+              </div>
+
+              {((studentsList || []).flatMap((s) => (s.reportedAbsences || []).map((a) => ({ ...a, studentName: s.name, studentId: s.id, regNo: s.registrationNo, batch: (s.enrolledCourses || [])[0] || "Classical Dance" })))).length === 0 ? (
+                <div className="p-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-stone-500 text-xs">
+                  No disciple absences reported yet. When students report an absence from their portal, notices will appear here for Dr. Malavika to review.
+                </div>
+              ) : (
+                <div className="divide-y divide-stone-100">
+                  {((studentsList || []).flatMap((s) => (s.reportedAbsences || []).map((a) => ({ ...a, studentName: s.name, studentId: s.id, regNo: s.registrationNo, batch: (s.enrolledCourses || [])[0] || "Classical Dance" })))).map((abs) => (
+                    <div key={abs.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <strong className="text-stone-900 font-bold">{abs.studentName}</strong>
+                          <span className="text-[10px] text-stone-400 font-mono">({abs.regNo})</span>
+                          <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 text-[10px] font-bold">
+                            {abs.batch}
+                          </span>
+                        </div>
+                        <div className="text-stone-600 flex flex-wrap items-center gap-2">
+                          <span>Date of Absence: <strong className="text-rose-700">{abs.date}</strong></span>
+                          <span>&bull;</span>
+                          <span>Reason: <strong className="text-stone-800">{abs.reason}</strong></span>
+                          {abs.notes && <span>&bull; <em>"{abs.notes}"</em></span>}
+                        </div>
+                        <span className="text-[10px] text-stone-400">Reported on {abs.reportedAt}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${abs.status === "Acknowledged" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-amber-50 text-amber-800 border-amber-200"}`}>
+                          {abs.status || "Logged"}
+                        </span>
+                        {abs.status !== "Acknowledged" && (
+                          <button
+                            type="button"
+                            onClick={() => acknowledgeStudentAbsence && acknowledgeStudentAbsence(abs.studentId, abs.id)}
+                            className="px-3 py-1 rounded-lg bg-[#260A22] text-[#E8B896] hover:text-white text-xs font-bold cursor-pointer"
+                          >
+                            Acknowledge &amp; Clear Makeup
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -3613,6 +3851,267 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: EDIT PERSONALIZED WELLNESS ADVICE (TUTOR WRITES)
+      ═══════════════════════════════════════════════════════════════ */}
+      {wellnessStudentTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <Stethoscope className="w-5 h-5 text-emerald-600" />
+                <div>
+                  <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                    Physician Wellness &amp; Posture Advice
+                  </h3>
+                  <p className="text-xs text-stone-500">Disciple: <strong>{wellnessStudentTarget.name}</strong></p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWellnessStudentTarget(null)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateStudent(wellnessStudentTarget.id, { wellnessAdvice: wellnessTextInput.trim() });
+                showToast(`Wellness advice saved for ${wellnessStudentTarget.name}!`, "success");
+                setWellnessStudentTarget(null);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <p className="text-stone-600 leading-relaxed">
+                As a physician and classical guru, write custom biomechanical observations, joint safety tips, or warmup prescriptions for this student to see in their portal.
+              </p>
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Doctor's Anatomical Advice &amp; Exercises</label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="e.g. Symmetrical patellar alignment; ensure 5-minute soleus stretches after footwork. Maintain core engagement during Araimandi..."
+                  value={wellnessTextInput}
+                  onChange={(e) => setWellnessTextInput(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-stone-200 bg-white font-medium text-stone-900 leading-relaxed"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWellnessStudentTarget(null)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold cursor-pointer shadow-md"
+                >
+                  Save Wellness Advice
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: SET STUDENT SHOWCASE VIDEO (YOUTUBE SHORTS LINK)
+      ═══════════════════════════════════════════════════════════════ */}
+      {showcaseStudentTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-rose-600" />
+                <div>
+                  <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                    Student Showcase Video &amp; Recital Link
+                  </h3>
+                  <p className="text-xs text-stone-500">Disciple: <strong>{showcaseStudentTarget.name}</strong></p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowcaseStudentTarget(null)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateStudent(showcaseStudentTarget.id, { showcaseVideoUrl: showcaseUrlInput.trim() });
+                showToast(`Showcase video link saved for ${showcaseStudentTarget.name}!`, "success");
+                setShowcaseStudentTarget(null);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <p className="text-stone-600 leading-relaxed">
+                Add a YouTube Shorts link or video recording of this student's performance. The disciple and their family can watch and share this recital showcase worldwide.
+              </p>
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">YouTube Shorts or Video URL</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://youtube.com/shorts/... or https://www.youtube.com/watch?v=..."
+                  value={showcaseUrlInput}
+                  onChange={(e) => setShowcaseUrlInput(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-stone-200 bg-white font-medium text-stone-900"
+                />
+                <span className="text-[10px] text-stone-400 block mt-1">
+                  Supports YouTube Shorts, full YouTube videos, Vimeo, and direct MP4 links.
+                </span>
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowcaseStudentTarget(null)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold cursor-pointer shadow-md"
+                >
+                  Save Showcase Link
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: CHANGE DASHBOARD PASSCODE
+      ═══════════════════════════════════════════════════════════════ */}
+      {isChangePasscodeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-[#C9956A]" />
+                <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                  {isFaculty ? "Change Tutor Passcode" : "Change Admin Passcode"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChangePasscodeModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const pass = newDashboardPasscode.trim();
+                if (!pass || pass.length < 4) {
+                  showToast("Passcode must be at least 4 characters.", "error");
+                  return;
+                }
+                if (isFaculty) {
+                  localStorage.setItem("dancingragas_tutor_passcode", pass);
+                  showToast(`Tutor passcode changed to "${pass}"! Please use it on your next login.`, "success");
+                } else {
+                  localStorage.setItem("dancingragas_admin_passcode", pass);
+                  showToast(`Admin passcode changed to "${pass}"! Please use it on your next login.`, "success");
+                }
+                setIsChangePasscodeModalOpen(false);
+                setNewDashboardPasscode("");
+              }}
+              className="space-y-4 text-xs"
+            >
+              <p className="text-stone-600 leading-relaxed">
+                Set a new private passcode to protect your {isFaculty ? "Tutor Portal" : "Admin Dashboard"}.
+              </p>
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">New Passcode</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter new passcode (e.g. malavika2026)"
+                  value={newDashboardPasscode}
+                  onChange={(e) => setNewDashboardPasscode(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 bg-white font-bold"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsChangePasscodeModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold cursor-pointer shadow-md"
+                >
+                  Save Passcode
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: PREVIEW STUDENT SHOWCASE RECITAL (TUTOR WATCHES)
+      ═══════════════════════════════════════════════════════════════ */}
+      {previewShowcaseUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-[#151515] text-[#F5F0E8] rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Play className="w-5 h-5 text-[#C9956A] fill-[#C9956A]" />
+                <h3 className="text-lg font-bold font-serif-luxury text-white">
+                  Disciple Showcase Recital &bull; Video Preview
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewShowcaseUrl(null)}
+                className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center cursor-pointer hover:bg-white/20"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="rounded-2xl overflow-hidden aspect-video bg-black flex items-center justify-center border border-white/10">
+              <UniversalVideoPlayer
+                url={previewShowcaseUrl}
+                title="Student Showcase Recital"
+                className="w-full h-full"
+              />
+            </div>
+            <div className="flex items-center justify-between text-xs text-stone-400 pt-1">
+              <span>This recital is showcased on the disciple's student portal.</span>
+              <button
+                type="button"
+                onClick={() => setPreviewShowcaseUrl(null)}
+                className="px-4 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white font-bold cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <TuitionReceiptModal
         isOpen={Boolean(receiptStudent)}
         onClose={() => setReceiptStudent(null)}

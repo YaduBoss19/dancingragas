@@ -14,7 +14,6 @@ import {
   User,
   LogOut,
   ExternalLink,
-  Sparkles,
   ShieldCheck,
   Film,
   Search,
@@ -37,8 +36,12 @@ import {
   Compass,
   CheckCircle,
   Flame,
-  CreditCard
+  CreditCard,
+  Eye,
+  X,
+  KeyRound
 } from "lucide-react";
+import WhatsAppIcon from "../components/WhatsAppIcon";
 import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
 import TanpuraDroneWidget from "../components/TanpuraDroneWidget";
 import SollukattuRhythmWidget from "../components/SollukattuRhythmWidget";
@@ -64,6 +67,7 @@ export default function StudentPortal({ onOpenAuth }) {
   const [isAbsenceModalOpen, setIsAbsenceModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [previewPdfDoc, setPreviewPdfDoc] = useState(null);
   const [sadhanaStreak, setSadhanaStreak] = useState(14);
   const [practicedToday, setPracticedToday] = useState(false);
   const [activePracticeTool, setActivePracticeTool] = useState("tanpura"); // 'tanpura' | 'talam'
@@ -85,19 +89,33 @@ export default function StudentPortal({ onOpenAuth }) {
     setActiveStudentId,
     studyMaterials,
     liveClassSchedules,
-    updateStudentProfileDetails
+    updateStudentProfileDetails,
+    updateStudentAccessKey,
+    reportStudentAbsence
   } = useAcademy();
 
-  // Active student identity (from studentsList or authUser)
-  const currentStudent =
-    (studentsList || []).find((s) => s.id === activeStudentId) ||
-    (studentsList || [])[0] || {
-      id: "stu-1",
-      name: authUser?.user_metadata?.full_name || studentProfile?.studentName || "Ananya Menon",
-      registrationNo: studentProfile?.registrationNo || "DR-DIP-2026-084",
-      enrolledCourses: ["Bharatanatyam Diploma"],
-      attendance: 94
-    };
+  // 🔒 SECURE STUDENT ISOLATION:
+  // When logged in as student, ALWAYS lock directly to authenticated student identity.
+  // Never allow viewing another student's assessments, attendance, or private feedback.
+  const currentStudent = userRole === "student" && authUser?.email
+    ? ((studentsList || []).find((s) => s.email?.toLowerCase() === authUser.email.toLowerCase()) || {
+        id: authUser.id || "stu-user",
+        name: authUser.user_metadata?.full_name || "Enrolled Disciple",
+        email: authUser.email,
+        registrationNo: authUser.user_metadata?.registration_no || "DR-DIP-2026",
+        enrolledCourses: ["Bharatanatyam Diploma"],
+        attendance: 94
+      })
+    : ((studentsList || []).find((s) => s.id === activeStudentId) ||
+       (authUser?.email && (studentsList || []).find((s) => s.email?.toLowerCase() === authUser.email.toLowerCase())) ||
+       (studentsList || [])[0] || {
+        id: "stu-1",
+        name: "Ananya Menon",
+        email: "ananya.menon@example.com",
+        registrationNo: "DR-DIP-2026-084",
+        enrolledCourses: ["Bharatanatyam Diploma"],
+        attendance: 94
+      });
 
   // Selected course area if student is enrolled in multiple
   const [selectedCourseArea, setSelectedCourseArea] = useState(
@@ -115,6 +133,36 @@ export default function StudentPortal({ onOpenAuth }) {
     s.courseCategory === selectedCourseArea ||
     (s.batchName && s.batchName.toLowerCase().includes(selectedCourseArea.toLowerCase()))
   ) || (liveClassSchedules || [])[0] || liveClassConfig;
+
+  // Dynamic Personalized Greeting with Next Class Countdown
+  const getGreetingData = () => {
+    const hour = new Date().getHours();
+    let salutation = "Good evening";
+    if (hour >= 5 && hour < 12) salutation = "Good morning";
+    else if (hour >= 12 && hour < 17) salutation = "Good afternoon";
+
+    const firstName = (currentStudent?.name || "Student").split(" ")[0];
+
+    let nextClassPhrase = "Class schedule updating soon";
+    if (activeLiveSession?.targetTimestamp) {
+      const diffMs = new Date(activeLiveSession.targetTimestamp).getTime() - Date.now();
+      if (diffMs <= 0) {
+        nextClassPhrase = "Class is happening today!";
+      } else {
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays === 0) {
+          nextClassPhrase = `Next live class is today (in ${diffHours}h)!`;
+        } else if (diffDays === 1) {
+          nextClassPhrase = "Next live class is tomorrow!";
+        } else {
+          nextClassPhrase = `Next live class in ${diffDays} days!`;
+        }
+      }
+    }
+    return { salutation, firstName, nextClassPhrase };
+  };
+  const greetingData = getGreetingData();
 
   // Navigation tabs
   const [activeTab, setActiveTab] = useState("curriculum"); // 'curriculum' | 'live_studio' | 'evaluations' | 'documents'
@@ -138,11 +186,39 @@ export default function StudentPortal({ onOpenAuth }) {
   // Search in curriculum
   const [lessonSearch, setLessonSearch] = useState("");
 
+  // Filter curriculum modules for active course category
+  const filteredModules = (curriculumModules || []).filter((m) => {
+    if (!m.courseCategory) return true;
+    return (
+      m.courseCategory === selectedCourseArea ||
+      (selectedCourseArea === "Bharatanatyam Diploma" && m.courseCategory?.toLowerCase().includes("bharatanatyam")) ||
+      (selectedCourseArea === "Carnatic Music" && m.courseCategory?.toLowerCase().includes("carnatic")) ||
+      (selectedCourseArea === "Bollywood & Semi-Classical" && m.courseCategory?.toLowerCase().includes("bollywood"))
+    );
+  });
+
+  // Extract lessons from modules and combine with recordings
+  const moduleLessons = filteredModules.flatMap((m) =>
+    (m.lessons || []).map((l) => ({
+      ...l,
+      module: m.title,
+      moduleId: m.id,
+      courseCategory: m.courseCategory || l.category || selectedCourseArea
+    }))
+  );
+
+  const combinedRecordings = [...moduleLessons];
+  (recordings || []).forEach((rec) => {
+    if (!combinedRecordings.some((r) => r.id === rec.id)) {
+      combinedRecordings.push(rec);
+    }
+  });
+
   // Filter recordings strictly for current student and selected course area
-  const authorizedRecordings = (recordings || []).filter((rec) => {
-    // 1. Must match course category
+  const authorizedRecordings = combinedRecordings.filter((rec) => {
     const recCategory = rec.courseCategory || rec.category;
     const matchesCourse =
+      !recCategory ||
       recCategory === selectedCourseArea ||
       (selectedCourseArea === "Bharatanatyam Diploma" && recCategory?.toLowerCase().includes("bharatanatyam")) ||
       (selectedCourseArea === "Carnatic Music" && recCategory?.toLowerCase().includes("carnatic")) ||
@@ -150,13 +226,11 @@ export default function StudentPortal({ onOpenAuth }) {
 
     if (!matchesCourse) return false;
 
-    // 2. Access Scope check (selected students only vs all enrolled students)
     if (rec.accessScope === "selected_students") {
       const allowed = rec.allowedStudentIds || [];
       return allowed.includes(currentStudent.id) || allowed.includes(currentStudent.email);
     }
 
-    // Default: visible to any student enrolled in this course
     return true;
   });
 
@@ -280,18 +354,18 @@ export default function StudentPortal({ onOpenAuth }) {
       {/* ═══════════════════════════════════════════════════════════════
           DEDICATED PORTAL APP TOP NAVIGATION (NO MARKETING HEADER)
       ═══════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#0F172A] via-[#0B132B] to-[#0F172A] text-[#F5F0E8] border-b border-[#B99A63]/30 px-4 sm:px-8 py-3.5 shadow-md">
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-[#0F172A] via-[#0B132B] to-[#0F172A] text-[#F5F0E8] border-b border-[#DFAC88]/30 px-4 sm:px-8 py-3.5 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1E293B] to-[#151515] border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1E293B] to-[#151515] border border-[#C9956A]/50 text-[#C9956A] flex items-center justify-center font-serif-luxury font-bold text-base shadow-sm">
               DR
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-white tracking-wide font-serif-luxury">
-                  DancingRagas <span className="text-[#D4AF37]">Conservatory</span>
+                  DancingRagas <span className="text-[#C9956A]">Conservatory</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-bold uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded-full bg-[#C9956A]/20 border border-[#C9956A]/40 text-[#C9956A] text-[10px] font-bold uppercase tracking-wider">
                   Student Portal
                 </span>
               </div>
@@ -301,32 +375,62 @@ export default function StudentPortal({ onOpenAuth }) {
             </div>
           </div>
 
-          {/* Student Profile Switcher & Actions */}
+          {/* Student Profile Identity & Actions */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Student Switcher (Testing & Verification) */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 border border-white/15 text-xs text-stone-200">
-              <UserCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span className="text-[11px] text-stone-400">Student:</span>
-              <select
-                value={currentStudent.id}
-                onChange={(e) => setActiveStudentId(e.target.value)}
-                className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer"
-              >
-                {(studentsList || []).map((s) => (
-                  <option key={s.id} value={s.id} className="text-[#151515] bg-white">
-                    {s.name} ({s.enrolledCourses?.join(", ")})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Tutor Inspection Mode: Switcher & Return to Desk */}
+            {(userRole === "tutor" || userRole === "admin") ? (
+              <>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 border border-white/15 text-xs text-stone-200">
+                  <UserCheck className="w-3.5 h-3.5 text-[#C9956A]" />
+                  <span className="text-[11px] text-stone-400">Viewing Disciple:</span>
+                  <select
+                    value={currentStudent.id}
+                    onChange={(e) => setActiveStudentId(e.target.value)}
+                    className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer"
+                  >
+                    {(studentsList || []).map((s) => (
+                      <option key={s.id} value={s.id} className="text-[#151515] bg-white">
+                        {s.name} ({s.enrolledCourses?.join(", ")})
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <button
-              onClick={() => navigateTo("admin")}
-              className="px-3.5 py-1.5 rounded-xl bg-[#1E293B] hover:bg-[#334155] text-[#D4AF37] border border-[#B99A63]/40 text-xs font-bold transition-all cursor-pointer shadow-xs"
-              title="Open Tutor / Director Portal"
-            >
-              Tutor Portal
-            </button>
+                <button
+                  onClick={() => navigateTo("admin")}
+                  className="px-3.5 py-1.5 rounded-xl bg-[#C9956A] hover:bg-[#b07d53] text-[#260A22] text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  title="Return to Tutor / Director Desk"
+                >
+                  Tutor Desk &rarr;
+                </button>
+              </>
+            ) : (
+              /* Enrolled Student Secured View: Fixed Single Identity (No Switching Allowed) */
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-[#DFAC88]/30 text-xs text-[#E8B896]">
+                  <UserCheck className="w-3.5 h-3.5 text-[#C9956A]" />
+                  <span className="font-bold text-white">{currentStudent.name}</span>
+                  <span className="text-[10px] text-stone-300 font-mono">({currentStudent.registrationNo || "Enrolled Disciple"})</span>
+                </div>
+                <button
+                  onClick={() => {
+                    const newKey = window.prompt(`Set your new personal access key:`, currentStudent.accessKey || "ragas2026");
+                    if (newKey && newKey.trim()) {
+                      if (newKey.trim().length < 4) {
+                        alert("Access key must be at least 4 characters.");
+                        return;
+                      }
+                      updateStudentAccessKey && updateStudentAccessKey(currentStudent.id, newKey.trim());
+                    }
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#E8B896] border border-[#DFAC88]/30 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                  title="Change your personal access key"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-[#C9956A]" />
+                  <span className="hidden sm:inline">Change Key</span>
+                </button>
+              </div>
+            )}
 
             <button
               onClick={() => navigateTo("home")}
@@ -363,7 +467,7 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         <AnimatedSection
           animation="fade-up"
-          className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-[#F5F0E8] border border-[#B99A63]/40 shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left"
+          className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-[#F5F0E8] border border-[#DFAC88]/40 shadow-2xl p-6 sm:p-8 relative overflow-hidden text-left"
         >
           <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.12)_0,transparent_70%)] pointer-events-none" />
 
@@ -375,22 +479,22 @@ export default function StudentPortal({ onOpenAuth }) {
                 className="relative group cursor-pointer shrink-0"
                 title="Click to change disciple photo & details"
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#0F172A] to-[#1E293B] border-2 border-[#D4AF37] text-[#D4AF37] flex items-center justify-center font-serif-luxury text-2xl font-bold shadow-xl overflow-hidden group-hover:scale-105 transition-all">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#260A22] to-[#3D1035] border-2 border-[#C9956A] text-[#C9956A] flex items-center justify-center font-serif-luxury text-2xl font-bold shadow-xl overflow-hidden group-hover:scale-105 transition-all">
                   {currentStudent.avatarUrl ? (
                     <img src={currentStudent.avatarUrl} alt={currentStudent.name} className="w-full h-full object-cover" />
                   ) : (
                     <span>{currentStudent.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}</span>
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md group-hover:brightness-110">
+                <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#0F172A] shadow-md group-hover:brightness-110">
                   <Camera className="w-3.5 h-3.5 text-[#0F172A]" />
                 </div>
               </div>
 
               <div className="space-y-1.5 text-left">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-3 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
-                    <ShieldCheck className="w-3 h-3 text-[#D4AF37]" />
+                  <span className="px-3 py-0.5 rounded-full bg-[#C9956A]/20 border border-[#C9956A]/40 text-[#C9956A] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                    <ShieldCheck className="w-3 h-3 text-[#C9956A]" />
                     <span>Verified Student ID</span>
                   </span>
                   <span className="text-[11px] font-mono text-stone-300">
@@ -400,9 +504,15 @@ export default function StudentPortal({ onOpenAuth }) {
                     onClick={() => setIsProfileModalOpen(true)}
                     className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3 text-[#D4AF37]" />
+                    <Edit2 className="w-3 h-3 text-[#C9956A]" />
                     <span>Edit Profile</span>
                   </button>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C9956A]/20 border border-[#C9956A]/40 text-[#E8B896] text-xs font-semibold backdrop-blur-md">
+                  <span>🙏 {greetingData.salutation}, <strong>{greetingData.firstName}</strong>!</span>
+                  <span className="text-stone-400">&bull;</span>
+                  <span className="text-white font-bold">{greetingData.nextClassPhrase}</span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -418,7 +528,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-emerald-300 text-xs font-bold transition-all shadow-xs"
                     title="Direct WhatsApp with Dr. Malavika"
                   >
-                    <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
                     <span>WhatsApp: {currentStudent.whatsappNumber || currentStudent.phone || "+91 98470 12345"}</span>
                   </a>
                 </div>
@@ -429,14 +539,17 @@ export default function StudentPortal({ onOpenAuth }) {
 
                 {/* Academy Quick Actions */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setIsCertificateOpen(true)}
-                    className="silk-zari-btn px-3 py-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] text-[10px] font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1 cursor-pointer tap-bounce"
-                  >
-                    <Award className="w-3 h-3 text-[#0F172A]" />
-                    <span>View Certificate</span>
-                  </button>
+                  {/* View Certificate: ONLY visible when tutor enables it for this student or if previewing as tutor/admin */}
+                  {(currentStudent.certificateEnabled || userRole === "tutor" || userRole === "admin") && (
+                    <button
+                      type="button"
+                      onClick={() => setIsCertificateOpen(true)}
+                      className="silk-zari-btn px-3 py-1 rounded-full bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#0F172A] text-[10px] font-bold shadow-md hover:brightness-105 transition-all flex items-center gap-1 cursor-pointer tap-bounce"
+                    >
+                      <Award className="w-3 h-3 text-[#0F172A]" />
+                      <span>View Certificate</span>
+                    </button>
+                  )}
 
                   <button
                     type="button"
@@ -461,7 +574,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     onClick={() => setIsAbsenceModalOpen(true)}
                     className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-stone-200 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer tap-bounce"
                   >
-                    <Calendar className="w-3 h-3 text-[#D4AF37]" />
+                    <Calendar className="w-3 h-3 text-[#C9956A]" />
                     <span>Report Absence</span>
                   </button>
                 </div>
@@ -480,7 +593,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     onClick={() => setSelectedCourseArea(courseName)}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       selectedCourseArea === courseName
-                        ? "bg-[#D4AF37] text-[#151515] shadow-md"
+                        ? "bg-[#C9956A] text-[#151515] shadow-md"
                         : "bg-white/10 text-stone-300 hover:bg-white/20"
                     }`}
                   >
@@ -506,12 +619,12 @@ export default function StudentPortal({ onOpenAuth }) {
                 Curriculum Progress
               </span>
               <div className="flex items-baseline justify-between">
-                <p className="text-base font-bold text-[#D4AF37]">{overallProgress}%</p>
+                <p className="text-base font-bold text-[#C9956A]">{overallProgress}%</p>
                 <span className="text-[10px] text-stone-400">{completedLessons}/{allLessons.length} Units</span>
               </div>
               <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#B99A63] to-[#D4AF37] transition-all duration-700"
+                  className="h-full bg-gradient-to-r from-[#DFAC88] to-[#C9956A] transition-all duration-700"
                   style={{ width: `${overallProgress}%` }}
                 />
               </div>
@@ -529,8 +642,49 @@ export default function StudentPortal({ onOpenAuth }) {
               <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
                 Faculty Mentor
               </span>
-              <p className="text-xs sm:text-sm font-bold text-[#D4AF37] truncate">Dr. Malavika M. Sunil</p>
+              <p className="text-xs sm:text-sm font-bold text-[#C9956A] truncate">Dr. Malavika M. Sunil</p>
               <span className="text-[10px] text-stone-400 block">MBBS &bull; Senior Exponent</span>
+            </div>
+          </div>
+        
+          {/* Expanded Curriculum Milestone Journey */}
+          <div className="relative z-10 p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3 mt-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-stone-300 font-bold uppercase tracking-wider text-[11px]">Syllabus Milestones:</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-[#C9956A]/20 text-[#E8B896] border border-[#C9956A]/40 text-[10px] font-bold uppercase tracking-wider">
+                  {overallProgress < 25 ? "Stage 1: Beginner" : overallProgress < 50 ? "Stage 2: Intermediate" : overallProgress < 75 ? "Stage 3: Advanced" : "Stage 4: Arangetram Ready"}
+                </span>
+              </div>
+              <div className="text-[11px] text-stone-300 font-mono">
+                Overall Progress: <strong className="text-[#E8B896] text-sm">{overallProgress}%</strong> ({completedLessons}/{allLessons.length} units completed)
+              </div>
+            </div>
+
+            <div className="w-full h-3.5 rounded-full bg-black/40 border border-white/10 overflow-hidden p-0.5">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#C9956A] via-[#E8B896] to-[#C9956A] transition-all duration-700 shadow-sm"
+                style={{ width: `${Math.max(5, overallProgress)}%` }}
+              />
+            </div>
+
+            <div className="grid grid-cols-4 text-center text-[10px] sm:text-xs pt-1">
+              <div className={`p-1.5 rounded-xl ${overallProgress >= 0 ? "bg-white/5 text-[#E8B896] font-bold" : "text-stone-400"}`}>
+                <span>Beginner</span>
+                <span className="block text-[9px] opacity-70">0 - 25%</span>
+              </div>
+              <div className={`p-1.5 rounded-xl ${overallProgress >= 25 ? "bg-white/5 text-[#E8B896] font-bold" : "text-stone-400"}`}>
+                <span>Intermediate</span>
+                <span className="block text-[9px] opacity-70">26 - 50%</span>
+              </div>
+              <div className={`p-1.5 rounded-xl ${overallProgress >= 50 ? "bg-white/5 text-[#E8B896] font-bold" : "text-stone-400"}`}>
+                <span>Advanced</span>
+                <span className="block text-[9px] opacity-70">51 - 75%</span>
+              </div>
+              <div className={`p-1.5 rounded-xl ${overallProgress >= 75 ? "bg-white/5 text-[#E8B896] font-bold" : "text-stone-400"}`}>
+                <span>Arangetram</span>
+                <span className="block text-[9px] opacity-70">76 - 100%</span>
+              </div>
             </div>
           </div>
         </AnimatedSection>
@@ -538,7 +692,7 @@ export default function StudentPortal({ onOpenAuth }) {
         {/* ═══════════════════════════════════════════════════════════════
             LIVE CLASSROOM GOOGLE MEET CONNECT (SYNCED PER BATCH)
         ═══════════════════════════════════════════════════════════════ */}
-        <div className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#162032] to-[#0F172A] border border-[#B99A63]/50 text-white p-6 sm:p-7 shadow-2xl relative overflow-hidden text-left space-y-4">
+        <div className="rounded-3xl bg-gradient-to-br from-[#260A22] via-[#3D1035] to-[#260A22] border border-[#DFAC88]/50 text-white p-6 sm:p-7 shadow-2xl relative overflow-hidden text-left space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -546,7 +700,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
                   Live Classroom &bull; {selectedCourseArea} Batch
                 </span>
-                <span className="text-xs text-[#D4AF37] font-semibold">
+                <span className="text-xs text-[#C9956A] font-semibold">
                   • {activeLiveSession.scheduledDayTime}
                 </span>
               </div>
@@ -561,7 +715,7 @@ export default function StudentPortal({ onOpenAuth }) {
             {/* Google Meet & Instant Classroom Direct Launch */}
             <div className="flex flex-wrap items-center gap-2.5 shrink-0">
               <a
-                href={activeLiveSession.meetUrl || "https://meet.google.com/new"}
+                href={(activeLiveSession.meetUrl && !activeLiveSession.meetUrl.includes("dnc-") && !activeLiveSession.meetUrl.includes("ragas-live-room")) ? activeLiveSession.meetUrl : "https://meet.google.com/new"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="silk-zari-btn px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2 cursor-pointer tap-bounce"
@@ -570,17 +724,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 <span>Join Google Meet Now</span>
               </a>
 
-              <a
-                href={`https://meet.jit.si/DancingRagas-Classroom-${encodeURIComponent((selectedCourseArea || "Academy").replace(/[^a-zA-Z0-9]/g, ""))}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-[#D4AF37] border border-[#D4AF37]/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
-                title="Alternative instant video classroom (Zero login required)"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span className="hidden sm:inline">Instant Web Classroom</span>
-                <span className="sm:hidden">Web Room</span>
-              </a>
+
 
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`🌸 DancingRagas Live Classroom\n\nClass: ${activeLiveSession.sessionTitle}\nBatch: ${selectedCourseArea}\nTime: ${activeLiveSession.scheduledDayTime}\n\nJoin Google Meet:\n${activeLiveSession.meetUrl || "https://meet.google.com/new"}`)}`}
@@ -589,7 +733,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 className="p-3 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-emerald-300 transition-all cursor-pointer shadow-xs"
                 title="Send Meet link to WhatsApp"
               >
-                <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                <WhatsAppIcon className="w-4 h-4" />
               </a>
             </div>
           </div>
@@ -603,7 +747,7 @@ export default function StudentPortal({ onOpenAuth }) {
 
             <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-0.5">
               <span className="text-[10px] uppercase font-bold text-stone-400 block">Next Live Countdown</span>
-              <div className="flex items-center gap-2 text-xs font-bold text-[#D4AF37]">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#C9956A]">
                 <span>{timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span>
               </div>
               <span className="text-[10px] text-emerald-300">Synchronized to {userTimezone}</span>
@@ -621,15 +765,15 @@ export default function StudentPortal({ onOpenAuth }) {
         {/* ═══════════════════════════════════════════════════════════════
             DAILY PRACTICE TRACKER (ACADEMY RIYAZ)
         ═══════════════════════════════════════════════════════════════ */}
-        <div className="rounded-2xl bg-gradient-to-r from-[#0F172A] via-[#162032] to-[#0F172A] border border-[#B99A63]/40 p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg text-left">
+        <div className="rounded-2xl bg-gradient-to-r from-[#260A22] via-[#3D1035] to-[#260A22] border border-[#DFAC88]/40 p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg text-left">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-[#D4AF37] text-[#0F172A] flex items-center justify-center font-bold shadow-md shrink-0">
+            <div className="w-11 h-11 rounded-2xl bg-[#C9956A] text-[#0F172A] flex items-center justify-center font-bold shadow-md shrink-0">
               <Flame className="w-6 h-6 text-[#0F172A] fill-[#0F172A]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="font-bold text-sm sm:text-base font-serif-luxury text-white">
-                  Daily Practice Tracker: <span className="text-[#D4AF37]">{sadhanaStreak} Days Active Streak</span>
+                  Daily Practice Tracker: <span className="text-[#C9956A]">{sadhanaStreak} Days Active Streak</span>
                 </h4>
                 {practicedToday && (
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/40">
@@ -659,7 +803,7 @@ export default function StudentPortal({ onOpenAuth }) {
             className={`silk-zari-btn px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer tap-bounce shrink-0 self-start sm:self-auto ${
               practicedToday
                 ? "bg-emerald-900/60 text-emerald-200 border border-emerald-500/40"
-                : "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] hover:brightness-105"
+                : "bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#0F172A] hover:brightness-105"
             }`}
           >
             <CheckCircle className="w-3.5 h-3.5" />
@@ -676,7 +820,7 @@ export default function StudentPortal({ onOpenAuth }) {
               onClick={() => setActivePracticeTool("tanpura")}
               className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activePracticeTool === "tanpura"
-                  ? "bg-[#0F172A] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
+                  ? "bg-[#0F172A] text-[#C9956A] border border-[#DFAC88]/50 shadow-xs"
                   : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200"
               }`}
             >
@@ -687,7 +831,7 @@ export default function StudentPortal({ onOpenAuth }) {
               onClick={() => setActivePracticeTool("talam")}
               className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activePracticeTool === "talam"
-                  ? "bg-[#0F172A] text-[#D4AF37] border border-[#B99A63]/50 shadow-xs"
+                  ? "bg-[#0F172A] text-[#C9956A] border border-[#DFAC88]/50 shadow-xs"
                   : "bg-white text-stone-600 hover:text-stone-900 border border-stone-200"
               }`}
             >
@@ -722,7 +866,7 @@ export default function StudentPortal({ onOpenAuth }) {
             { id: "documents", label: `Study Materials & PDFs (${(studyMaterials || []).length})`, icon: FileText },
             { id: "evaluations", label: `My Submissions & Feedback (${studentAssessments.length})`, icon: Award },
             { id: "roadmap", label: "Learning Milestones", icon: Compass },
-            { id: "virtual_stage", label: "Student Recitals & Stage", icon: Sparkles }
+            { id: "virtual_stage", label: "Student Recitals & Stage", icon: Film }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -732,7 +876,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
                   isActive
-                    ? "bg-[#151515] text-[#D4AF37] shadow-sm"
+                    ? "bg-[#151515] text-[#C9956A] shadow-sm"
                     : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
                 }`}
               >
@@ -751,10 +895,10 @@ export default function StudentPortal({ onOpenAuth }) {
 
             {/* Active Theater Player */}
             {selectedLesson ? (
-              <div className="rounded-3xl bg-[#151515] text-[#F5F0E8] border border-[#B99A63]/40 shadow-xl overflow-hidden">
+              <div className="rounded-3xl bg-[#151515] text-[#F5F0E8] border border-[#DFAC88]/40 shadow-xl overflow-hidden">
                 <div className="p-4 sm:p-5 bg-gradient-to-r from-[#2A080E] to-[#151515] border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#C9956A]">
                       {selectedCourseArea} &bull; Unlisted Masterclass Player
                     </span>
                     <h3 className="text-base sm:text-lg font-bold font-serif-luxury text-white">
@@ -788,7 +932,7 @@ export default function StudentPortal({ onOpenAuth }) {
                 {/* Lesson Details */}
                 <div className="p-5 sm:p-6 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-stone-300 border-b border-white/10 pb-3">
-                    <span className="text-[#D4AF37] font-semibold">
+                    <span className="text-[#C9956A] font-semibold">
                       Duration: {selectedLesson.duration} &bull; Recorded Class &bull; {selectedLesson.date}
                     </span>
                     <span className="text-stone-400">
@@ -813,11 +957,65 @@ export default function StudentPortal({ onOpenAuth }) {
                       </div>
                     </div>
                   )}
+
+                  {/* Attached PDF Below Video Player */}
+                  {(selectedLesson.notesPdf || selectedLesson.pdfTitle || selectedLesson.pdfUrl) && (
+                    <div className="p-4 rounded-2xl bg-white/5 border border-[#C9956A]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#C9956A]/20 border border-[#C9956A]/40 flex items-center justify-center shrink-0">
+                          <FileText className="w-5 h-5 text-[#C9956A]" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-bold text-[#C9956A] tracking-wider block">
+                            Attached Study Notes &amp; Notation
+                          </span>
+                          <strong className="text-white text-xs sm:text-sm block">
+                            {selectedLesson.pdfTitle || selectedLesson.notesPdf}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewPdfDoc({
+                              title: selectedLesson.pdfTitle || selectedLesson.notesPdf,
+                              fileUrl: selectedLesson.pdfUrl || "#",
+                              type: "Lesson Study Notes"
+                            })
+                          }
+                          className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#E8B896] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#C9956A]" />
+                          <span>Preview Notes</span>
+                        </button>
+                        <a
+                          href={selectedLesson.pdfUrl || "#"}
+                          download={`${selectedLesson.pdfTitle || selectedLesson.notesPdf || "Lesson_Notes"}.pdf`}
+                          onClick={(e) => {
+                            if (!selectedLesson.pdfUrl || selectedLesson.pdfUrl.startsWith("#")) {
+                              e.preventDefault();
+                              setPreviewPdfDoc({
+                                title: selectedLesson.pdfTitle || selectedLesson.notesPdf,
+                                fileUrl: selectedLesson.pdfUrl || "#",
+                                type: "Lesson Study Notes"
+                              });
+                            }
+                          }}
+                          className="silk-zari-btn px-4 py-2 rounded-xl bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#151515] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download PDF</span>
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
               <div className="p-8 rounded-3xl bg-white border border-stone-200 text-center space-y-3">
-                <Lock className="w-8 h-8 text-[#B99A63] mx-auto" />
+                <Lock className="w-8 h-8 text-[#DFAC88] mx-auto" />
                 <h4 className="text-base font-bold text-stone-900">
                   No Unlisted Videos Assigned Yet
                 </h4>
@@ -827,15 +1025,20 @@ export default function StudentPortal({ onOpenAuth }) {
               </div>
             )}
 
-            {/* List of Available Unlisted Videos for this Student */}
-            <div className="space-y-4">
+            {/* Course Module-Wise Outline */}
+            <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
                 <div>
-                  <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
-                    {selectedCourseArea} &bull; Authorized Class Recordings ({authorizedRecordings.length})
-                  </h3>
-                  <p className="text-xs text-stone-500">
-                    Only students officially enrolled in {selectedCourseArea} have access to these unlisted masterclass recordings.
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#3D1035] text-[#E8B896] text-[10px] font-bold uppercase tracking-wider">
+                      Module-Wise Curriculum
+                    </span>
+                    <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                      {selectedCourseArea} &bull; Structured Units &amp; Lessons
+                    </h3>
+                  </div>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Structured by module with syllabus drills, actual video durations, and attached PDF notes.
                   </p>
                 </div>
 
@@ -845,72 +1048,148 @@ export default function StudentPortal({ onOpenAuth }) {
                     type="text"
                     value={lessonSearch}
                     onChange={(e) => setLessonSearch(e.target.value)}
-                    placeholder="Search recording topic..."
-                    className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs bg-white focus:outline-none focus:border-[#B99A63]"
+                    placeholder="Search module or topic..."
+                    className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs bg-white focus:outline-none focus:border-[#DFAC88]"
                   />
                 </div>
               </div>
 
-              {/* Videos Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {authorizedRecordings
-                  .filter(
-                    (rec) =>
-                      !lessonSearch.trim() ||
-                      rec.title.toLowerCase().includes(lessonSearch.toLowerCase()) ||
-                      (rec.topics && rec.topics.some((t) => t.toLowerCase().includes(lessonSearch.toLowerCase())))
-                  )
-                  .map((rec) => {
-                    const isSelected = selectedLesson?.id === rec.id;
+              {/* Modules List */}
+              {filteredModules.length === 0 ? (
+                <div className="p-8 rounded-3xl bg-white border border-stone-200 text-center space-y-2">
+                  <BookOpen className="w-8 h-8 text-stone-400 mx-auto" />
+                  <h4 className="text-sm font-bold text-stone-700">No modules found for this course area</h4>
+                  <p className="text-xs text-stone-500">Dr. Malavika will publish the next syllabus module soon.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {filteredModules.map((mod, modIdx) => {
+                    const modLessons = mod.lessons || [];
+                    const filteredLessons = modLessons.filter(
+                      (l) =>
+                        !lessonSearch.trim() ||
+                        l.title.toLowerCase().includes(lessonSearch.toLowerCase()) ||
+                        mod.title.toLowerCase().includes(lessonSearch.toLowerCase()) ||
+                        (l.topics && l.topics.some((t) => t.toLowerCase().includes(lessonSearch.toLowerCase())))
+                    );
+                    if (filteredLessons.length === 0 && lessonSearch.trim()) return null;
+
+                    const completedCount = modLessons.filter((l) => l.completed).length;
+                    const modPct = modLessons.length > 0 ? Math.round((completedCount / modLessons.length) * 100) : (mod.progressPercent || 0);
+
                     return (
                       <div
-                        key={rec.id}
-                        onClick={() => {
-                          setSelectedLesson(rec);
-                          window.scrollTo({ top: 320, behavior: "smooth" });
-                        }}
-                        className={`rounded-2xl overflow-hidden border transition-all cursor-pointer bg-white flex flex-col justify-between ${
-                          isSelected
-                            ? "border-[#B99A63] ring-2 ring-[#B99A63]/30 shadow-md"
-                            : "border-stone-200 hover:border-[#B99A63]/50 shadow-xs"
-                        }`}
+                        key={mod.id || modIdx}
+                        className="rounded-3xl bg-white border border-stone-200 shadow-sm overflow-hidden transition-all hover:border-[#DFAC88]/60"
                       >
-                        <div className="relative aspect-video bg-stone-900 overflow-hidden">
-                          <img
-                            src={rec.thumbnail || "/images/courses/Courses/bharatanatyam_diploma/main.jpg"}
-                            alt={rec.title}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                            <div className="w-10 h-10 rounded-full bg-white/90 text-[#151515] flex items-center justify-center shadow-lg">
-                              <Play className="w-4 h-4 fill-current translate-x-0.5" />
+                        {/* Module Header Bar */}
+                        <div className="p-4 sm:p-5 bg-gradient-to-r from-stone-50 via-white to-stone-50 border-b border-stone-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2.5 py-0.5 rounded-lg bg-[#3D1035] text-[#E8B896] text-[10px] font-bold uppercase tracking-wider">
+                                {mod.moduleNumber || `Module 0${modIdx + 1}`}
+                              </span>
+                              <span className="text-xs font-semibold text-stone-500">
+                                {modLessons.length} {modLessons.length === 1 ? "Lesson" : "Lessons"}
+                              </span>
+                            </div>
+                            <h4 className="text-base font-bold text-stone-900 font-serif-luxury">
+                              {mod.title}
+                            </h4>
+                            {mod.description && (
+                              <p className="text-xs text-stone-600 line-clamp-2 max-w-2xl">
+                                {mod.description}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Module Progress Metric */}
+                          <div className="flex items-center gap-3 shrink-0">
+                            <div className="text-right">
+                              <span className="text-[10px] font-bold uppercase text-stone-400 block">Progress</span>
+                              <span className="text-xs font-bold text-[#3D1035]">{modPct}% Complete</span>
+                            </div>
+                            <div className="w-24 h-2 bg-stone-100 rounded-full overflow-hidden border border-stone-200">
+                              <div
+                                className="h-full bg-gradient-to-r from-[#C9956A] to-[#3D1035] rounded-full transition-all duration-500"
+                                style={{ width: `${modPct}%` }}
+                              />
                             </div>
                           </div>
-                          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-[10px] text-white font-bold">
-                            {rec.duration}
-                          </span>
                         </div>
 
-                        <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between text-[11px] text-stone-500">
-                              <span className="font-bold text-[#1E293B]">{rec.module || rec.courseCategory}</span>
-                              <span>{rec.date}</span>
-                            </div>
-                            <h4 className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2">
-                              {rec.title}
-                            </h4>
-                          </div>
+                        {/* Module Lessons Grid */}
+                        <div className="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {filteredLessons.map((rec) => {
+                            const isSelected = selectedLesson?.id === rec.id;
+                            return (
+                              <div
+                                key={rec.id}
+                                onClick={() => {
+                                  setSelectedLesson(rec);
+                                  window.scrollTo({ top: 320, behavior: "smooth" });
+                                }}
+                                className={`rounded-2xl overflow-hidden border transition-all cursor-pointer bg-white flex flex-col justify-between ${
+                                  isSelected
+                                    ? "border-[#3D1035] ring-2 ring-[#3D1035]/20 shadow-md"
+                                    : "border-stone-200 hover:border-[#DFAC88]/60 shadow-xs"
+                                }`}
+                              >
+                                <div className="relative aspect-video bg-stone-900 overflow-hidden">
+                                  <img
+                                    src={rec.thumbnail || "/images/courses/Courses/bharatanatyam_diploma/main.jpg"}
+                                    alt={rec.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-white/90 text-[#151515] flex items-center justify-center shadow-lg">
+                                      <Play className="w-4 h-4 fill-current translate-x-0.5" />
+                                    </div>
+                                  </div>
+                                  {/* Actual Video Duration */}
+                                  <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/85 text-[10px] text-white font-bold">
+                                    {rec.duration || "24 mins"}
+                                  </span>
+                                  {rec.completed && (
+                                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-600/90 text-white text-[9px] font-bold flex items-center gap-1 shadow-sm">
+                                      <CheckCircle2 className="w-3 h-3" /> Done
+                                    </span>
+                                  )}
+                                </div>
 
-                          <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-semibold text-[#B99A63]">
-                            <span>{isSelected ? "● Currently In Player" : "Watch Masterclass"}</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </div>
+                                <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                                  <div className="space-y-1">
+                                    <div className="flex items-center justify-between text-[11px] text-stone-500">
+                                      <span className="font-bold text-[#3D1035] truncate max-w-[150px]">{mod.moduleNumber || "Unit"}</span>
+                                      <span>{rec.date || "Term Class"}</span>
+                                    </div>
+                                    <h5 className="text-xs sm:text-sm font-bold text-stone-900 line-clamp-2">
+                                      {rec.title}
+                                    </h5>
+                                  </div>
+
+                                  {/* PDF Notes Attached Indicator */}
+                                  {(rec.notesPdf || rec.pdfTitle) && (
+                                    <div className="pt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-[#3D1035] bg-stone-50 px-2 py-1 rounded-lg border border-stone-200">
+                                      <FileText className="w-3 h-3 text-[#C9956A] shrink-0" />
+                                      <span className="truncate">Notes: {rec.pdfTitle || rec.notesPdf}</span>
+                                    </div>
+                                  )}
+
+                                  <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs font-semibold text-[#C9956A]">
+                                    <span>{isSelected ? "● Playing in Player" : "Watch Lesson"}</span>
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );
                   })}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -939,7 +1218,7 @@ export default function StudentPortal({ onOpenAuth }) {
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "live_studio" && (
           <div className="space-y-8 text-left">
-            <div className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-[#F5F0E8] border border-[#B99A63]/50 shadow-2xl p-6 sm:p-10 relative overflow-hidden space-y-6">
+            <div className="rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] text-[#F5F0E8] border border-[#DFAC88]/50 shadow-2xl p-6 sm:p-10 relative overflow-hidden space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -961,32 +1240,24 @@ export default function StudentPortal({ onOpenAuth }) {
                     href={activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "https://meet.google.com/new"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="silk-zari-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#B99A63] text-[#151515] font-bold text-sm shadow-xl shadow-[#D4AF37]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0 tap-bounce"
+                    className="silk-zari-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-[#C9956A] via-[#F3E5AB] to-[#DFAC88] text-[#151515] font-bold text-sm shadow-xl shadow-[#C9956A]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0 tap-bounce"
                   >
                     <Video className="w-5 h-5" />
                     <span>Join Google Meet ({currentStudent.name.split(" ")[0]})</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
 
-                  <a
-                    href={`https://meet.jit.si/DancingRagas-Classroom-${encodeURIComponent((selectedCourseArea || "Academy").replace(/[^a-zA-Z0-9]/g, ""))}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-2 rounded-full bg-slate-800 hover:bg-slate-700 text-[#D4AF37] border border-[#D4AF37]/30 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>Instant Web Classroom (Zero Setup)</span>
-                  </a>
+
 
                   <div className="text-[10px] text-stone-300 text-center flex items-center justify-center gap-1">
-                    <span>Passcode: <strong className="text-[#D4AF37] font-mono">{activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026"}</strong></span>
+                    <span>Passcode: <strong className="text-[#C9956A] font-mono">{activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026"}</strong></span>
                   </div>
                 </div>
               </div>
 
               {/* Countdown Timer */}
               <div className="space-y-3">
-                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] block">
+                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#C9956A] block">
                   Time Remaining Until Next Masterclass:
                 </span>
                 <div className="grid grid-cols-4 max-w-md gap-3">
@@ -998,9 +1269,9 @@ export default function StudentPortal({ onOpenAuth }) {
                   ].map((unit, uIdx) => (
                     <div
                       key={uIdx}
-                      className="p-3 sm:p-4 rounded-2xl bg-white/5 border border-[#B99A63]/30 text-center space-y-0.5"
+                      className="p-3 sm:p-4 rounded-2xl bg-white/5 border border-[#DFAC88]/30 text-center space-y-0.5"
                     >
-                      <p className="text-2xl sm:text-3xl font-bold font-serif-luxury text-[#D4AF37]">
+                      <p className="text-2xl sm:text-3xl font-bold font-serif-luxury text-[#C9956A]">
                         {String(unit.val).padStart(2, "0")}
                       </p>
                       <span className="text-[10px] text-stone-400 uppercase tracking-wider block">
@@ -1026,7 +1297,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     <button
                       type="button"
                       onClick={() => handleCopyLink(activeLiveSession?.meetingId || liveClassConfig?.meetingId || "ragas-live-room", "Meeting ID")}
-                      className="font-mono text-[#D4AF37] hover:underline flex items-center gap-1 cursor-pointer"
+                      className="font-mono text-[#C9956A] hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <span>{activeLiveSession?.meetingId || liveClassConfig?.meetingId || "ragas-live-room"}</span>
                       <Copy className="w-3 h-3" />
@@ -1037,7 +1308,7 @@ export default function StudentPortal({ onOpenAuth }) {
                     <button
                       type="button"
                       onClick={() => handleCopyLink(activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026", "Passcode")}
-                      className="font-mono text-[#D4AF37] hover:underline flex items-center gap-1 cursor-pointer"
+                      className="font-mono text-[#C9956A] hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <span>{activeLiveSession?.passcode || liveClassConfig?.passcode || "RAGAS2026"}</span>
                       <Copy className="w-3 h-3" />
@@ -1061,7 +1332,7 @@ export default function StudentPortal({ onOpenAuth }) {
                       onClick={handleAddToGoogleCalendar}
                       className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                      <CalendarPlus className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <CalendarPlus className="w-3.5 h-3.5 text-[#C9956A]" />
                       <span>Google Calendar</span>
                     </button>
 
@@ -1070,7 +1341,7 @@ export default function StudentPortal({ onOpenAuth }) {
                       onClick={handleDownloadIcs}
                       className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Download className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <Download className="w-3.5 h-3.5 text-[#C9956A]" />
                       <span>Apple / Outlook (.ics)</span>
                     </button>
                   </div>
@@ -1088,7 +1359,7 @@ export default function StudentPortal({ onOpenAuth }) {
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/20 text-[#1E293B] text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#DFAC88]/20 text-[#1E293B] text-[10px] font-bold uppercase tracking-wider">
                     Medical &amp; Artistic Evaluation
                   </span>
                   <span className="text-xs text-stone-500">Evaluated by Dr. Malavika M. Sunil (MBBS)</span>
@@ -1104,9 +1375,9 @@ export default function StudentPortal({ onOpenAuth }) {
               <button
                 type="button"
                 onClick={() => setIsSubmitModalOpen(true)}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#151515] hover:bg-[#B99A63] text-white hover:text-[#151515] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer shrink-0"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#151515] hover:bg-[#DFAC88] text-white hover:text-[#151515] text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer shrink-0"
               >
-                <Upload className="w-4 h-4 text-[#D4AF37]" />
+                <Upload className="w-4 h-4 text-[#C9956A]" />
                 <span>Submit Video for Evaluation</span>
               </button>
             </div>
@@ -1134,7 +1405,7 @@ export default function StudentPortal({ onOpenAuth }) {
                           {ass.status}
                         </span>
                         {ass.grade && ass.grade !== "Under Review" && (
-                          <span className="px-2.5 py-0.5 rounded-full bg-[#151515] text-[#D4AF37] text-[10px] font-bold">
+                          <span className="px-2.5 py-0.5 rounded-full bg-[#151515] text-[#C9956A] text-[10px] font-bold">
                             Grade: {ass.grade}
                           </span>
                         )}
@@ -1153,7 +1424,7 @@ export default function StudentPortal({ onOpenAuth }) {
                       rel="noopener noreferrer"
                       className="px-3.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold flex items-center gap-1.5 transition-colors self-start sm:self-auto"
                     >
-                      <Video className="w-3.5 h-3.5 text-[#B99A63]" />
+                      <Video className="w-3.5 h-3.5 text-[#DFAC88]" />
                       <span>View Submission Video</span>
                     </a>
                   </div>
@@ -1189,7 +1460,7 @@ export default function StudentPortal({ onOpenAuth }) {
                       </div>
 
                       {ass.clinicalNote && (
-                        <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#B99A63]/30 space-y-1 text-xs">
+                        <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#DFAC88]/30 space-y-1 text-xs">
                           <strong className="text-[#1E293B] font-bold block text-xs">
                             Dr. Malavika&apos;s Biomechanical &amp; Performance Summary:
                           </strong>
@@ -1229,11 +1500,11 @@ export default function StudentPortal({ onOpenAuth }) {
               {(studyMaterials || []).map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-5 rounded-2xl bg-white border border-stone-200 shadow-xs flex items-center justify-between gap-4 hover:border-[#B99A63]/50 transition-all"
+                  className="p-5 rounded-2xl bg-white border border-stone-200 shadow-xs flex items-center justify-between gap-4 hover:border-[#DFAC88]/50 transition-all"
                 >
                   <div className="space-y-1 text-left">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono font-bold text-[#B99A63]">
+                      <span className="text-[10px] font-mono font-bold text-[#DFAC88]">
                         {doc.refNo}
                       </span>
                       <span className="text-[10px] text-stone-400">&bull; {doc.size}</span>
@@ -1251,22 +1522,33 @@ export default function StudentPortal({ onOpenAuth }) {
                     </span>
                   </div>
 
-                  <a
-                    href={doc.fileUrl || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      if (!doc.fileUrl || doc.fileUrl.startsWith("#")) {
-                        e.preventDefault();
-                        showToast(`Viewing syllabus material: ${doc.title}`, "info");
-                      }
-                    }}
-                    className="p-2.5 rounded-xl bg-stone-100 hover:bg-[#151515] hover:text-[#D4AF37] text-stone-700 transition-colors cursor-pointer shrink-0 flex items-center gap-1.5 text-xs font-bold"
-                    title="Download Official PDF"
-                  >
-                    <Download className="w-4 h-4 text-[#B99A63]" />
-                    <span className="hidden sm:inline">PDF</span>
-                  </a>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewPdfDoc(doc)}
+                      className="px-3 py-2 rounded-xl bg-[#260A22]/5 hover:bg-[#260A22]/10 text-[#3D1035] border border-[#3D1035]/20 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+                      title="Preview PDF notes before downloading"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-[#C9956A]" />
+                      <span>Preview</span>
+                    </button>
+                    <a
+                      href={doc.fileUrl || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        if (!doc.fileUrl || doc.fileUrl.startsWith("#")) {
+                          e.preventDefault();
+                          setPreviewPdfDoc(doc);
+                        }
+                      }}
+                      className="p-2.5 rounded-xl bg-stone-100 hover:bg-[#260A22] hover:text-[#E8B896] text-stone-700 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+                      title="Download Official PDF"
+                    >
+                      <Download className="w-4 h-4 text-[#C9956A]" />
+                      <span className="hidden sm:inline">PDF</span>
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1280,10 +1562,10 @@ export default function StudentPortal({ onOpenAuth }) {
       ═══════════════════════════════════════════════════════════════ */}
       {isSubmitModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
-          <div className="w-full max-w-lg rounded-3xl bg-white border border-[#B99A63]/50 shadow-2xl p-6 sm:p-7 space-y-5 text-left">
+          <div className="w-full max-w-lg rounded-3xl bg-white border border-[#DFAC88]/50 shadow-2xl p-6 sm:p-7 space-y-5 text-left">
             <div className="flex items-center justify-between border-b border-stone-200 pb-4">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#B99A63]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#DFAC88]">
                   Formal Faculty Review
                 </span>
                 <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
@@ -1310,7 +1592,7 @@ export default function StudentPortal({ onOpenAuth }) {
                   value={submitForm.title}
                   onChange={(e) => setSubmitForm({ ...submitForm, title: e.target.value })}
                   placeholder="e.g. Module 1: Tatta Adavu 1 to 8 Speed Checks & Aramandi"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-[#B99A63]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-[#DFAC88]"
                 />
               </div>
 
@@ -1324,7 +1606,7 @@ export default function StudentPortal({ onOpenAuth }) {
                   value={submitForm.videoUrl}
                   onChange={(e) => setSubmitForm({ ...submitForm, videoUrl: e.target.value })}
                   placeholder="https://drive.google.com/file/d/... or https://youtu.be/..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-[#B99A63] font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-[#DFAC88] font-mono"
                 />
                 <span className="text-[11px] text-stone-500 mt-1 block">
                   Ensure Google Drive permissions are set to &quot;Anyone with the link can view&quot;.
@@ -1340,7 +1622,7 @@ export default function StudentPortal({ onOpenAuth }) {
                   value={submitForm.notes}
                   onChange={(e) => setSubmitForm({ ...submitForm, notes: e.target.value })}
                   placeholder="e.g. I felt slight tension in the Achilles tendon in the 3rd speed; could you verify my knee angle?"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:border-[#B99A63]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:border-[#DFAC88]"
                 />
               </div>
 
@@ -1356,9 +1638,9 @@ export default function StudentPortal({ onOpenAuth }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#151515] hover:bg-[#B99A63] text-white hover:text-[#151515] text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
+                  className="silk-zari-btn px-6 py-2.5 rounded-xl bg-[#151515] hover:bg-[#DFAC88] text-white hover:text-[#151515] text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-2"
                 >
-                  <Upload className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <Upload className="w-3.5 h-3.5 text-[#C9956A]" />
                   <span>{isSubmitting ? "Submitting..." : "Submit for Faculty Review"}</span>
                 </button>
               </div>
@@ -1391,6 +1673,8 @@ export default function StudentPortal({ onOpenAuth }) {
         studentName={currentStudent.name}
         registrationNo={currentStudent.registrationNo}
         batchName={currentStudent.enrolledCourses?.[0]}
+        wellnessAdvice={currentStudent.wellnessAdvice}
+        student={currentStudent}
       />
 
       {/* Proud Parent & Grandparent Digital Showcase */}
@@ -1401,7 +1685,7 @@ export default function StudentPortal({ onOpenAuth }) {
         registrationNo={currentStudent.registrationNo}
         batchName={currentStudent.enrolledCourses?.[0]}
         activePiece={selectedLesson?.title || "Jathiswaram in Ragam Kalyani"}
-        featuredVideoUrl={selectedLesson?.embedUrl || selectedLesson?.videoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
+        featuredVideoUrl={currentStudent.showcaseVideoUrl || currentStudent.featuredVideoUrl || selectedLesson?.embedUrl || selectedLesson?.videoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
       />
 
       {/* Absence Care & Makeup Catch-Up */}
@@ -1410,7 +1694,11 @@ export default function StudentPortal({ onOpenAuth }) {
         onClose={() => setIsAbsenceModalOpen(false)}
         studentName={currentStudent.name}
         onAbsenceLogged={(data) => {
-          showToast(`Absence recorded for ${data.date}. Your attendance streak is protected!`, "success");
+          if (typeof reportStudentAbsence === "function") {
+            reportStudentAbsence(currentStudent.id, data);
+          } else {
+            showToast(`Absence recorded for ${data.date}. Your attendance streak is protected!`, "success");
+          }
         }}
       />
 
@@ -1420,6 +1708,79 @@ export default function StudentPortal({ onOpenAuth }) {
         onClose={() => setIsReceiptModalOpen(false)}
         student={currentStudent}
       />
+
+      {/* PDF Notes Preview Modal */}
+      {previewPdfDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-[#260A22] to-[#3D1035] text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-[#E8B896]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm sm:text-base text-white line-clamp-1">{previewPdfDoc.title || previewPdfDoc.name || "PDF Document"}</h3>
+                  <p className="text-[11px] text-[#E8B896]">Official DancingRagas Study Notes &bull; Verified by Dr. Malavika</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPreviewPdfDoc(null)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 text-left">
+              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <div className="flex items-center justify-between text-xs text-stone-600">
+                  <span>Course Batch: <strong>{selectedCourseArea}</strong></span>
+                  <span>Document Type: <strong>{previewPdfDoc.type || "Repertoire Notes"}</strong></span>
+                </div>
+                <div className="text-xs text-stone-500">
+                  Attached to Lesson: <strong>{selectedLesson?.title || "Class Curriculum"}</strong>
+                </div>
+              </div>
+
+              {previewPdfDoc.fileUrl && !previewPdfDoc.fileUrl.startsWith("#") ? (
+                <iframe
+                  src={previewPdfDoc.fileUrl}
+                  title={previewPdfDoc.title}
+                  className="w-full h-96 rounded-xl border border-stone-200"
+                />
+              ) : (
+                <div className="p-8 text-center rounded-2xl bg-gradient-to-b from-stone-50 to-stone-100 border border-stone-200 space-y-3">
+                  <FileText className="w-12 h-12 text-[#C9956A] mx-auto" />
+                  <h4 className="font-bold text-stone-800 text-sm">{previewPdfDoc.title || "Lesson Study Material"}</h4>
+                  <p className="text-xs text-stone-600 max-w-md mx-auto">
+                    This document contains detailed tala notations, adavu footwork angles, mudra slokas, and practice regimens curated specifically for this unit.
+                  </p>
+                  <div className="pt-2 flex items-center justify-center gap-3">
+                    <a
+                      href={previewPdfDoc.fileUrl || "#"}
+                      download={previewPdfDoc.title ? `${previewPdfDoc.title}.pdf` : "DancingRagas_Notes.pdf"}
+                      className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#3D1035] text-[#E8B896] hover:bg-[#260A22] text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 text-[#C9956A]" />
+                      <span>Download Study Material (PDF)</span>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 bg-stone-50 border-t border-stone-200 flex items-center justify-between">
+              <span className="text-[11px] text-stone-500">DancingRagas Digital Academy</span>
+              <button
+                onClick={() => setPreviewPdfDoc(null)}
+                className="px-4 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Persistent Floating Tanpura Audio Bar */}
       <FloatingTanpuraBar />

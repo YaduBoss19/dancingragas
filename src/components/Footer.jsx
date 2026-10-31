@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
+import WhatsAppIcon from "./WhatsAppIcon";
 import {
   Phone,
   Mail,
-  Sparkles,
   ArrowRight,
-  MessageCircle,
   Award,
   Heart,
   Lock
@@ -62,7 +61,7 @@ export default function Footer() {
         <div className="rounded-3xl bg-[#1c1c1c] border border-[#B99A63]/30 p-8 sm:p-10 mb-16 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-6">
           <div className="text-left">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B99A63]/15 text-[#B99A63] border border-[#B99A63]/30 text-xs font-bold uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-[#B99A63]" /> Classical Arts Mentorship
+              Classical Arts Mentorship
             </span>
             <h3 className="text-2xl sm:text-3xl font-bold tracking-tight font-serif-luxury text-[#F5F0E8]">
               Ready to begin your personal dance or vocal journey?
@@ -88,9 +87,9 @@ export default function Footer() {
             </button>
             <button
               onClick={openWhatsApp}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer tap-bounce"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer tap-bounce"
             >
-              <MessageCircle className="w-4 h-4" />
+              <WhatsAppIcon className="w-5 h-5 text-white" />
               <span>WhatsApp Dr. Malavika</span>
             </button>
           </div>
@@ -215,8 +214,8 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
               >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>+91 90745 85672 (WhatsApp)</span>
+                <WhatsAppIcon className="w-3.5 h-3.5 shrink-0" />
+                <span>+91 90745 85672 (Admissions Enquiry)</span>
               </a>
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-[#B99A63] shrink-0" />
@@ -248,14 +247,6 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-6">
-            <button
-              onClick={() => navigateTo("admin")}
-              className="flex items-center gap-1.5 text-stone-500 hover:text-[#D4AF37] transition-colors cursor-pointer"
-            >
-              <Lock className="w-3.5 h-3.5 text-[#B99A63]" />
-              <span>Director &amp; Tutor Suite</span>
-            </button>
-            <span className="hidden sm:inline text-slate-700">|</span>
             <span className="flex items-center gap-1 text-slate-400">
               Move. Learn. Master. with <Heart className="w-3 h-3 text-[#B99A63] fill-[#B99A63]" />
             </span>

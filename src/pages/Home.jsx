@@ -13,14 +13,15 @@ import AcademyNewsAndEvents from "../components/AcademyNewsAndEvents";
 import { playGhungrooChime } from "../utils/talamAudio";
 import { EditableText, EditableMedia } from "../components/LiveVisualEditor";
 import { FAQS, TESTIMONIALS } from "../data/initialData";
+import WhatsAppIcon from "../components/WhatsAppIcon";
 import {
-  Sparkles,
   ArrowRight,
   Star,
-  MessageCircle,
   Send,
   ChevronDown,
-  UserCheck
+  UserCheck,
+  Compass,
+  CheckCircle2
 } from "lucide-react";
 
 export default function Home() {
@@ -163,7 +164,7 @@ export default function Home() {
                   }}
                   className="silk-zari-btn px-5 sm:px-8 py-3 sm:py-4 rounded-full bg-[#B99A63] hover:bg-[#cca86d] text-[#151515] font-bold text-xs sm:text-base shadow-xl shadow-[#B99A63]/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer tap-bounce"
                 >
-                  <Sparkles className="w-4 h-4 text-[#151515]" />
+                  <Compass className="w-4 h-4 text-[#151515]" />
                   <span>Explore Classes</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
@@ -398,7 +399,7 @@ export default function Home() {
             {submittedSuccess ? (
               <div className="text-center py-8 space-y-4">
                 <div className="w-16 h-16 rounded-full bg-[#B99A63]/20 text-[#B99A63] flex items-center justify-center mx-auto">
-                  <Sparkles className="w-8 h-8 text-[#B99A63]" />
+                  <CheckCircle2 className="w-8 h-8 text-[#B99A63]" />
                 </div>
                 <h3 className="text-2xl font-bold font-serif-luxury text-[#F5F0E8]">
                   Trial Request Received!
@@ -411,7 +412,7 @@ export default function Home() {
                     onClick={openWhatsAppBooking}
                     className="silk-zari-btn px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 tap-bounce"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <WhatsAppIcon className="w-4 h-4" />
                     <span>Confirm Instantly via WhatsApp</span>
                   </button>
                   <button

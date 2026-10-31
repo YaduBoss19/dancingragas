@@ -1,540 +1,736 @@
 import React, { useState } from "react";
 import { useAcademy } from "../context/AcademyContext";
-import { loginUser, signUpStudent } from "../lib/supabaseClient";
+import WhatsAppIcon from "./WhatsAppIcon";
 import {
   X,
   Lock,
   Mail,
-  User,
-  Shield,
   GraduationCap,
-  Sparkles,
   ArrowRight,
   CheckCircle2,
   AlertCircle,
   KeyRound,
-  BookOpen
+  BookOpen,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  ArrowLeft,
+  ShieldCheck
 } from "lucide-react";
 
+/**
+ * DancingRagas Official Authentication & Passcode Recovery Modal
+ * Streamlined to 2 Dedicated Roles:
+ * 1. Student Portal (Email + Access Key granted by Tutor, with Forgot/Change Option)
+ * 2. Tutor & Faculty Desk (Tutor Passcode: tutor123 / Admin: admin123, with Passcode Reset)
+ */
 export default function AuthModal({ isOpen, onClose }) {
-  const { setAuthUser, setUserRole, setCurrentPage, navigateTo, showToast, studentsList, setStudentsList, loginAdmin } = useAcademy();
+  const {
+    setAuthUser,
+    setUserRole,
+    navigateTo,
+    showToast,
+    studentsList,
+    setActiveStudentId,
+    setIsAdminLoggedIn,
+    updateStudentAccessKey,
+    academyInfo
+  } = useAcademy();
 
-  // 3 Prestigious Roles: 'student' (Disciple Sanctuary) | 'tutor' (Faculty & Guru Desk) | 'admin' (Directorate Suite)
+  // Exactly 2 Roles: 'student' | 'tutor'
   const [authRole, setAuthRole] = useState("student");
-  const [authMode, setAuthMode] = useState("login"); // 'login' | 'signup' | 'forgot'
-
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [batchName, setBatchName] = useState("Online Bharatanatyam Diploma Course");
-
+  const [accessKey, setAccessKey] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [resetSuccessMessage, setResetSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Forgot / Reset Password Mode
+  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [newKeyInput, setNewKeyInput] = useState("");
+  const [forgotRoleTarget, setForgotRoleTarget] = useState("tutor"); // 'tutor' | 'admin'
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e) => {
+  const getSavedTutorPass = () => {
+    try {
+      return localStorage.getItem("dancingragas_tutor_passcode") || "tutor123";
+    } catch {
+      return "tutor123";
+    }
+  };
+
+  const getSavedAdminPass = () => {
+    try {
+      return localStorage.getItem("dancingragas_admin_passcode") || "admin123";
+    } catch {
+      return "admin123";
+    }
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
-    setResetSuccessMessage("");
+    setSuccessMessage("");
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanKey = accessKey.trim();
 
     try {
-      // 1. FORGOT PASSWORD (FOR REGISTERED STUDENTS)
-      if (authMode === "forgot") {
-        if (!email.trim()) {
-          setErrorMessage("Please enter your registered student email address or ID.");
-          setIsLoading(false);
-          return;
-        }
-        if (!newPassword || newPassword.length < 6) {
-          setErrorMessage("New password must be at least 6 characters.");
-          setIsLoading(false);
-          return;
-        }
-        if (newPassword !== confirmPassword) {
-          setErrorMessage("Passwords do not match. Please re-enter.");
+      // ══════════════════════════════════════════════════════════
+      // 1. STUDENT AUTHENTICATION (EMAIL + TUTOR-GRANTED ACCESS KEY)
+      // ══════════════════════════════════════════════════════════
+      if (authRole === "student") {
+        if (
+          cleanKey.toLowerCase() === "tutor123" ||
+          cleanKey.toLowerCase() === "admin123" ||
+          cleanKey.toLowerCase() === "guru123" ||
+          cleanKey.toLowerCase() === "faculty123" ||
+          cleanKey.toLowerCase() === getSavedTutorPass().toLowerCase()
+        ) {
+          setErrorMessage(
+            "You entered a faculty passcode. Please switch to the Tutor tab above to log into the Tutor Portal."
+          );
           setIsLoading(false);
           return;
         }
 
-        // Look up student in registered studentsList
-        const normalized = email.trim().toLowerCase();
-        const found = (studentsList || []).find(
-          (s) => s.email?.toLowerCase() === normalized || s.registrationNo?.toLowerCase() === normalized
+        if (!cleanEmail) {
+          setErrorMessage("Please enter your registered student email address.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!cleanKey) {
+          setErrorMessage("Please enter the student access key sent by your tutor.");
+          setIsLoading(false);
+          return;
+        }
+
+        // Match student by email in academy directory
+        const student = (studentsList || []).find(
+          (s) =>
+            s.email?.toLowerCase() === cleanEmail ||
+            s.registrationNo?.toLowerCase() === cleanEmail
         );
 
-        if (!found) {
-          setErrorMessage("No student account found with this email or registration ID.");
+        // Check if access key matches student's assigned key or universal initial key
+        const expectedKey = (student?.accessKey || student?.password || "ragas2026").toLowerCase();
+        const isKeyCorrect =
+          cleanKey.toLowerCase() === expectedKey ||
+          cleanKey.toLowerCase() === "ragas2026" ||
+          cleanKey.toLowerCase() === "student123";
+
+        // Also allow demo quick-login for initial testing if email matches
+        const isDemoStudent =
+          !student &&
+          (cleanEmail.includes("student") ||
+            cleanEmail.includes("ananya") ||
+            cleanEmail.includes("pooja") ||
+            cleanEmail.includes("example"));
+
+        if (!student && !isDemoStudent) {
+          setErrorMessage(
+            "No student found with this email. Your student portal access must be granted by Dr. Malavika. You can click 'Forgot your student access key?' below or request access via WhatsApp."
+          );
           setIsLoading(false);
           return;
         }
 
-        const updatedList = studentsList.map((s) =>
-          s.id === found.id ? { ...s, password: newPassword } : s
-        );
-        setStudentsList(updatedList);
+        if (!isKeyCorrect && !isDemoStudent) {
+          setErrorMessage(
+            "Invalid student access key. Please verify the access key sent to your email or WhatsApp by Dr. Malavika, or use 'Forgot your student access key?' below."
+          );
+          setIsLoading(false);
+          return;
+        }
+
+        const activeStudent = student || (studentsList || [])[0];
+
+        // Authorize student
+        if (typeof setUserRole === "function") setUserRole("student");
+        if (typeof setIsAdminLoggedIn === "function") setIsAdminLoggedIn(false);
         try {
-          localStorage.setItem("dancingragas_academy_students_v3", JSON.stringify(updatedList));
-        } catch {
-          // Ignore storage failure
+          localStorage.removeItem("dancingragas_academy_admin_auth_v2");
+        } catch {}
+        if (typeof setActiveStudentId === "function") setActiveStudentId(activeStudent.id);
+        if (typeof setAuthUser === "function") {
+          setAuthUser({
+            id: activeStudent.id,
+            email: activeStudent.email,
+            role: "student",
+            user_metadata: {
+              full_name: activeStudent.name,
+              registration_no: activeStudent.registrationNo,
+              role: "student"
+            }
+          });
         }
 
-        setResetSuccessMessage("Password reset successfully! You can now log in to the Student Portal.");
-        setPassword(newPassword);
-        setTimeout(() => {
-          setAuthMode("login");
-          setResetSuccessMessage("");
-        }, 1800);
-        showToast("Password reset successfully!", "success");
+        if (typeof showToast === "function") showToast(`Welcome back, ${activeStudent.name}! Opening your Student Portal...`, "success");
+        if (typeof onClose === "function") onClose();
+        if (typeof navigateTo === "function") navigateTo("student-portal");
         return;
       }
 
-      // 2. NEW STUDENT SIGN UP
-      if (authMode === "signup" && authRole === "student") {
-        const { user, error } = await signUpStudent(email, password, fullName, batchName);
-        if (error) {
-          setErrorMessage(error.message);
-          setIsLoading(false);
-          return;
-        }
-        setAuthUser(user);
-        setUserRole("student");
-        showToast("Student account created successfully! Welcome to DancingRagas Academy.", "success");
-        onClose();
-        navigateTo("student-portal");
-        return;
-      }
-
-      // 3. TUTOR PORTAL AUTHENTICATION
+      // ══════════════════════════════════════════════════════════
+      // 2. TUTOR & FACULTY AUTHENTICATION (TUTOR vs ADMIN)
+      // ══════════════════════════════════════════════════════════
       if (authRole === "tutor") {
-        const isTutorKey = password === "tutor123" || password === "guru123" || password === "faculty123";
-
-        if (!isTutorKey) {
-          setErrorMessage("Invalid Tutor passcode. Default access key: 'tutor123'");
+        // If a student tries their student access key here
+        const isStudentKey = (studentsList || []).some(
+          (s) => (s.accessKey || s.password || "").toLowerCase() === cleanKey.toLowerCase()
+        );
+        if (isStudentKey) {
+          setErrorMessage(
+            "This key is a student access key. Please switch to the Student tab above to access your student portal."
+          );
           setIsLoading(false);
           return;
         }
 
-        setUserRole("tutor");
-        setAuthUser({
-          id: "tutor-dr-malavika",
-          email: email || "tutor@dancingragas.com",
-          role: "tutor",
-          user_metadata: { full_name: "Dr. Malavika (Tutor)", role: "tutor" }
-        });
-        showToast("Welcome to Tutor Portal!", "success");
-        onClose();
-        navigateTo("admin");
-        return;
-      }
+        const savedTutor = getSavedTutorPass().toLowerCase();
+        const savedAdmin = getSavedAdminPass().toLowerCase();
 
-      // 4. ADMIN DASHBOARD AUTHENTICATION
-      if (authRole === "admin") {
-        const ok = loginAdmin ? loginAdmin(password) : (password === "admin123" || password === "admin");
-        if (!ok) {
-          setErrorMessage("Invalid Admin passcode. Default key is 'admin123'");
+        const isAdminPass =
+          cleanKey.toLowerCase() === savedAdmin ||
+          cleanKey.toLowerCase() === "admin123" ||
+          cleanKey.toLowerCase() === "guru123";
+
+        const isTutorPass =
+          cleanKey.toLowerCase() === savedTutor ||
+          cleanKey.toLowerCase() === "tutor123" ||
+          cleanKey.toLowerCase() === "faculty123";
+
+        if (!isTutorPass && !isAdminPass) {
+          setErrorMessage(
+            "Invalid passcode. (Hint: Tutor passcode is 'tutor123', Admin passcode is 'admin123'). Click 'Forgot passcode?' below if you need to reset."
+          );
           setIsLoading(false);
           return;
         }
-        setUserRole("admin");
-        setAuthUser({
-          id: "admin-malavika",
-          email: "info@malavikasunil.com",
-          role: "admin",
-          user_metadata: { full_name: "Dr. Malavika M. Sunil (Admin)", role: "admin" }
-        });
-        showToast("Admin authenticated! Dashboard active.", "success");
-        onClose();
-        navigateTo("admin");
-        return;
-      }
 
-      // 5. STUDENT PORTAL SIGN IN
-      const { user, role, error } = await loginUser(email, password);
-      if (error) {
-        setErrorMessage(error.message);
-        setIsLoading(false);
-        return;
-      }
+        if (isAdminPass) {
+          // Log in as Super Admin (Controls Website CMS, Course Catalog, Gallery + Tutor Workspace)
+          if (typeof setUserRole === "function") setUserRole("admin");
+          if (typeof setIsAdminLoggedIn === "function") setIsAdminLoggedIn(true);
+          try {
+            localStorage.setItem("dancingragas_academy_admin_auth_v2", "true");
+          } catch {}
+          if (typeof setAuthUser === "function") {
+            setAuthUser({
+              id: "admin-director",
+              email: cleanEmail || "admin@dancingragas.com",
+              role: "admin",
+              user_metadata: {
+                full_name: "Academy Director & Webmaster",
+                role: "admin"
+              }
+            });
+          }
 
-      const effectiveRole = role || "student";
-      setAuthUser(user);
-      setUserRole(effectiveRole);
-      showToast("Welcome back to your Student Portal!", "success");
-      onClose();
-      navigateTo("student-portal");
-      navigateTo("student-portal");
+          if (typeof showToast === "function") showToast("Welcome to the Admin Directorate Suite!", "success");
+          if (typeof onClose === "function") onClose();
+          if (typeof navigateTo === "function") navigateTo("admin");
+          return;
+        } else {
+          // Log in as Tutor (Controls Student Inquiries & Leads, Curriculum, Live Classes, Assessments)
+          if (typeof setUserRole === "function") setUserRole("tutor");
+          if (typeof setIsAdminLoggedIn === "function") setIsAdminLoggedIn(true);
+          try {
+            localStorage.setItem("dancingragas_academy_admin_auth_v2", "true");
+          } catch {}
+          if (typeof setAuthUser === "function") {
+            setAuthUser({
+              id: "tutor-dr-malavika",
+              email: cleanEmail || "tutor@dancingragas.com",
+              role: "tutor",
+              user_metadata: {
+                full_name: "Dr. Malavika M. Sunil (Tutor)",
+                role: "tutor"
+              }
+            });
+          }
+
+          if (typeof showToast === "function") showToast("Welcome to the Tutor Portal, Dr. Malavika!", "success");
+          if (typeof onClose === "function") onClose();
+          if (typeof navigateTo === "function") navigateTo("admin");
+          return;
+        }
+      }
     } catch (err) {
-      setErrorMessage(err.message || "Authentication error occurred.");
+      setErrorMessage(err.message || "An authentication error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ══════════════════════════════════════════════════════════
+  // FORGOT PASSWORD / ACCESS KEY RECOVERY HANDLER
+  // ══════════════════════════════════════════════════════════
+  const handleResetSubmit = (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    const targetEmail = forgotEmail.trim().toLowerCase();
+    const newPass = newKeyInput.trim();
+
+    if (!targetEmail) {
+      setErrorMessage("Please enter your registered email address.");
+      return;
+    }
+
+    if (!newPass) {
+      setErrorMessage("Please enter your desired new access key or passcode.");
+      return;
+    }
+
+    if (newPass.length < 4) {
+      setErrorMessage("New passcode must be at least 4 characters.");
+      return;
+    }
+
+    if (authRole === "student") {
+      const student = (studentsList || []).find(
+        (s) =>
+          s.email?.toLowerCase() === targetEmail ||
+          s.registrationNo?.toLowerCase() === targetEmail
+      );
+
+      if (!student) {
+        setErrorMessage(
+          `No student record found with email "${targetEmail}". If you are newly admitted, please click below to contact Dr. Malavika on WhatsApp.`
+        );
+        return;
+      }
+
+      if (typeof updateStudentAccessKey === "function") {
+        updateStudentAccessKey(student.id, newPass);
+      }
+      setSuccessMessage(
+        `Success! Access key for ${student.name} has been updated to "${newPass}". You can now sign in with your new key.`
+      );
+      setEmail(targetEmail);
+      setAccessKey(newPass);
+      setTimeout(() => {
+        setIsForgotMode(false);
+      }, 2000);
+    } else {
+      // Tutor / Admin Passcode Reset
+      const isAuthorizedEmail =
+        targetEmail.includes("malavika") ||
+        targetEmail.includes("admin") ||
+        targetEmail.includes("tutor") ||
+        targetEmail === "tutor@dancingragas.com" ||
+        targetEmail === "dr.malavika.sunil@gmail.com";
+
+      if (!isAuthorizedEmail) {
+        setErrorMessage(
+          "Unrecognized faculty email. Please enter the authorized director email (e.g. tutor@dancingragas.com or dr.malavika.sunil@gmail.com)."
+        );
+        return;
+      }
+
+      if (forgotRoleTarget === "admin") {
+        try {
+          localStorage.setItem("dancingragas_admin_passcode", newPass);
+        } catch {}
+        setSuccessMessage(`Admin Directorate passcode updated to "${newPass}". You can now log in.`);
+      } else {
+        try {
+          localStorage.setItem("dancingragas_tutor_passcode", newPass);
+        } catch {}
+        setSuccessMessage(`Tutor Portal passcode updated to "${newPass}". You can now log in.`);
+      }
+
+      setAccessKey(newPass);
+      setTimeout(() => {
+        setIsForgotMode(false);
+      }, 2000);
+    }
+  };
+
+  const whatsappInquiryUrl = `https://wa.me/${(academyInfo?.whatsappNumber || "919074585672").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+    `Hello Dr. Malavika! 🙏\n\nI need assistance with my DancingRagas Student Portal access key. My registered email is: ${forgotEmail || email || "[Your Email]"}. Please help me reset my key.`
+  )}`;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-3xl bg-[#FAF7F2] border border-[#B99A63]/50 shadow-2xl overflow-hidden text-left font-sans">
-        {/* iPhone Deep Burgundy Header bar */}
-        <div className="relative p-6 sm:p-7 bg-gradient-to-b from-[#0F172A] via-[#0B132B] to-[#0F172A] text-[#F5F0E8] border-b border-[#B99A63]/30">
-          <button
-            onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4" />
-          </button>
+      <div className="relative w-full max-w-md rounded-3xl bg-[#FBF7F5] border border-[#DFAC88]/60 shadow-2xl overflow-hidden text-left font-sans">
+        
+        {/* Header Ribbon */}
+        <div className="p-6 bg-gradient-to-r from-[#260A22] via-[#3D1035] to-[#260A22] text-white space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-[#E8B896]">
+                {isForgotMode ? (
+                  <RotateCcw className="w-5 h-5 text-[#DFAC88]" />
+                ) : authRole === "student" ? (
+                  <GraduationCap className="w-5 h-5" />
+                ) : (
+                  <BookOpen className="w-5 h-5" />
+                )}
+              </div>
+              <div>
+                <h3 className="font-bold text-base font-serif-luxury text-white">
+                  {isForgotMode
+                    ? authRole === "student"
+                      ? "Reset Student Access Key"
+                      : "Reset Faculty Passcode"
+                    : authRole === "student"
+                    ? "Student Portal Log In"
+                    : "Tutor & Admin Portal"}
+                </h3>
+                <p className="text-[11px] text-[#E8B896]">
+                  {isForgotMode
+                    ? "Self-service credential recovery"
+                    : authRole === "student"
+                    ? "Access granted by Dr. Malavika"
+                    : "Faculty Desk & Academy Control"}
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#D4AF37]">
-              Verified Academy Access
-            </span>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white transition-colors cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-white">
-            DancingRagas <span className="text-[#D4AF37]">Portals</span>
-          </h3>
-          <p className="text-xs text-stone-300 mt-0.5">
-            {authMode === "forgot"
-              ? "Reset Student Password"
-              : authRole === "admin"
-              ? "Admin Dashboard • Courses, Website Content & Settings"
-              : authRole === "tutor"
-              ? "Tutor Portal • Live Google Meet, Student Videos & PDFs"
-              : "Student Portal • Live Classes, Videos, Notes & Feedback"}
-          </p>
 
-          {/* 3 Simple Roles: Student, Tutor, Admin */}
-          {authMode !== "forgot" && (
-            <div className="mt-5 grid grid-cols-3 p-1 rounded-2xl bg-black/40 border border-[#B99A63]/30 gap-1">
+          {/* EXACTLY 2 Clean Role Tabs (Hidden during Forgot Mode) */}
+          {!isForgotMode && (
+            <div className="grid grid-cols-2 p-1 rounded-2xl bg-black/30 border border-white/10">
               <button
                 type="button"
                 onClick={() => {
                   setAuthRole("student");
                   setErrorMessage("");
+                  setSuccessMessage("");
                 }}
-                className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "student"
-                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md shadow-[#D4AF37]/20"
+                    ? "bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#260A22] shadow-md shadow-[#C9956A]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
                 <GraduationCap className="w-4 h-4 shrink-0" />
-                <span className="truncate">Student</span>
+                <span>Student</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => {
                   setAuthRole("tutor");
-                  setAuthMode("login");
                   setErrorMessage("");
+                  setSuccessMessage("");
                 }}
-                className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   authRole === "tutor"
-                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md shadow-[#D4AF37]/20"
+                    ? "bg-gradient-to-r from-[#C9956A] to-[#DFAC88] text-[#260A22] shadow-md shadow-[#C9956A]/20"
                     : "text-stone-300 hover:text-white"
                 }`}
               >
                 <BookOpen className="w-4 h-4 shrink-0" />
-                <span className="truncate">Tutor</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthRole("admin");
-                  setAuthMode("login");
-                  setErrorMessage("");
-                }}
-                className={`py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  authRole === "admin"
-                    ? "bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] shadow-md shadow-[#D4AF37]/20"
-                    : "text-stone-300 hover:text-white"
-                }`}
-              >
-                <Shield className="w-4 h-4 shrink-0" />
-                <span className="truncate">Admin</span>
+                <span>Tutor</span>
               </button>
             </div>
           )}
         </div>
 
         {/* Form Body */}
-        <div className="p-6 sm:p-7 space-y-4">
+        <div className="p-6 space-y-4">
           {errorMessage && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {resetSuccessMessage && (
+          {successMessage && (
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-              <span>{resetSuccessMessage}</span>
+              <span>{successMessage}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3.5">
-            {/* FORGOT PASSWORD FORM (FOR DISCIPLES) */}
-            {authMode === "forgot" ? (
-              <>
-                <div className="p-3 rounded-xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-xs text-[#1E293B]">
-                  <p className="font-bold flex items-center gap-1.5 mb-0.5">
-                    <KeyRound className="w-3.5 h-3.5 text-[#B99A63]" />
-                    <span>Instant Disciple Password Recovery</span>
-                  </p>
-                  <p className="text-[11px] text-stone-600">
-                    Enter your registered disciple email address (*e.g., student@dancingragas.com*) and choose your new password.
-                  </p>
+          {/* ═══════════════════════════════════════════════════════
+              REGULAR LOGIN FORM
+          ═══════════════════════════════════════════════════════ */}
+          {!isForgotMode ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Field 1: Email (Username) */}
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">
+                  {authRole === "student" ? "Student Email Address (Username)" : "Tutor / Faculty Email"}
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={authRole === "student" ? "e.g. ananya.menon@example.com" : "tutor@dancingragas.com"}
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs focus:outline-none focus:border-[#C9956A] transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Field 2: Access Key (Passcode) */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-stone-700">
+                    {authRole === "student" ? "Student Access Key" : "Faculty Passcode"}
+                  </label>
+                  {authRole === "student" && (
+                    <span className="text-[10px] text-stone-500 font-medium">Provided by Tutor</span>
+                  )}
+                </div>
+                <div className="relative">
+                  <KeyRound className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={accessKey}
+                    onChange={(e) => setAccessKey(e.target.value)}
+                    placeholder={
+                      authRole === "student"
+                        ? "Enter your student access key"
+                        : "Enter tutor passcode (tutor123)"
+                    }
+                    required
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs focus:outline-none focus:border-[#C9956A] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-2.5 text-stone-400 hover:text-stone-600 cursor-pointer"
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Registered Disciple Email / ID</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-                    <input
-                      type="text"
-                      required
-                      placeholder="student@dancingragas.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">New Password</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      placeholder="At least 6 characters"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Confirm New Password</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      placeholder="Re-enter new password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
-                    />
-                  </div>
-                </div>
-
-                <button id="auth-modal-forgot-submit-btn" type="submit" disabled={isLoading}
-                  className="silk-zari-btn w-full py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] text-[#0F172A] font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce"
-                >
-                  <KeyRound className="w-4 h-4 text-[#0F172A]" />
-                  <span>Update Password &amp; Continue</span>
-                </button>
-
-                <div className="text-center pt-2">
+                {/* Forgot Password Link */}
+                <div className="flex items-center justify-end pt-1">
                   <button
                     type="button"
                     onClick={() => {
-                      setAuthMode("login");
+                      setIsForgotMode(true);
+                      setForgotEmail(email);
                       setErrorMessage("");
+                      setSuccessMessage("");
                     }}
-                    className="text-xs text-stone-600 hover:text-[#151515] underline cursor-pointer"
+                    className="text-[11px] text-[#93522C] hover:text-[#260A22] font-semibold hover:underline cursor-pointer"
                   >
-                    &larr; Return to Sign In
+                    {authRole === "student"
+                      ? "Forgot your student access key?"
+                      : "Forgot passcode / Reset?"}
                   </button>
                 </div>
-              </>
-            ) : (
-              /* REGULAR LOGIN / SIGNUP FORM */
-              <>
-                {authMode === "signup" && authRole === "student" && (
-                  <>
-                    <div>
-                      <label className="block text-xs font-bold text-stone-700 mb-1">Disciple Full Name</label>
-                      <div className="relative">
-                        <User className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Ananya Menon"
-                          value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
-                        />
-                      </div>
-                    </div>
+              </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-stone-700 mb-1">
-                        Enrolled Discipline / Batch
-                      </label>
-                      <select
-                        value={batchName}
-                        onChange={(e) => setBatchName(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none"
-                      >
-                        <option value="Online Bharatanatyam Diploma Course">
-                          Online Bharatanatyam Diploma Course
-                        </option>
-                        <option value="Online Bharatanatyam Non-Diploma Classes">
-                          Online Bharatanatyam Non-Diploma Classes
-                        </option>
-                        <option value="Online Carnatic Music Classes">
-                          Online Carnatic Music Classes
-                        </option>
-                        <option value="Online Semi-Classical Bollywood Dance Classes">
-                          Online Semi-Classical Bollywood Dance Classes
-                        </option>
-                      </select>
-                    </div>
-                  </>
-                )}
-
-                {authRole === "admin" ? (
-                  <div className="p-3.5 rounded-2xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-xs text-[#1E293B]">
-                    <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#1E293B] font-serif-luxury">
-                      <Shield className="w-4 h-4 text-[#B99A63]" />
-                      <span>Admin Authentication</span>
-                    </span>
-                    <p className="text-[11px] text-stone-600 leading-relaxed">
-                      Enter the admin security passcode to access website content, student directory, courses, and academy settings.
-                    </p>
+              {/* Notice Boxes */}
+              {authRole === "student" ? (
+                <div className="p-3 rounded-xl bg-stone-100 border border-stone-200 space-y-1.5 text-left">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#3D1035]">
+                    <Lock className="w-3.5 h-3.5 text-[#C9956A]" />
+                    <span>Student Portal Access Policy</span>
                   </div>
-                ) : authRole === "tutor" ? (
-                  <div className="p-3.5 rounded-2xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-xs text-[#1E293B]">
-                    <span className="font-bold flex items-center gap-1.5 mb-1 text-sm text-[#1E293B] font-serif-luxury">
-                      <BookOpen className="w-4 h-4 text-[#B99A63]" />
-                      <span>Tutor Access</span>
-                    </span>
-                    <p className="text-[11px] text-stone-600 leading-relaxed">
-                      Enter your tutor passcode (e.g. <code>tutor123</code>) to schedule Google Meet live classes, review student videos, and upload study PDFs.
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">Student Registered Email</label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-                      <input
-                        type="email"
-                        required
-                        placeholder="student@dancingragas.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-stone-700">
-                      {authRole === "admin"
-                        ? "Admin Passcode"
-                        : authRole === "tutor"
-                        ? "Tutor Passcode"
-                        : "Student Password"}
-                    </label>
-                    {authRole === "student" && authMode === "login" && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAuthMode("forgot");
-                          setErrorMessage("");
-                        }}
-                        className="text-[11px] text-[#B99A63] hover:text-[#1E293B] font-semibold cursor-pointer"
-                      >
-                        Forgot password?
-                      </button>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      placeholder={
-                        authRole === "admin"
-                          ? "Enter admin passcode (admin123)"
-                          : authRole === "tutor"
-                          ? "Enter tutor passcode (tutor123)"
-                          : "••••••••"
-                      }
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs sm:text-sm bg-white focus:border-[#B99A63] focus:outline-none focus:ring-1 focus:ring-[#B99A63]"
-                    />
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    Student access keys are issued directly by Dr. Malavika to officially enrolled disciples.
+                  </p>
+                  <div className="pt-1">
+                    <a
+                      href={whatsappInquiryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#128C7E] hover:underline"
+                    >
+                      <WhatsAppIcon className="w-3.5 h-3.5" />
+                      <span>Request Access Key from Dr. Malavika</span>
+                    </a>
                   </div>
                 </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-stone-100 border border-stone-200 text-xs text-stone-600 space-y-1">
+                  <div>
+                    <span className="font-bold text-stone-800">Tutor Passcode:</span>{" "}
+                    <code className="px-1 py-0.5 rounded bg-white font-mono font-bold text-[#3D1035]">tutor123</code> (Enquiries, Leads, Students &amp; Video Modules)
+                  </div>
+                  <div>
+                    <span className="font-bold text-stone-800">Admin Passcode:</span>{" "}
+                    <code className="px-1 py-0.5 rounded bg-white font-mono font-bold text-[#3D1035]">admin123</code> (Website Text, Public Courses &amp; Gallery)
+                  </div>
+                </div>
+              )}
 
-                <button
-                  id="auth-modal-submit-btn"
-                  type="submit"
-                  disabled={isLoading}
-                  className="silk-zari-btn w-full py-3.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] hover:text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer tap-bounce border border-[#B99A63]/40"
-                >
-                  <span>
-                    {isLoading
-                      ? "Verifying Credentials..."
-                      : authMode === "signup"
-                      ? "Create Student Account"
-                      : authRole === "admin"
-                      ? "Enter Admin Dashboard"
-                      : authRole === "tutor"
-                      ? "Enter Tutor Portal"
-                      : "Sign In to Student Portal"}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
-                </button>
-              </>
-            )}
-          </form>
-
-          {/* Switch mode for students */}
-          {authRole === "student" && authMode !== "forgot" && (
-            <div className="text-center pt-1 border-t border-stone-200">
+              {/* Submit Action */}
               <button
-                type="button"
-                onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}
-                className="text-xs text-stone-600 hover:text-[#151515] underline cursor-pointer"
+                type="submit"
+                disabled={isLoading}
+                className="silk-zari-btn w-full py-3 rounded-xl bg-gradient-to-r from-[#260A22] to-[#3D1035] hover:from-[#3D1035] hover:to-[#260A22] text-[#E8B896] hover:text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#260A22]/20 transition-all disabled:opacity-50"
               >
-                {authMode === "login"
-                  ? "New student? Create your student account"
-                  : "Already registered? Sign in to Student Portal"}
+                <span>
+                  {isLoading
+                    ? "Validating Access..."
+                    : authRole === "student"
+                    ? "Log In as Student"
+                    : "Log In to Workspace"}
+                </span>
+                <ArrowRight className="w-4 h-4" />
               </button>
-            </div>
+            </form>
+          ) : (
+            /* ═══════════════════════════════════════════════════════
+               FORGOT PASSWORD / RESET INTERFACE
+            ═══════════════════════════════════════════════════════ */
+            <form onSubmit={handleResetSubmit} className="space-y-4">
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <ShieldCheck className="w-4 h-4 text-amber-700" />
+                  <span>Credential Recovery &amp; Self-Service Reset</span>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  {authRole === "student"
+                    ? "Enter your registered disciple email address to set a new access key."
+                    : "Enter your registered faculty email to reset your Tutor or Admin passcode."}
+                </p>
+              </div>
+
+              {/* Registered Email */}
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">
+                  {authRole === "student" ? "Your Registered Student Email" : "Master Faculty Email"}
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder={
+                      authRole === "student"
+                        ? "e.g. ananya.menon@example.com"
+                        : "tutor@dancingragas.com"
+                    }
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs focus:outline-none focus:border-[#C9956A]"
+                  />
+                </div>
+              </div>
+
+              {/* If Faculty, select which passcode to reset */}
+              {authRole === "tutor" && (
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Target Role to Reset</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForgotRoleTarget("tutor")}
+                      className={`py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                        forgotRoleTarget === "tutor"
+                          ? "bg-[#260A22] text-[#E8B896] border-[#DFAC88]"
+                          : "bg-white text-stone-700 border-stone-200"
+                      }`}
+                    >
+                      Tutor Passcode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForgotRoleTarget("admin")}
+                      className={`py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                        forgotRoleTarget === "admin"
+                          ? "bg-[#260A22] text-[#E8B896] border-[#DFAC88]"
+                          : "bg-white text-stone-700 border-stone-200"
+                      }`}
+                    >
+                      Admin Passcode
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* New Passcode */}
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">
+                  {authRole === "student" ? "Set New Student Access Key" : "Set New Passcode"}
+                </label>
+                <div className="relative">
+                  <KeyRound className="w-4 h-4 text-stone-400 absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={newKeyInput}
+                    onChange={(e) => setNewKeyInput(e.target.value)}
+                    placeholder="Enter new key (e.g. ragas2026)"
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs focus:outline-none focus:border-[#C9956A]"
+                  />
+                </div>
+              </div>
+
+              {/* Reset Actions */}
+              <div className="space-y-2 pt-2">
+                <button
+                  type="submit"
+                  className="silk-zari-btn w-full py-2.5 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Update &amp; Set New Key</span>
+                </button>
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotMode(false);
+                      setErrorMessage("");
+                      setSuccessMessage("");
+                    }}
+                    className="text-xs text-stone-600 hover:text-stone-900 font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back to Log In</span>
+                  </button>
+
+                  {authRole === "student" && (
+                    <a
+                      href={whatsappInquiryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-[#128C7E] font-bold hover:underline flex items-center gap-1"
+                    >
+                      <WhatsAppIcon className="w-3.5 h-3.5" />
+                      <span>Ask Dr. Malavika</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </form>
           )}
 
-          {/* Direct Concierge Support */}
-          <div className="p-3 rounded-2xl bg-[#1E293B]/10 border border-[#B99A63]/30 text-[11px] text-[#1E293B] flex items-center justify-between gap-3">
-            <div>
-              <span className="font-bold block">Need Portal Assistance?</span>
-              <span className="text-stone-600">Direct WhatsApp with Dr. Malavika</span>
+          {/* Quick Demo Helper Pill for initial testing */}
+          {!isForgotMode && (
+            <div className="pt-2 text-center text-[11px] text-stone-500">
+              {authRole === "student" ? (
+                <span>
+                  Demo Student: <strong className="text-stone-700">ananya.menon@example.com</strong> &bull; Key:{" "}
+                  <strong className="text-stone-700">ragas2026</strong>
+                </span>
+              ) : (
+                <span>
+                  Tutor Pass: <strong className="text-stone-700">{getSavedTutorPass()}</strong> &bull; Admin:{" "}
+                  <strong className="text-stone-700">{getSavedAdminPass()}</strong>
+                </span>
+              )}
             </div>
-            <a
-              href="https://wa.me/919074585672?text=Hello%20Dr.%20Malavika%2C%20I%20need%20assistance%20logging%20into%20my%20DancingRagas%20account."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-xl bg-[#25D366] text-white font-bold text-xs shrink-0 hover:brightness-105 transition-all shadow-xs"
-            >
-              WhatsApp
-            </a>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import React from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
-import { MessageCircle, Sparkles, Phone, Compass } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
+import { Phone, Compass, Play } from "lucide-react";
 
 /**
  * Mobile-first sticky bottom action bar.
@@ -11,8 +12,8 @@ import { MessageCircle, Sparkles, Phone, Compass } from "lucide-react";
 export default function MobileBottomBar() {
   const { currentPage, navigateTo, academyInfo } = useAcademy();
 
-  // Hide on admin portal
-  if (currentPage === "admin") return null;
+  // Hide on portals
+  if (currentPage === "admin" || currentPage === "student-portal") return null;
 
   const openWhatsApp = () => {
     playGhungrooChime();
@@ -55,10 +56,10 @@ export default function MobileBottomBar() {
           className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-emerald-400 hover:text-emerald-300 transition-colors tap-bounce"
           aria-label="Chat with Dr. Malavika on WhatsApp"
         >
-          <div className="w-8 h-8 rounded-full bg-emerald-950 border border-emerald-800 flex items-center justify-center mb-0.5">
-            <MessageCircle className="w-4 h-4 fill-emerald-400 text-emerald-400" />
+          <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-600/40 flex items-center justify-center mb-0.5">
+            <WhatsAppIcon className="w-4 h-4" />
           </div>
-          <span className="text-[10px] font-bold tracking-tight">WhatsApp</span>
+          <span className="text-[10px] font-bold tracking-tight">Enquiries</span>
         </button>
 
         {/* Call Button */}
@@ -88,11 +89,11 @@ export default function MobileBottomBar() {
         {/* Trial Hero Button */}
         <button
           onClick={handleTrialClick}
-          className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl bg-[#B99A63] hover:bg-[#cca86d] text-[#151515] shadow-md shadow-[#B99A63]/25 tap-bounce"
+          className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl bg-[#C9956A] hover:bg-[#DFAC88] text-[#151515] shadow-md shadow-[#C9956A]/25 tap-bounce"
           aria-label="Book Trial Session"
         >
           <div className="w-8 h-8 rounded-full bg-[#151515]/20 flex items-center justify-center text-[#151515] mb-0.5">
-            <Sparkles className="w-4 h-4 text-[#151515]" />
+            <Play className="w-3.5 h-3.5 fill-[#151515] translate-x-0.5" />
           </div>
           <span className="text-[10px] font-extrabold tracking-tight">Book Trial</span>
         </button>
