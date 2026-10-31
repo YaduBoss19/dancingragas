@@ -264,7 +264,7 @@ export default function AboutUs() {
             {/* Floating: stage count */}
             <div className="absolute -bottom-4 -left-2 sm:-bottom-5 sm:-left-6 z-30 px-3.5 py-2.5 rounded-2xl bg-white shadow-xl border border-slate-100 flex items-center gap-2.5 animate-float-reverse">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center text-white">
-                <Star className="w-4 h-4 fill-white" />
+                <Sparkles className="w-4 h-4 text-white fill-white" />
               </div>
               <div className="text-left">
                 <div className="text-lg font-black text-slate-900 leading-none">600+</div>
@@ -467,7 +467,7 @@ export default function AboutUs() {
                 </p>
                 <div className="mt-5 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-violet-600 flex items-center justify-center shrink-0">
-                    <Star className="w-4 h-4 text-white fill-white" />
+                    <Award className="w-4 h-4 text-white fill-white" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white">Dr. Malavika M. Sunil</p>

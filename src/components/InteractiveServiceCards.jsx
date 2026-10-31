@@ -553,7 +553,7 @@ export default function InteractiveServiceCards({ onSelectServiceForBooking }) {
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Star className="w-3.5 h-3.5" />
+              <Award className="w-3.5 h-3.5 text-[#B99A63]" />
               <span>Services ({otherServices.length})</span>
             </button>
           </div>
@@ -655,7 +655,7 @@ export default function InteractiveServiceCards({ onSelectServiceForBooking }) {
             <div className="flex items-center justify-between border-b border-slate-200 pb-3.5">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-[#151515] text-[#D4AF37] flex items-center justify-center border border-[#B99A63]/50 shadow-xs">
-                  <Star className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 text-[#B99A63]" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[#151515] font-serif-luxury leading-tight">

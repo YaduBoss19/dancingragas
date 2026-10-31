@@ -42,6 +42,9 @@ import {
   Camera,
   Play,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
+  FolderPlus,
   KeyRound,
   Stethoscope,
   Heart
@@ -96,6 +99,16 @@ export default function AdminDashboard() {
     acknowledgeStudentAbsence,
     updateStudentAccessKey,
     updateStudentProgress,
+    curriculumModules,
+    addCurriculumModule,
+    updateCurriculumModule,
+    deleteCurriculumModule,
+    addLessonToModule,
+    updateLessonInModule,
+    deleteLessonFromModule,
+    moveLessonBetweenModules,
+    reorderLessonInModule,
+    attachPdfToLesson,
     deleteStudent,
     addStudentToCourse,
     removeStudentFromCourse,
@@ -113,6 +126,22 @@ export default function AdminDashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   // Passcode change modal state
   const [isChangePasscodeModalOpen, setIsChangePasscodeModalOpen] = useState(false);
+  // Module & Lesson Management States
+  const [isAddingModuleModal, setIsAddingModuleModal] = useState(false);
+  const [moduleForm, setModuleForm] = useState({ title: "", moduleNumber: "", description: "" });
+  const [targetModuleForLesson, setTargetModuleForLesson] = useState(null);
+  const [moduleLessonForm, setModuleLessonForm] = useState({
+    title: "",
+    embedUrl: "",
+    duration: "25 mins",
+    topics: "",
+    notesPdf: "",
+    pdfUrl: "",
+    pdfTitle: ""
+  });
+  const [targetLessonForPdf, setTargetLessonForPdf] = useState(null);
+  const [pdfNoteForm, setPdfNoteForm] = useState({ title: "", url: "" });
+
   const [newDashboardPasscode, setNewDashboardPasscode] = useState("");
 
   // Student Wellness Advice Modal State
@@ -1733,25 +1762,52 @@ export default function AdminDashboard() {
             ACADEMIC TABS: COURSE AREAS, STUDENTS, ASSESSMENTS, LIVE STUDIO
         ═══════════════════════════════════════════════════════════════ */}
         {activeTab === "course_areas" && (
-          <div className="space-y-6 text-left">
+          <div className="space-y-6 text-left font-sans">
+            {/* Header with Add Module & Add Video Buttons */}
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                  Course Areas &amp; Unlisted Video Vault
-                </h3>
-                <p className="text-xs text-stone-500">
-                  Publish unlisted syllabus recordings and practice drill videos for enrolled disciples.
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-[#260A22] text-[#E8B896] text-[10px] font-bold uppercase tracking-wider">
+                    Syllabus Architecture
+                  </span>
+                  <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
+                    Course Modules &amp; Video Lessons
+                  </h3>
+                </div>
+                <p className="text-xs text-stone-500 mt-1">
+                  Organize video drills into curriculum modules, set custom video durations, attach PDF notes, and manage disciple course enrollments.
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsAddingVideoModal(true)}
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Masterclass Video</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentMods = (curriculumModules || []).filter(
+                      (m) => !selectedCourseArea || m.courseCategory === selectedCourseArea
+                    );
+                    setModuleForm({
+                      title: "",
+                      moduleNumber: `Module 0${currentMods.length + 1}`,
+                      description: ""
+                    });
+                    setIsAddingModuleModal(true);
+                  }}
+                  className="silk-zari-btn px-4 py-2.5 rounded-full bg-[#260A22] text-[#E8B896] hover:text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                >
+                  <FolderPlus className="w-4 h-4" />
+                  <span>+ Add Course Module</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAddingVideoModal(true)}
+                  className="px-4 py-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Quick Add Video</span>
+                </button>
+              </div>
             </div>
 
             {/* Course Area Filter Pills */}
@@ -1762,7 +1818,7 @@ export default function AdminDashboard() {
                   onClick={() => setSelectedCourseArea(area)}
                   className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer transition-all ${
                     selectedCourseArea === area
-                      ? "bg-[#1E293B] text-[#D4AF37] shadow-sm"
+                      ? "bg-[#260A22] text-[#E8B896] shadow-sm"
                       : "bg-white border border-stone-200 text-stone-600 hover:bg-stone-50"
                   }`}
                 >
@@ -1776,11 +1832,11 @@ export default function AdminDashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
                 <div>
                   <h4 className="text-sm sm:text-base font-bold font-serif-luxury text-stone-900 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-[#B99A63]" />
+                    <Users className="w-4 h-4 text-[#C9956A]" />
                     <span>Disciples Enrolled in {selectedCourseArea}</span>
                   </h4>
                   <p className="text-[11px] text-stone-500">
-                    Manage students who have access to this course's masterclass vault &amp; curriculum.
+                    Students who have active access to this course's masterclass vault &amp; curriculum modules.
                   </p>
                 </div>
 
@@ -1794,7 +1850,7 @@ export default function AdminDashboard() {
                         e.target.value = "";
                       }
                     }}
-                    className="px-3 py-1.5 rounded-xl border border-stone-200 text-xs font-semibold bg-stone-50 hover:bg-white focus:outline-none focus:border-[#B99A63] cursor-pointer"
+                    className="px-3 py-1.5 rounded-xl border border-stone-200 text-xs font-semibold bg-stone-50 hover:bg-white focus:outline-none focus:border-[#DFAC88] cursor-pointer"
                   >
                     <option value="" disabled>+ Enroll a Student to {selectedCourseArea}...</option>
                     {(studentsList || [])
@@ -1852,41 +1908,332 @@ export default function AdminDashboard() {
               })()}
             </div>
 
-            {/* Recordings List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(recordings || [])
-                .filter((r) => !selectedCourseArea || r.courseCategory === selectedCourseArea)
-                .map((rec) => (
-                  <div key={rec.id} className="bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-sm flex flex-col justify-between">
-                    <UniversalVideoPlayer
-                        url={rec.embedUrl}
-                        title={rec.title}
-                        className="w-full"
-                      />
-                    <div className="p-5 space-y-2 flex-1 flex flex-col justify-between text-xs">
-                      <div>
-                        <span className="text-[10px] text-[#B99A63] font-bold uppercase">{rec.module}</span>
-                        <h4 className="font-bold text-stone-900 text-sm mt-0.5">{rec.title}</h4>
-                        <p className="text-stone-500 text-[11px] line-clamp-2 mt-1">{rec.description}</p>
+            {/* ═══════════════════════════════════════════════════════════════
+                MODULE-WISE CURRICULUM ARCHITECTURE (TUTOR CONTROLS)
+            ═══════════════════════════════════════════════════════════════ */}
+            <div className="space-y-6">
+              {(() => {
+                const courseModules = (curriculumModules || []).filter(
+                  (m) => !selectedCourseArea || m.courseCategory === selectedCourseArea
+                );
+
+                if (courseModules.length === 0) {
+                  return (
+                    <div className="p-8 rounded-3xl bg-white border border-dashed border-stone-300 text-center space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-800 flex items-center justify-center mx-auto">
+                        <FolderPlus className="w-6 h-6 text-[#C9956A]" />
+                      </div>
+                      <h4 className="text-base font-bold font-serif-luxury text-stone-900">
+                        No Curriculum Modules Configured for {selectedCourseArea}
+                      </h4>
+                      <p className="text-xs text-stone-500 max-w-md mx-auto">
+                        Create structured units such as <em>Module 01: Aramandi &amp; Footwork Drills</em> to organize your video lessons, attach PDF study materials, and track disciple syllabus progress.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModuleForm({
+                            title: "Foundations & Adavu Drills",
+                            moduleNumber: "Module 01",
+                            description: "Fundamental footwork postures, rhythm cycles, and mudra precision."
+                          });
+                          setIsAddingModuleModal(true);
+                        }}
+                        className="silk-zari-btn px-6 py-2.5 rounded-full bg-[#260A22] text-[#E8B896] hover:text-white font-bold text-xs inline-flex items-center gap-2 cursor-pointer shadow-md"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Create First Module for {selectedCourseArea}</span>
+                      </button>
+                    </div>
+                  );
+                }
+
+                return courseModules.map((mod, modIdx) => {
+                  const lessons = mod.lessons || [];
+                  const otherModules = courseModules.filter((other) => other.id !== mod.id);
+
+                  return (
+                    <div
+                      key={mod.id || modIdx}
+                      className="rounded-3xl bg-white border border-stone-200 shadow-sm overflow-hidden"
+                    >
+                      {/* Module Header Bar */}
+                      <div className="p-4 sm:p-5 bg-gradient-to-r from-stone-50 via-white to-stone-50 border-b border-stone-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-0.5 rounded-lg bg-[#260A22] text-[#E8B896] text-[10px] font-bold uppercase tracking-wider">
+                              {mod.moduleNumber || `Module 0${modIdx + 1}`}
+                            </span>
+                            <span className="text-xs font-semibold text-stone-500">
+                              {lessons.length} {lessons.length === 1 ? "Video Lesson" : "Video Lessons"}
+                            </span>
+                          </div>
+                          <h4 className="text-base sm:text-lg font-bold text-stone-900 font-serif-luxury flex items-center gap-2">
+                            <span>{mod.title}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newTitle = window.prompt("Edit Module Title:", mod.title);
+                                if (newTitle && newTitle.trim()) {
+                                  updateCurriculumModule(mod.id, { title: newTitle.trim() });
+                                }
+                              }}
+                              className="text-stone-400 hover:text-stone-700 p-1 cursor-pointer"
+                              title="Edit Module Title"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                          </h4>
+                          {mod.description && (
+                            <p className="text-xs text-stone-600 line-clamp-2 max-w-2xl">
+                              {mod.description}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Module Actions */}
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTargetModuleForLesson(mod);
+                              setModuleLessonForm({
+                                title: "",
+                                embedUrl: "",
+                                duration: "25 mins",
+                                topics: "",
+                                notesPdf: "",
+                                pdfUrl: "",
+                                pdfTitle: ""
+                              });
+                            }}
+                            className="silk-zari-btn px-4 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>+ Add Video to Module</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Delete module "${mod.title}" and its lessons?`)) {
+                                deleteCurriculumModule(mod.id);
+                              }
+                            }}
+                            className="p-2 rounded-xl bg-stone-100 hover:bg-rose-50 text-stone-500 hover:text-rose-600 border border-stone-200 transition-colors cursor-pointer"
+                            title="Delete this module"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-                        <span className="text-[11px] text-stone-400">{rec.duration}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (window.confirm(`Delete video "${rec.title}"?`)) {
-                              deleteRecording(rec.id);
-                            }
-                          }}
-                          className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                      {/* Video Lessons in this Module */}
+                      <div className="p-4 sm:p-5">
+                        {lessons.length === 0 ? (
+                          <div className="p-6 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-200 text-stone-500 text-xs space-y-2">
+                            <p>No video lessons added to this module yet.</p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTargetModuleForLesson(mod);
+                                setModuleLessonForm({
+                                  title: "",
+                                  embedUrl: "",
+                                  duration: "25 mins",
+                                  topics: "",
+                                  notesPdf: "",
+                                  pdfUrl: "",
+                                  pdfTitle: ""
+                                });
+                              }}
+                              className="text-[#C9956A] font-bold hover:underline cursor-pointer"
+                            >
+                              + Add first video lesson to {mod.title}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {lessons.map((lesson, lessonIdx) => (
+                              <div
+                                key={lesson.id || lessonIdx}
+                                className="rounded-2xl border border-stone-200 bg-white shadow-xs overflow-hidden flex flex-col justify-between"
+                              >
+                                <div>
+                                  {/* Video Player */}
+                                  <UniversalVideoPlayer
+                                    url={lesson.embedUrl}
+                                    title={lesson.title}
+                                    className="w-full"
+                                  />
+
+                                  <div className="p-4 space-y-2.5">
+                                    <div className="flex items-center justify-between text-[11px]">
+                                      <span className="font-bold text-[#C9956A] bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                        Lesson {lessonIdx + 1}
+                                      </span>
+                                      {/* Editable Duration */}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newDur = window.prompt("Change video duration (e.g. 24 mins):", lesson.duration || "24 mins");
+                                          if (newDur && newDur.trim()) {
+                                            updateLessonInModule(mod.id, lesson.id, { duration: newDur.trim() });
+                                          }
+                                        }}
+                                        className="font-mono text-stone-600 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                                        title="Click to change duration"
+                                      >
+                                        <span>{lesson.duration || "24 mins"}</span>
+                                        <Edit className="w-2.5 h-2.5 text-stone-400" />
+                                      </button>
+                                    </div>
+
+                                    <div>
+                                      <h5 className="font-bold text-stone-900 text-sm leading-snug flex items-center justify-between">
+                                        <span className="truncate">{lesson.title}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const newTitle = window.prompt("Edit Lesson Title:", lesson.title);
+                                            if (newTitle && newTitle.trim()) {
+                                              updateLessonInModule(mod.id, lesson.id, { title: newTitle.trim() });
+                                            }
+                                          }}
+                                          className="text-stone-400 hover:text-stone-700 ml-1 p-0.5"
+                                          title="Edit Title"
+                                        >
+                                          <Edit className="w-3 h-3" />
+                                        </button>
+                                      </h5>
+                                      {lesson.topics && (
+                                        <p className="text-[11px] text-stone-500 mt-1 line-clamp-2">
+                                          Topics: {Array.isArray(lesson.topics) ? lesson.topics.join(", ") : lesson.topics}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    {/* Attached PDF Notes */}
+                                    <div className="pt-2 border-t border-stone-100">
+                                      {lesson.notesPdf || lesson.pdfTitle ? (
+                                        <div className="p-2 rounded-xl bg-teal-50 border border-teal-200 text-[11px] flex items-center justify-between text-teal-900">
+                                          <div className="flex items-center gap-1.5 min-w-0">
+                                            <FileText className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+                                            <span className="truncate font-semibold">{lesson.pdfTitle || lesson.notesPdf}</span>
+                                          </div>
+                                          <div className="flex items-center gap-1 shrink-0 ml-1">
+                                            {lesson.pdfUrl && (
+                                              <a
+                                                href={lesson.pdfUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[10px] text-teal-700 font-bold hover:underline"
+                                              >
+                                                View
+                                              </a>
+                                            )}
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setTargetLessonForPdf({ moduleId: mod.id, lesson });
+                                                setPdfNoteForm({
+                                                  title: lesson.pdfTitle || lesson.notesPdf || "",
+                                                  url: lesson.pdfUrl || ""
+                                                });
+                                              }}
+                                              className="text-[10px] text-teal-800 font-bold hover:underline ml-1"
+                                            >
+                                              Edit
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setTargetLessonForPdf({ moduleId: mod.id, lesson });
+                                            setPdfNoteForm({
+                                              title: `${lesson.title} - Study Notes.pdf`,
+                                              url: ""
+                                            });
+                                          }}
+                                          className="w-full py-1.5 px-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-dashed border-stone-300 text-stone-600 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                        >
+                                          <FileText className="w-3 h-3 text-[#C9956A]" />
+                                          <span>+ Add PDF Notes below video</span>
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Video Lesson Footer Controls: Reorder, Move Module, Delete */}
+                                <div className="p-3 bg-stone-50/70 border-t border-stone-100 flex items-center justify-between text-xs gap-1">
+                                  {/* Reorder Buttons */}
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      disabled={lessonIdx === 0}
+                                      onClick={() => reorderLessonInModule(mod.id, lesson.id, "up")}
+                                      className="p-1 rounded bg-white hover:bg-stone-200 border border-stone-200 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer text-stone-700"
+                                      title="Move lesson up in module"
+                                    >
+                                      <ArrowUp className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={lessonIdx === lessons.length - 1}
+                                      onClick={() => reorderLessonInModule(mod.id, lesson.id, "down")}
+                                      className="p-1 rounded bg-white hover:bg-stone-200 border border-stone-200 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer text-stone-700"
+                                      title="Move lesson down in module"
+                                    >
+                                      <ArrowDown className="w-3 h-3" />
+                                    </button>
+                                  </div>
+
+                                  {/* Move to another module dropdown */}
+                                  {otherModules.length > 0 && (
+                                    <select
+                                      defaultValue=""
+                                      onChange={(e) => {
+                                        if (e.target.value) {
+                                          moveLessonBetweenModules(mod.id, e.target.value, lesson.id);
+                                          e.target.value = "";
+                                        }
+                                      }}
+                                      className="text-[10px] py-1 px-1.5 rounded-lg border border-stone-200 bg-white text-stone-700 font-semibold focus:outline-none cursor-pointer max-w-[120px]"
+                                    >
+                                      <option value="" disabled>Move to module...</option>
+                                      {otherModules.map((m) => (
+                                        <option key={m.id} value={m.id}>
+                                          {m.moduleNumber || m.title}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (window.confirm(`Remove video "${lesson.title}" from ${mod.title}?`)) {
+                                        deleteLessonFromModule(mod.id, lesson.id);
+                                      }
+                                    }}
+                                    className="p-1 rounded text-rose-600 hover:bg-rose-50 cursor-pointer ml-auto"
+                                    title="Delete video from module"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
@@ -4108,6 +4455,331 @@ export default function AdminDashboard() {
                 Close Preview
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: CREATE NEW COURSE MODULE
+      ═══════════════════════════════════════════════════════════════ */}
+      {isAddingModuleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <FolderPlus className="w-5 h-5 text-[#C9956A]" />
+                <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                  Add Course Module
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddingModuleModal(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!moduleForm.title.trim()) {
+                  showToast("Please enter a module title.", "error");
+                  return;
+                }
+                addCurriculumModule(selectedCourseArea, moduleForm);
+                setIsAddingModuleModal(false);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Course Area</label>
+                <input
+                  type="text"
+                  disabled
+                  value={selectedCourseArea}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 font-bold text-stone-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-1">
+                  <label className="block font-bold text-stone-700 mb-1">Unit Tag</label>
+                  <input
+                    type="text"
+                    required
+                    value={moduleForm.moduleNumber}
+                    onChange={(e) => setModuleForm({ ...moduleForm, moduleNumber: e.target.value })}
+                    placeholder="Module 01"
+                    className="w-full p-2.5 rounded-xl border border-stone-200 font-bold"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block font-bold text-stone-700 mb-1">Module Title</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Footwork Drills &amp; Mudras"
+                    value={moduleForm.title}
+                    onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Description &amp; Syllabus Objectives</label>
+                <textarea
+                  rows={3}
+                  placeholder="Outline the pedagogical focus, postures, and speed requirements for this module..."
+                  value={moduleForm.description}
+                  onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddingModuleModal(false)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold cursor-pointer shadow-md"
+                >
+                  Create Module
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: ADD VIDEO LESSON TO SPECIFIC MODULE
+      ═══════════════════════════════════════════════════════════════ */}
+      {targetModuleForLesson && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <Video className="w-5 h-5 text-[#C9956A]" />
+                <div>
+                  <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                    Add Video Lesson
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Adding to: <strong>{targetModuleForLesson.moduleNumber} - {targetModuleForLesson.title}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTargetModuleForLesson(null)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!moduleLessonForm.title.trim()) {
+                  showToast("Please enter a lesson title.", "error");
+                  return;
+                }
+                addLessonToModule(targetModuleForLesson.id, {
+                  ...moduleLessonForm,
+                  courseCategory: selectedCourseArea
+                });
+                setTargetModuleForLesson(null);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Lesson Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Tatta Adavu 1st &amp; 2nd Speed Drills"
+                  value={moduleLessonForm.title}
+                  onChange={(e) => setModuleLessonForm({ ...moduleLessonForm, title: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">YouTube / Vimeo / MP4 Video URL</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://www.youtube.com/watch?v=... or https://youtube.com/shorts/..."
+                  value={moduleLessonForm.embedUrl}
+                  onChange={(e) => setModuleLessonForm({ ...moduleLessonForm, embedUrl: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 font-mono text-emerald-800"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Actual Video Duration</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 24 mins"
+                    value={moduleLessonForm.duration}
+                    onChange={(e) => setModuleLessonForm({ ...moduleLessonForm, duration: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 font-bold"
+                  />
+                  <span className="text-[10px] text-stone-400 mt-0.5 block">Replaces static 60m with real duration</span>
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Topics Covered</label>
+                  <input
+                    type="text"
+                    placeholder="Araimandi, Tala, Speed Drills"
+                    value={moduleLessonForm.topics}
+                    onChange={(e) => setModuleLessonForm({ ...moduleLessonForm, topics: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Optional: Attach PDF Study Notes Below Video
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="PDF Title (e.g. Adavu Theory.pdf)"
+                    value={moduleLessonForm.notesPdf}
+                    onChange={(e) => setModuleLessonForm({ ...moduleLessonForm, notesPdf: e.target.value, pdfTitle: e.target.value })}
+                    className="w-full p-2 rounded-xl border border-stone-200 text-xs bg-white"
+                  />
+                  <input
+                    type="url"
+                    placeholder="PDF Document URL / Link"
+                    value={moduleLessonForm.pdfUrl}
+                    onChange={(e) => setModuleLessonForm({ ...moduleLessonForm, pdfUrl: e.target.value })}
+                    className="w-full p-2 rounded-xl border border-stone-200 text-xs bg-white font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTargetModuleForLesson(null)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold cursor-pointer shadow-md"
+                >
+                  Add Video Lesson
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: ATTACH / EDIT PDF NOTES BELOW VIDEO
+      ═══════════════════════════════════════════════════════════════ */}
+      {targetLessonForPdf && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-teal-700" />
+                <div>
+                  <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                    Attach PDF Notes Below Video
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Lesson: <strong>{targetLessonForPdf.lesson.title}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTargetLessonForPdf(null)}
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!pdfNoteForm.title.trim()) {
+                  showToast("Please enter a PDF title.", "error");
+                  return;
+                }
+                attachPdfToLesson(targetLessonForPdf.moduleId, targetLessonForPdf.lesson.id, {
+                  title: pdfNoteForm.title.trim(),
+                  notesPdf: pdfNoteForm.title.trim(),
+                  pdfUrl: pdfNoteForm.url.trim(),
+                  fileUrl: pdfNoteForm.url.trim()
+                });
+                setTargetLessonForPdf(null);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <p className="text-stone-600 leading-relaxed">
+                Disciples will be able to view, study, and download this PDF material directly beneath the video player in their Student Sanctuary.
+              </p>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">PDF Document Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Asamyutta Hastas Theory &amp; Shloka.pdf"
+                  value={pdfNoteForm.title}
+                  onChange={(e) => setPdfNoteForm({ ...pdfNoteForm, title: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">PDF File URL / Cloud Document Link</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://... or Google Drive / Cloud Link"
+                  value={pdfNoteForm.url}
+                  onChange={(e) => setPdfNoteForm({ ...pdfNoteForm, url: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-stone-200 font-mono text-emerald-800"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTargetLessonForPdf(null)}
+                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold cursor-pointer shadow-md"
+                >
+                  Save PDF Notes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
