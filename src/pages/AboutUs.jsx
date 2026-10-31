@@ -4,6 +4,7 @@ import { EditableText, EditableMedia } from "../components/LiveVisualEditor";
 import AnimatedSection from "../components/AnimatedSection";
 import FilmArchiveShowcase from "../components/FilmArchiveShowcase";
 import DiplomaGoldSeal from "../components/DiplomaGoldSeal";
+import DrMalavikaProfileSlideshow from "../components/DrMalavikaProfileSlideshow";
 import {
   Sparkles,
   Heart,
@@ -234,12 +235,9 @@ export default function AboutUs() {
           <AnimatedSection animation="slide-left" className="lg:col-span-5 relative">
             <TiltCard>
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-amber-300/40 aspect-[4/5] hover-img-zoom bg-slate-950">
-                <EditableMedia
-                  section="about"
-                  field="portraitImage"
-                  defaultSrc="/images/malavika_portrait.jpg"
-                  alt="Dr. Malavika M. Sunil"
-                  className="w-full h-full object-cover"
+                <DrMalavikaProfileSlideshow
+                  aspectRatio="aspect-[4/5]"
+                  className="w-full h-full"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
                 <div className="absolute bottom-6 left-5 right-5 text-left text-white">

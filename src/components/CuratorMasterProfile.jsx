@@ -4,6 +4,7 @@ import SacredMandalaScroll from "./SacredMandalaScroll";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
 import { EditableText, EditableMedia } from "./LiveVisualEditor";
+import DrMalavikaProfileSlideshow from "./DrMalavikaProfileSlideshow";
 import {
   Sparkles,
   Award,
@@ -210,12 +211,9 @@ export default function CuratorMasterProfile() {
             {/* Museum Gilded Frame Portrait */}
             <div className="museum-frame group shadow-xl">
               <div className="museum-frame-inner aspect-[4/5] bg-[#151515] relative overflow-hidden rounded-2xl">
-                <EditableMedia
-                  section="about"
-                  field="portraitImage"
-                  defaultSrc="/images/malavika_portrait.jpg"
-                  alt="Dr. Malavika M. Sunil Portrait"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                <DrMalavikaProfileSlideshow
+                  aspectRatio="aspect-[4/5]"
+                  className="w-full h-full"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#151515]/95 via-[#151515]/30 to-transparent pointer-events-none" />
 

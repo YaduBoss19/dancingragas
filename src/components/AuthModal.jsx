@@ -207,7 +207,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
         if (!isTutorPass && !isAdminPass) {
           setErrorMessage(
-            "Invalid passcode. (Hint: Tutor passcode is 'tutor123', Admin passcode is 'admin123'). Click 'Forgot passcode?' below if you need to reset."
+            "Invalid passcode. Please check your credentials or click 'Forgot passcode / Reset?' below."
           );
           setIsLoading(false);
           return;
@@ -359,8 +359,8 @@ export default function AuthModal({ isOpen, onClose }) {
   )}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-3xl bg-[#FBF7F5] border border-[#DFAC88]/60 shadow-2xl overflow-hidden text-left font-sans">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-3xl bg-[#FBF7F5] border border-[#DFAC88]/60 shadow-2xl text-left font-sans my-auto">
         
         {/* Header Ribbon */}
         <div className="p-6 bg-gradient-to-r from-[#260A22] via-[#3D1035] to-[#260A22] text-white space-y-4">
@@ -502,7 +502,7 @@ export default function AuthModal({ isOpen, onClose }) {
                     placeholder={
                       authRole === "student"
                         ? "Enter your student access key"
-                        : "Enter tutor passcode (tutor123)"
+                        : "Enter faculty or director passcode"
                     }
                     required
                     className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs focus:outline-none focus:border-[#C9956A] transition-colors"
@@ -559,15 +559,14 @@ export default function AuthModal({ isOpen, onClose }) {
                   </div>
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-stone-100 border border-stone-200 text-xs text-stone-600 space-y-1">
-                  <div>
-                    <span className="font-bold text-stone-800">Tutor Passcode:</span>{" "}
-                    <code className="px-1 py-0.5 rounded bg-white font-mono font-bold text-[#3D1035]">tutor123</code> (Enquiries, Leads, Students &amp; Video Modules)
+                <div className="p-3 rounded-xl bg-stone-100 border border-stone-200 text-xs text-stone-600 space-y-1 text-left">
+                  <div className="flex items-center gap-1.5 font-bold text-[#3D1035]">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#C9956A]" />
+                    <span>Faculty &amp; Administration Portal</span>
                   </div>
-                  <div>
-                    <span className="font-bold text-stone-800">Admin Passcode:</span>{" "}
-                    <code className="px-1 py-0.5 rounded bg-white font-mono font-bold text-[#3D1035]">admin123</code> (Website Text, Public Courses &amp; Gallery)
-                  </div>
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    Access is restricted to authorized faculty and academy administrators. Passcodes are securely managed and can be updated within your workspace.
+                  </p>
                 </div>
               )}
 
@@ -668,7 +667,7 @@ export default function AuthModal({ isOpen, onClose }) {
                     type="text"
                     value={newKeyInput}
                     onChange={(e) => setNewKeyInput(e.target.value)}
-                    placeholder="Enter new key (e.g. ragas2026)"
+                    placeholder="Enter new access key"
                     required
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs focus:outline-none focus:border-[#C9956A]"
                   />
@@ -715,22 +714,6 @@ export default function AuthModal({ isOpen, onClose }) {
             </form>
           )}
 
-          {/* Quick Demo Helper Pill for initial testing */}
-          {!isForgotMode && (
-            <div className="pt-2 text-center text-[11px] text-stone-500">
-              {authRole === "student" ? (
-                <span>
-                  Demo Student: <strong className="text-stone-700">ananya.menon@example.com</strong> &bull; Key:{" "}
-                  <strong className="text-stone-700">ragas2026</strong>
-                </span>
-              ) : (
-                <span>
-                  Tutor Pass: <strong className="text-stone-700">{getSavedTutorPass()}</strong> &bull; Admin:{" "}
-                  <strong className="text-stone-700">{getSavedAdminPass()}</strong>
-                </span>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>

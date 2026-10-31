@@ -60,8 +60,8 @@ export default function StudentProfileModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-      <div className="relative w-full max-w-lg rounded-3xl bg-[#FAF7F2] border border-[#B99A63]/50 shadow-2xl p-6 sm:p-8 text-left font-sans space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in">
+      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-[#FAF7F2] border border-[#B99A63]/50 shadow-2xl p-5 sm:p-8 text-left font-sans space-y-4 my-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stone-200 pb-3">
           <div>

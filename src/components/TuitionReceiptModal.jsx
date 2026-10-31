@@ -16,8 +16,8 @@ export default function TuitionReceiptModal({ isOpen, onClose, student, academyI
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-white border border-[#B99A63]/50 shadow-2xl p-6 sm:p-8 text-left font-sans space-y-6 my-8 text-stone-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-3xl bg-white border border-[#B99A63]/50 shadow-2xl p-5 sm:p-8 text-left font-sans space-y-5 my-auto text-stone-900">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center cursor-pointer transition-all print:hidden"

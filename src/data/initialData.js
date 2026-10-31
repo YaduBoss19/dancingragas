@@ -1741,6 +1741,13 @@ export const INITIAL_SITE_CONTENT = {
       "Having performed over 600 recitals across India and more than 20 prestigious productions in the Republic of Georgia, her classes welcome both disciplined young aspirants preparing for diploma certifications and adult returners seeking meditative mastery."
     ],
     portraitImage: "/images/malavika_dance_stage.jpg",
+    posterFallbackImage: "/images/malavika_dance_stage.jpg",
+    profilePhotos: [
+      "/images/malavika_dance_stage.jpg",
+      "/images/malavika_portrait.jpg",
+      "/images/malavika_dance_pose.jpg",
+      "/images/malavika_vocal.jpg"
+    ],
     credentials: [
       "CCRT National Cultural Scholar (Govt. of India)",
       "Bachelor of Medicine & Bachelor of Surgery (MBBS)",

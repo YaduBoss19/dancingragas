@@ -185,28 +185,28 @@ export default function YouTubeShortsReel({ className = "" }) {
           MODAL: PLAY ACTIVE YOUTUBE SHORT
       ═══════════════════════════════════════════════════════════════ */}
       {activeVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-3xl bg-[#151515] text-[#F5F0E8] border border-[#DFAC88]/40 shadow-2xl overflow-hidden text-left font-sans">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[94vh] overflow-y-auto rounded-3xl bg-[#151515] text-[#F5F0E8] border border-[#DFAC88]/40 shadow-2xl text-left font-sans my-auto">
             <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#DFAC88] block">
+              <div className="min-w-0 pr-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#DFAC88] block truncate">
                   {activeVideo.batch || "YouTube Shorts"} &bull; {activeVideo.performer}
                 </span>
-                <h4 className="text-base font-bold text-white font-serif-luxury truncate max-w-sm">
+                <h4 className="text-base font-bold text-white font-serif-luxury truncate">
                   {activeVideo.title}
                 </h4>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveVideo(null)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-4">
-              <div className="rounded-2xl overflow-hidden aspect-[9/16] max-h-[65vh] mx-auto bg-black border border-white/10 shadow-2xl flex items-center justify-center">
+            <div className="p-3 sm:p-4">
+              <div className="rounded-2xl overflow-hidden aspect-[9/16] max-h-[60vh] mx-auto bg-black border border-white/10 shadow-2xl flex items-center justify-center">
                 <UniversalVideoPlayer
                   url={activeVideo.embedUrl}
                   title={activeVideo.title}
@@ -215,12 +215,12 @@ export default function YouTubeShortsReel({ className = "" }) {
               </div>
             </div>
 
-            <div className="p-4 border-t border-white/10 flex items-center justify-between text-xs text-stone-400">
-              <span>Recital performance curated by Dr. Malavika</span>
+            <div className="p-3 sm:p-4 border-t border-white/10 flex items-center justify-between text-xs text-stone-400">
+              <span className="truncate pr-2">Recital performance curated by Dr. Malavika</span>
               <button
                 type="button"
                 onClick={() => setActiveVideo(null)}
-                className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-colors"
+                className="px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold cursor-pointer transition-colors shrink-0"
               >
                 Close
               </button>
@@ -233,8 +233,8 @@ export default function YouTubeShortsReel({ className = "" }) {
           MODAL: TUTOR ADDS NEW YOUTUBE SHORT
       ═══════════════════════════════════════════════════════════════ */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 sm:p-7 max-w-md w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans my-auto">
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
                 <Film className="w-5 h-5 text-rose-600" />

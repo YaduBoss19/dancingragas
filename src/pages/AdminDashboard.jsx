@@ -149,10 +149,6 @@ export default function AdminDashboard() {
   const [wellnessStudentTarget, setWellnessStudentTarget] = useState(null);
   const [wellnessTextInput, setWellnessTextInput] = useState("");
 
-  // Student Showcase Link Modal State
-  const [showcaseStudentTarget, setShowcaseStudentTarget] = useState(null);
-  const [showcaseUrlInput, setShowcaseUrlInput] = useState("");
-  const [previewShowcaseUrl, setPreviewShowcaseUrl] = useState(null);
 
   const [workspaceMode, setWorkspaceMode] = useState(isFaculty ? "academic" : "admissions"); // 'academic' | 'admissions'
   const [activeTab, setActiveTab] = useState(isFaculty ? "course_areas" : "site_cms");
@@ -296,11 +292,22 @@ export default function AdminDashboard() {
     badge: siteContent?.about?.badge || "Principal Guru & Physician",
     intro: siteContent?.about?.intro || "Bridging 21 years of sacred Natyashastra Margam discipline with modern anatomical movement kinesiology.",
     portraitImage: siteContent?.about?.portraitImage || "/images/malavika_dance_stage.jpg",
+    posterFallbackImage: siteContent?.about?.posterFallbackImage || siteContent?.about?.portraitImage || "/images/malavika_dance_stage.jpg",
+    profilePhotos: siteContent?.about?.profilePhotos && siteContent.about.profilePhotos.length > 0
+      ? siteContent.about.profilePhotos
+      : [
+          "/images/malavika_dance_stage.jpg",
+          "/images/malavika_portrait.jpg",
+          "/images/malavika_dance_pose.jpg",
+          "/images/malavika_vocal.jpg"
+        ],
     philosophy: siteContent?.about?.philosophy || "No two bodies or voices are identical. In our dedicated coaching, we discard one-size-fits-all pressures. We progress at your exact pace, aligning rhythm, anatomy, and soulful expression so you truly own your art.",
     bio1: siteContent?.about?.bio1 || "Welcome to a private space where classical dance and music are taught as living arts. I began my Bharatanatyam journey over 21 years ago under my father and master guru, Dr. Sunil Nellay, and trained for 16+ years in Carnatic vocal music under my mother, Resmi Narayanan. At age 12, I was honored with the prestigious CCRT National Scholarship by the Government of India.",
     bio2: siteContent?.about?.bio2 || "As a medical doctor (MBBS), I approach pedagogy with scientific depth. Every movement, posture, and mudra is guided with an understanding of human anatomy and biomechanics — teaching safe knee alignment in Araimandi, core engagement, and physical longevity.",
     bio3: siteContent?.about?.bio3 || "Beyond technique lies the heart of art: Bhava and Raga. Whether coaching an aspiring soloist, preparing for yearly diploma examinations, or guiding an adult returning to their childhood dream, each student receives meticulous 1-on-1 focus."
   });
+
+  const [newAboutPhotoUrl, setNewAboutPhotoUrl] = useState("");
 
   const [tickerAnnouncement, setTickerAnnouncement] = useState(
     siteContent?.ticker?.announcementText || "ADMISSIONS OPEN 2026/27: Online Bharatanatyam Diploma (Yearly Exams & Certificates) • Carnatic Classical Vocal Coaching • 1-on-1 Consultations"
@@ -331,7 +338,8 @@ export default function AdminDashboard() {
     role: "Bharatanatyam Diploma Disciple",
     location: "London, UK",
     quote: "",
-    rating: 5
+    rating: 5,
+    avatar: "/images/testimonials/semmalar_dharman.jpg"
   });
 
   // Instagram Feed State
@@ -454,6 +462,76 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error(err);
       showToast(err.message || "Failed to upload portrait.", "error");
+    } finally {
+      setIsUploadingMedia(false);
+      setUploadStatusText("");
+      e.target.value = "";
+    }
+  };
+
+
+  const handleUploadAboutSlidePhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      setUploadStatusText("Compressing slideshow photo...");
+      const compressed = await compressImageFile(file, 1200, 0.90);
+      const res = await uploadMediaToBucket("academy-media", compressed.file, "about");
+      const finalUrl = res.url || compressed.dataUrl;
+      setAboutForm((prev) => ({
+        ...prev,
+        profilePhotos: [...(prev.profilePhotos || []), finalUrl]
+      }));
+      showToast("Photo added to Dr. Malavika's profile slideshow!", "success");
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload photo.", "error");
+    } finally {
+      setIsUploadingMedia(false);
+      setUploadStatusText("");
+      e.target.value = "";
+    }
+  };
+
+  const handleUploadAboutPoster = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      setUploadStatusText("Compressing poster fallback image...");
+      const compressed = await compressImageFile(file, 1400, 0.88);
+      const res = await uploadMediaToBucket("academy-media", compressed.file, "about");
+      const finalUrl = res.url || compressed.dataUrl;
+      setAboutForm((prev) => ({ ...prev, posterFallbackImage: finalUrl }));
+      showToast("Profile poster fallback image updated!", "success");
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload poster fallback.", "error");
+    } finally {
+      setIsUploadingMedia(false);
+      setUploadStatusText("");
+      e.target.value = "";
+    }
+  };
+
+  const handleUploadStoryAvatar = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingMedia(true);
+      setUploadStatusText("Uploading testimonial photo...");
+      const compressed = await compressImageFile(file, 600, 0.88);
+      const res = await uploadMediaToBucket("academy-media", compressed.file, "testimonials");
+      const finalUrl = res.url || compressed.dataUrl;
+      setStoryForm((prev) => ({ ...prev, avatar: finalUrl }));
+      showToast("Student story photo updated!", "success");
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "Failed to upload story photo.", "error");
     } finally {
       setIsUploadingMedia(false);
       setUploadStatusText("");
@@ -1065,29 +1143,131 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-4 text-xs">
-                  {/* Portrait Photo Uploader */}
+{/* Dr. Malavika Profile Slideshow Gallery Manager */}
                   <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
-                    <label className="font-bold text-stone-800 block">Dr. Malavika Stage Portrait Photo</label>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="font-bold text-stone-800 text-xs block">Dr. Malavika Profile Slideshow Photos</label>
+                        <span className="text-[10px] text-stone-500">Photos automatically transition in a carousel on the website</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px]">
+                        {(aboutForm.profilePhotos || []).length} Photo(s) Active
+                      </span>
+                    </div>
+
+                    {/* Slideshow Photos Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                      {(aboutForm.profilePhotos || []).map((photoUrl, pIdx) => {
+                        const isMain = aboutForm.portraitImage === photoUrl || (!aboutForm.portraitImage && pIdx === 0);
+                        return (
+                          <div key={pIdx} className="relative group rounded-xl overflow-hidden aspect-[4/5] bg-stone-900 border-2 border-stone-300 shadow-xs">
+                            <img src={photoUrl} alt={`Slide ${pIdx + 1}`} className="w-full h-full object-cover" />
+                            {isMain && (
+                              <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-[#1E050B] text-[#D4AF37] text-[9px] font-bold shadow-xs">
+                                ★ Cover
+                              </span>
+                            )}
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1 text-center">
+                              {!isMain && (
+                                <button
+                                  type="button"
+                                  onClick={() => setAboutForm({ ...aboutForm, portraitImage: photoUrl })}
+                                  className="px-2 py-1 rounded bg-[#D4AF37] text-stone-900 text-[9px] font-bold hover:brightness-110 cursor-pointer"
+                                >
+                                  Set as Cover
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = (aboutForm.profilePhotos || []).filter((_, i) => i !== pIdx);
+                                  setAboutForm({
+                                    ...aboutForm,
+                                    profilePhotos: updated,
+                                    portraitImage: isMain ? updated[0] || "" : aboutForm.portraitImage
+                                  });
+                                  showToast("Photo removed from slideshow.", "info");
+                                }}
+                                className="p-1 rounded bg-rose-600 text-white hover:bg-rose-700 cursor-pointer"
+                                title="Remove photo from slideshow"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Add Photo to Slideshow */}
+                    <div className="pt-2 border-t border-stone-200 flex flex-col sm:flex-row items-center gap-2">
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs shrink-0">
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>Upload Photo to Slideshow</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleUploadAboutSlidePhoto}
+                        />
+                      </label>
+                      <div className="flex items-center gap-1.5 w-full">
+                        <input
+                          type="text"
+                          value={newAboutPhotoUrl}
+                          onChange={(e) => setNewAboutPhotoUrl(e.target.value)}
+                          placeholder="Or paste image URL (e.g. /images/malavika_dance_pose.jpg)"
+                          className="flex-1 px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!newAboutPhotoUrl.trim()) return;
+                            setAboutForm({
+                              ...aboutForm,
+                              profilePhotos: [...(aboutForm.profilePhotos || []), newAboutPhotoUrl.trim()]
+                            });
+                            setNewAboutPhotoUrl("");
+                            showToast("New photo added to profile slideshow!", "success");
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-stone-800 text-white font-bold text-xs hover:bg-stone-700 cursor-pointer shrink-0"
+                        >
+                          + Add URL
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Poster Fallback Image */}
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-stone-800 block">Poster Fallback Image</label>
+                      <span className="text-[10px] text-stone-500">Displays while video or slideshow initializes</span>
+                    </div>
                     <div className="flex items-center gap-4">
                       <div className="w-20 h-24 rounded-2xl overflow-hidden bg-stone-900 shrink-0 border border-stone-300 shadow-sm">
-                        <img src={aboutForm.portraitImage} alt="Dr. Malavika Portrait" className="w-full h-full object-cover" />
+                        <img
+                          src={aboutForm.posterFallbackImage || aboutForm.portraitImage}
+                          alt="Poster Fallback"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div className="flex-1 space-y-2">
                         <label className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-xs cursor-pointer shadow-xs">
                           <UploadCloud className="w-4 h-4" />
-                          <span>Upload New Stage Portrait (Supabase)</span>
+                          <span>Upload Poster Fallback (Supabase)</span>
                           <input
                             type="file"
                             accept="image/*"
                             className="hidden"
-                            onChange={handleUploadAboutPortrait}
+                            onChange={handleUploadAboutPoster}
                           />
                         </label>
                         <input
                           type="text"
-                          value={aboutForm.portraitImage}
-                          onChange={(e) => setAboutForm({ ...aboutForm, portraitImage: e.target.value })}
-                          placeholder="Or enter portrait image URL"
+                          value={aboutForm.posterFallbackImage}
+                          onChange={(e) => setAboutForm({ ...aboutForm, posterFallbackImage: e.target.value })}
+                          placeholder="Or enter poster fallback image URL"
                           className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
                         />
                       </div>
@@ -1239,7 +1419,8 @@ export default function AdminDashboard() {
                         role: "Bharatanatyam Diploma Disciple",
                         location: "London, UK",
                         quote: "",
-                        rating: 5
+                        rating: 5,
+    avatar: "/images/testimonials/semmalar_dharman.jpg"
                       });
                       setIsAddingStoryModal(true);
                     }}
@@ -1253,20 +1434,28 @@ export default function AdminDashboard() {
                 <div className="space-y-3 max-h-80 overflow-y-auto pr-1 text-xs">
                   {storiesList.map((story, idx) => (
                     <div key={story.id || idx} className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-stone-900">{story.name}</span>
-                          <span className="text-[10px] text-[#B99A63] font-semibold">&bull; {story.role}</span>
+                      <div className="flex items-start gap-3 min-w-0">
+                        <img
+                          src={story.avatar || "/images/testimonials/semmalar_dharman.jpg"}
+                          alt={story.name}
+                          className="w-10 h-10 rounded-full object-cover border border-[#B99A63]/50 shrink-0 shadow-xs"
+                          onError={(e) => { e.target.src = "/images/testimonials/semmalar_dharman.jpg"; }}
+                        />
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-stone-900">{story.name}</span>
+                            <span className="text-[10px] text-[#B99A63] font-semibold">&bull; {story.role}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-amber-500">
+                            {Array.from({ length: story.rating || 5 }).map((_, i) => (
+                              <Star key={i} className="w-3 h-3 fill-amber-400" />
+                            ))}
+                          </div>
+                          <p className="text-stone-600 text-[11px] italic leading-relaxed line-clamp-2">
+                            &ldquo;{story.quote}&rdquo;
+                          </p>
+                          <span className="text-[10px] text-stone-400 block">{story.location}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-amber-500">
-                          {Array.from({ length: story.rating || 5 }).map((_, i) => (
-                            <Star key={i} className="w-3 h-3 fill-amber-400" />
-                          ))}
-                        </div>
-                        <p className="text-stone-600 text-[11px] italic leading-relaxed line-clamp-2">
-                          &ldquo;{story.quote}&rdquo;
-                        </p>
-                        <span className="text-[10px] text-stone-400 block">{story.location}</span>
                       </div>
 
                       <button
@@ -1584,37 +1773,6 @@ export default function AdminDashboard() {
                     </button>
                   </div>
 
-                  {/* Control 3: Student Showcase (YouTube Shorts Link + Preview Player) */}
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowcaseStudentTarget(student);
-                        setShowcaseUrlInput(student.showcaseVideoUrl || "");
-                      }}
-                      className={`flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                        student.showcaseVideoUrl
-                          ? "bg-rose-50 text-rose-800 border border-rose-300"
-                          : "bg-stone-100 text-stone-600 hover:bg-stone-200 border border-stone-200"
-                      }`}
-                      title="Add or update YouTube Shorts link for this student recital"
-                    >
-                      <Heart className={`w-3.5 h-3.5 ${student.showcaseVideoUrl ? "text-rose-600 fill-rose-600" : "text-stone-400"}`} />
-                      <span className="truncate">{student.showcaseVideoUrl ? "✓ Edit Showcase" : "+ Showcase (YouTube Shorts)"}</span>
-                    </button>
-
-                    {student.showcaseVideoUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setPreviewShowcaseUrl(student.showcaseVideoUrl)}
-                        className="py-1.5 px-2.5 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
-                        title="Watch Disciple Showcase Recital Video"
-                      >
-                        <Play className="w-3 h-3 fill-current" />
-                        <span>Watch</span>
-                      </button>
-                    )}
-                  </div>
 
                   {/* Control 4: Absence Notices summary badge */}
                   {(student.reportedAbsences || []).length > 0 && (
@@ -2437,42 +2595,6 @@ export default function AdminDashboard() {
                     </button>
                   </div>
 
-                  {/* Individual Student Showcase (YouTube Shorts Recital Link) */}
-                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-[11px] text-stone-700 min-w-0">
-                      <Heart className={`w-3.5 h-3.5 shrink-0 ${student.showcaseVideoUrl ? "text-rose-600 fill-rose-600" : "text-stone-400"}`} />
-                      <span className="font-semibold truncate">Showcase Recital:</span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowcaseStudentTarget(student);
-                          setShowcaseUrlInput(student.showcaseVideoUrl || "");
-                        }}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
-                          student.showcaseVideoUrl
-                            ? "bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200"
-                            : "bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200"
-                        }`}
-                        title="Add or update YouTube Shorts recital video for this student"
-                      >
-                        <span>{student.showcaseVideoUrl ? "✓ Edit Link" : "+ Add Link"}</span>
-                      </button>
-
-                      {student.showcaseVideoUrl && (
-                        <button
-                          type="button"
-                          onClick={() => setPreviewShowcaseUrl(student.showcaseVideoUrl)}
-                          className="px-2 py-1 rounded-lg bg-[#260A22] text-[#E8B896] hover:text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer shadow-xs"
-                          title="Watch disciple recital video"
-                        >
-                          <Play className="w-2.5 h-2.5 fill-current" />
-                          <span>Watch</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
 
                   {/* Physician Wellness Advice row */}
                   <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
@@ -3493,6 +3615,38 @@ export default function AdminDashboard() {
               }}
               className="space-y-3 text-xs"
             >
+              {/* Photo / Avatar Uploader */}
+              <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <label className="font-bold text-stone-700 block text-xs">Student / Parent Photo (Avatar)</label>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={storyForm.avatar || "/images/testimonials/semmalar_dharman.jpg"}
+                    alt="Story Avatar"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-[#D4AF37] shadow-xs shrink-0"
+                    onError={(e) => { e.target.src = "/images/testimonials/semmalar_dharman.jpg"; }}
+                  />
+                  <div className="flex-1 space-y-1.5">
+                    <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>Upload Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleUploadStoryAvatar}
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Or enter photo URL"
+                      value={storyForm.avatar}
+                      onChange={(e) => setStoryForm({ ...storyForm, avatar: e.target.value })}
+                      className="w-full px-2.5 py-1 rounded-xl border border-stone-200 bg-white text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="font-bold text-stone-700 block mb-1">Student / Parent Name *</label>
                 <input
@@ -4429,77 +4583,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-          MODAL: SET STUDENT SHOWCASE VIDEO (YOUTUBE SHORTS LINK)
-      ═══════════════════════════════════════════════════════════════ */}
-      {showcaseStudentTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-rose-600" />
-                <div>
-                  <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
-                    Student Showcase Video &amp; Recital Link
-                  </h3>
-                  <p className="text-xs text-stone-500">Disciple: <strong>{showcaseStudentTarget.name}</strong></p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowcaseStudentTarget(null)}
-                className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                updateStudent(showcaseStudentTarget.id, { showcaseVideoUrl: showcaseUrlInput.trim() });
-                showToast(`Showcase video link saved for ${showcaseStudentTarget.name}!`, "success");
-                setShowcaseStudentTarget(null);
-              }}
-              className="space-y-4 text-xs"
-            >
-              <p className="text-stone-600 leading-relaxed">
-                Add a YouTube Shorts link or video recording of this student's performance. The disciple and their family can watch and share this recital showcase worldwide.
-              </p>
-              <div>
-                <label className="block font-bold text-stone-700 mb-1">YouTube Shorts or Video URL</label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://youtube.com/shorts/... or https://www.youtube.com/watch?v=..."
-                  value={showcaseUrlInput}
-                  onChange={(e) => setShowcaseUrlInput(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-stone-200 bg-white font-medium text-stone-900"
-                />
-                <span className="text-[10px] text-stone-400 block mt-1">
-                  Supports YouTube Shorts, full YouTube videos, Vimeo, and direct MP4 links.
-                </span>
-              </div>
-
-              <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowcaseStudentTarget(null)}
-                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#260A22] text-[#E8B896] hover:text-white font-bold cursor-pointer shadow-md"
-                >
-                  Save Showcase Link
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════
           MODAL: CHANGE DASHBOARD PASSCODE
@@ -4578,47 +4661,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-          MODAL: PREVIEW STUDENT SHOWCASE RECITAL (TUTOR WATCHES)
-      ═══════════════════════════════════════════════════════════════ */}
-      {previewShowcaseUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[#151515] text-[#F5F0E8] rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl border border-[#DFAC88]/40 space-y-4 text-left font-sans">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center gap-2">
-                <Play className="w-5 h-5 text-[#C9956A] fill-[#C9956A]" />
-                <h3 className="text-lg font-bold font-serif-luxury text-white">
-                  Disciple Showcase Recital &bull; Video Preview
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPreviewShowcaseUrl(null)}
-                className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center cursor-pointer hover:bg-white/20"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="rounded-2xl overflow-hidden aspect-video bg-black flex items-center justify-center border border-white/10">
-              <UniversalVideoPlayer
-                url={previewShowcaseUrl}
-                title="Student Showcase Recital"
-                className="w-full h-full"
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs text-stone-400 pt-1">
-              <span>This recital is showcased on the disciple's student portal.</span>
-              <button
-                type="button"
-                onClick={() => setPreviewShowcaseUrl(null)}
-                className="px-4 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white font-bold cursor-pointer"
-              >
-                Close Preview
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════
           MODAL: CREATE NEW COURSE MODULE

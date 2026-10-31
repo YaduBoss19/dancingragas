@@ -48,7 +48,6 @@ import TanpuraDroneWidget from "../components/TanpuraDroneWidget";
 import SollukattuRhythmWidget from "../components/SollukattuRhythmWidget";
 import SanadCertificateModal from "../components/SanadCertificateModal";
 import PhysicianWellnessReportModal from "../components/PhysicianWellnessReportModal";
-import StudentShowcaseModal from "../components/StudentShowcaseModal";
 import AbsenceCatchupModal from "../components/AbsenceCatchupModal";
 import MargamRoadmapWidget from "../components/MargamRoadmapWidget";
 import TuitionRenewalCard from "../components/TuitionRenewalCard";
@@ -65,7 +64,6 @@ export default function StudentPortal({ onOpenAuth }) {
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const [isCertLockedNoticeOpen, setIsCertLockedNoticeOpen] = useState(false);
   const [isWellnessModalOpen, setIsWellnessModalOpen] = useState(false);
-  const [isShowcaseModalOpen, setIsShowcaseModalOpen] = useState(false);
   const [isAbsenceModalOpen, setIsAbsenceModalOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -578,26 +576,6 @@ export default function StudentPortal({ onOpenAuth }) {
                     <div className="leading-tight min-w-0 truncate">
                       <span className="block font-bold truncate">Wellness Advice</span>
                       <span className="text-[9px] text-emerald-300/80 font-normal block truncate">Doctor's Care</span>
-                    </div>
-                  </button>
-
-                  {/* 3. Individual Showcase Recital (In Every Profile) */}
-                  <button
-                    type="button"
-                    onClick={() => setIsShowcaseModalOpen(true)}
-                    className={`w-full sm:w-auto px-3.5 py-2 rounded-2xl text-[11px] font-bold shadow-sm transition-all flex items-center gap-2 cursor-pointer tap-bounce text-left ${
-                      currentStudent.showcaseVideoUrl
-                        ? "bg-rose-500/25 border border-rose-400/50 text-rose-200 hover:bg-rose-500/35"
-                        : "bg-white/10 hover:bg-white/15 border border-white/20 text-stone-200"
-                    }`}
-                    title="Your Individual Showcase Recital Video & YouTube Shorts"
-                  >
-                    <Heart className={`w-4 h-4 shrink-0 ${currentStudent.showcaseVideoUrl ? "text-rose-400 fill-rose-400" : "text-stone-400"}`} />
-                    <div className="leading-tight min-w-0 truncate">
-                      <span className="block font-bold truncate">My Showcase</span>
-                      <span className="text-[9px] text-rose-300/80 font-normal block truncate">
-                        {currentStudent.showcaseVideoUrl ? "Recital Video" : "Shorts Reel"}
-                      </span>
                     </div>
                   </button>
 
@@ -1761,16 +1739,6 @@ export default function StudentPortal({ onOpenAuth }) {
         student={currentStudent}
       />
 
-      {/* Proud Parent & Grandparent Digital Showcase */}
-      <StudentShowcaseModal
-        isOpen={isShowcaseModalOpen}
-        onClose={() => setIsShowcaseModalOpen(false)}
-        studentName={currentStudent.name}
-        registrationNo={currentStudent.registrationNo}
-        batchName={currentStudent.enrolledCourses?.[0]}
-        activePiece={selectedLesson?.title || "Jathiswaram in Ragam Kalyani"}
-        featuredVideoUrl={currentStudent.showcaseVideoUrl || currentStudent.featuredVideoUrl || selectedLesson?.embedUrl || selectedLesson?.videoUrl || "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
-      />
 
       {/* Absence Care & Makeup Catch-Up */}
       <AbsenceCatchupModal
