@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
 import WhatsAppIcon from "./WhatsAppIcon";
@@ -6,17 +6,16 @@ import YouTubeIcon from "./YouTubeIcon";
 import {
   Phone,
   Mail,
+  MapPin,
   ArrowRight,
-  Award,
-  Heart,
-  Lock
+  ShieldCheck,
+  Award
 } from "lucide-react";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function Footer() {
-  const { currentPage, navigateTo, academyInfo, showToast } = useAcademy();
-  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const { currentPage, navigateTo, academyInfo } = useAcademy();
 
   const handleNavClick = (target, pageId) => {
     playGhungrooChime();
@@ -35,108 +34,104 @@ export default function Footer() {
     navigateTo(pageId);
   };
 
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (!newsletterEmail || !newsletterEmail.includes("@")) {
-      showToast("Please enter a valid email address.", "error");
-      return;
-    }
-    showToast("🎉 Thank you for subscribing to Dr. Malavika M. Sunil's Studio Notes!", "success");
-    setNewsletterEmail("");
-  };
-
   const openWhatsApp = () => {
-    const url = `https://wa.me/${academyInfo.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-      academyInfo.whatsappDefaultMsg
-    )}`;
-    window.open(url, "_blank");
+    const cleanNumber = (academyInfo?.whatsappNumber || "919074585672").replace(/[^0-9]/g, "");
+    const msg = encodeURIComponent(
+      academyInfo?.whatsappDefaultMsg ||
+        "Hello Dr. Malavika! I would like to enquire about classical dance & music coaching."
+    );
+    window.open(`https://wa.me/${cleanNumber}?text=${msg}`, "_blank");
   };
 
   return (
-    <footer id="contact-section" className="bg-[#151515] text-[#F5F0E8] pt-16 pb-24 sm:pb-28 lg:pb-12 border-t border-[#A9A49D]/20 relative overflow-hidden">
-      {/* Subtle background glow */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#B99A63]/10 rounded-full blur-3xl pointer-events-none" />
+    <footer id="contact-section" className="bg-[#141414] text-[#F5F0E8] pt-12 pb-24 sm:pb-28 lg:pb-12 border-t border-[#DFAC88]/20 relative overflow-hidden font-sans">
+      {/* Subtle warm ambient glow */}
+      <div className="absolute top-0 left-1/3 w-96 h-96 bg-[#C9956A]/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
-        {/* Top Call to Action Strip */}
-        <div className="rounded-3xl bg-[#1c1c1c] border border-[#B99A63]/30 p-8 sm:p-10 mb-16 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div className="text-left">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B99A63]/15 text-[#B99A63] border border-[#B99A63]/30 text-xs font-bold uppercase tracking-wider mb-3">
-              Classical Arts Mentorship
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10 space-y-12">
+        {/* Sleek Top Banner: Consultation CTA */}
+        <div className="rounded-3xl bg-gradient-to-r from-[#1E0D1B] via-[#2A1226] to-[#1E0D1B] border border-[#DFAC88]/30 p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="text-left space-y-1">
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#DFAC88]/15 text-[#DFAC88] border border-[#DFAC88]/30 text-[10px] font-bold uppercase tracking-wider">
+              <Award className="w-3 h-3" />
+              <span>Classical Arts Mentorship</span>
             </span>
-            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight font-serif-luxury text-[#F5F0E8]">
-              Ready to begin your personal dance or vocal journey?
+            <h3 className="text-xl sm:text-2xl font-bold font-serif-luxury text-white">
+              Ready to begin your classical journey?
             </h3>
-            <p className="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
-              Consult directly with Dr. Malavika M. Sunil. Flexible 1-on-1 pedagogical scheduling across international time zones with zero commitment.
+            <p className="text-stone-300 text-xs sm:text-sm max-w-xl">
+              1-on-1 pedagogical consultation with Dr. Malavika M. Sunil. Personalized classical training across worldwide time zones.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto shrink-0">
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
+              type="button"
               onClick={() => {
                 const el = document.getElementById("book-trial");
-                if (el) {
-                  el.scrollIntoView({ behavior: "smooth" });
-                } else {
-                  navigateTo("trial");
-                }
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+                else navigateTo("trial");
               }}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B99A63] hover:brightness-105 text-[#151515] font-bold text-sm shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 tap-bounce"
+              className="silk-zari-btn px-6 py-3 rounded-full bg-gradient-to-r from-[#DFAC88] to-[#C9956A] text-[#151515] font-bold text-xs shadow-lg hover:brightness-105 transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
             >
-              <span>Admissions Consultation</span>
-              <ArrowRight className="w-4 h-4 text-[#151515]" />
+              <span>Book Free Trial</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
             <button
+              type="button"
               onClick={openWhatsApp}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer tap-bounce"
+              className="px-5 py-3 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
             >
-              <WhatsAppIcon className="w-5 h-5 text-white" />
-              <span>WhatsApp Dr. Malavika</span>
+              <WhatsAppIcon className="w-4 h-4 text-white" />
+              <span>WhatsApp Direct</span>
             </button>
           </div>
         </div>
 
-        {/* Main Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#A9A49D]/20 text-left">
-          {/* Col 1: Brand Info */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3.5">
-              <div className="h-14 w-14 rounded-2xl bg-[#F5F0E8] p-1.5 shadow-lg flex items-center justify-center shrink-0 border border-[#B99A63]/40">
-                <img src="/images/logo_transparent.png" alt="DancingRagas Logo" className="w-full h-full object-contain" />
+        {/* Clean, Non-Repetitive 4-Column Footer Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 pb-8 border-b border-white/10 text-left">
+          {/* Column 1: Academy & Dr. Malavika */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-2xl bg-[#F5F0E8] p-1.5 shadow-md flex items-center justify-center shrink-0 border border-[#DFAC88]/40">
+                <img
+                  src="/images/logo_transparent.png"
+                  alt="DancingRagas Academy Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
-                <span className="font-bold text-2xl tracking-tight text-[#F5F0E8] font-serif-luxury block leading-tight">
+                <span className="font-bold text-lg text-white font-serif-luxury block leading-tight">
                   Dr. Malavika M Sunil
                 </span>
-                <span className="text-[10px] font-bold tracking-widest text-[#B99A63] uppercase">
-                  Dance &amp; Music
+                <span className="text-[10px] font-bold tracking-widest text-[#DFAC88] uppercase block">
+                  DancingRagas Academy
                 </span>
               </div>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-              Founded & personally directed by <strong>Dr. Malavika M. Sunil</strong> (CCRT Scholar, Bharatanatyam disciple of 21 years, Carnatic vocalist, and physician). Dedicated to providing mindful, anatomical, and expressive classical training worldwide.
+
+            <p className="text-stone-400 text-xs leading-relaxed">
+              Founded &amp; personally directed by Dr. Malavika M. Sunil (MBBS, CCRT Scholar, Bharatanatyam exponent). Dedicated to providing mindful, anatomical, and expressive classical arts training worldwide.
             </p>
 
-            {/* Official Social Media Connection Pills */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 pb-1">
-              {/* WhatsApp */}
+            {/* Social Media Links (Single clean luxury row, no duplicates) */}
+            <div className="flex items-center gap-2 pt-1">
               <a
                 href="https://wa.me/919074585672"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/40 text-[#25D366] text-xs font-bold transition-all shadow-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/40 text-[#25D366] text-xs font-bold transition-all"
                 title="Connect on WhatsApp"
               >
                 <WhatsAppIcon className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
               </a>
 
-              {/* Instagram */}
               <a
                 href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E1306C]/15 hover:bg-[#E1306C]/25 border border-[#E1306C]/40 text-[#f56040] text-xs font-bold transition-all shadow-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E1306C]/15 hover:bg-[#E1306C]/25 border border-[#E1306C]/40 text-[#f56040] text-xs font-bold transition-all"
                 title="Follow on Instagram"
               >
                 <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center text-[7px] text-white font-bold">
@@ -145,211 +140,151 @@ export default function Footer() {
                 <span>Instagram</span>
               </a>
 
-              {/* YouTube */}
               <a
                 href="https://www.youtube.com/@dancingragasbymalavika"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF0000]/15 hover:bg-[#FF0000]/25 border border-[#FF0000]/40 text-rose-400 text-xs font-bold transition-all shadow-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF0000]/15 hover:bg-[#FF0000]/25 border border-[#FF0000]/40 text-rose-400 text-xs font-bold transition-all"
                 title="Subscribe on YouTube"
               >
-                <YouTubeIcon className="w-4 h-4" />
+                <YouTubeIcon className="w-3.5 h-3.5" />
                 <span>YouTube</span>
               </a>
             </div>
-
-            <div className="flex flex-wrap gap-2 pt-1">
-              <span className="px-3 py-1 rounded-lg bg-[#1f1f1f] border border-[#A9A49D]/20 text-[11px] font-semibold text-[#B99A63] flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-[#B99A63]" /> CCRT National Scholar
-              </span>
-              <span className="px-3 py-1 rounded-lg bg-[#1f1f1f] border border-[#A9A49D]/20 text-[11px] font-semibold text-[#F5F0E8] flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-[#B99A63]" /> 21+ Years Classical Lineage
-              </span>
-            </div>
           </div>
 
-          {/* Col 2: Navigation */}
+          {/* Column 2: Navigation */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-[#B99A63] mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#DFAC88] mb-4">
               Navigation
             </h4>
-            <ul className="space-y-3 text-sm text-slate-400">
+            <ul className="space-y-2.5 text-xs text-stone-300">
               <li>
                 <button
+                  type="button"
                   onClick={() => handleNavClick("top", "home")}
-                  className="hover:text-[#F5F0E8] transition-colors cursor-pointer"
+                  className="hover:text-[#DFAC88] transition-colors cursor-pointer"
                 >
                   Home
                 </button>
               </li>
               <li>
                 <button
+                  type="button"
                   onClick={() => handleNavClick("about-artist", "about")}
-                  className="hover:text-[#F5F0E8] transition-colors cursor-pointer"
+                  className="hover:text-[#DFAC88] transition-colors cursor-pointer"
                 >
-                  About
+                  About Dr. Malavika
                 </button>
               </li>
               <li>
                 <button
+                  type="button"
                   onClick={() => handleNavClick("services-section", "courses")}
-                  className="hover:text-[#F5F0E8] transition-colors cursor-pointer"
+                  className="hover:text-[#DFAC88] transition-colors cursor-pointer"
                 >
-                  Courses
+                  Courses &amp; Curriculum
                 </button>
               </li>
               <li>
                 <button
+                  type="button"
                   onClick={() => handleNavClick("gallery-section", "gallery")}
-                  className="hover:text-[#F5F0E8] transition-colors cursor-pointer"
+                  className="hover:text-[#DFAC88] transition-colors cursor-pointer"
                 >
-                  Gallery
+                  Photo &amp; Stage Gallery
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigateTo("trial")}
+                  className="hover:text-[#DFAC88] transition-colors cursor-pointer"
+                >
+                  Book Audition / Free Trial
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Lesson Categories */}
+          {/* Column 3: Course Disciplines */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-[#B99A63] mb-4">
-              Course Offerings
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#DFAC88] mb-4">
+              Disciplines
             </h4>
-            <ul className="space-y-2 text-xs sm:text-sm text-slate-400">
-              <li onClick={() => navigateTo("courses")} className="hover:text-[#B99A63] transition-colors cursor-pointer">Bharatanatyam Diploma</li>
-              <li onClick={() => navigateTo("courses")} className="hover:text-[#B99A63] transition-colors cursor-pointer">Carnatic Vocal Music</li>
-              <li onClick={() => navigateTo("courses")} className="hover:text-[#B99A63] transition-colors cursor-pointer">Semi-Classical & Bollywood</li>
-              <li onClick={() => navigateTo("courses")} className="hover:text-[#B99A63] transition-colors cursor-pointer">Physician-Led Yoga & Breath</li>
-              <li onClick={() => navigateTo("courses")} className="hover:text-[#B99A63] transition-colors cursor-pointer">Personalised Song Choreography</li>
-              <li onClick={() => navigateTo("courses")} className="hover:text-[#B99A63] transition-colors cursor-pointer">Stage Show Choreography</li>
-              <li onClick={() => navigateTo("courses")} className="hover:text-[#B99A63] transition-colors cursor-pointer">Institutional Workshops</li>
+            <ul className="space-y-2.5 text-xs text-stone-300">
+              <li onClick={() => navigateTo("courses")} className="hover:text-[#DFAC88] transition-colors cursor-pointer">
+                Bharatanatyam Diploma (Govt Sanad)
+              </li>
+              <li onClick={() => navigateTo("courses")} className="hover:text-[#DFAC88] transition-colors cursor-pointer">
+                Foundational Adavu &amp; Rhythm Drill
+              </li>
+              <li onClick={() => navigateTo("courses")} className="hover:text-[#DFAC88] transition-colors cursor-pointer">
+                Carnatic Vocal Music (Raga &amp; Tala)
+              </li>
+              <li onClick={() => navigateTo("courses")} className="hover:text-[#DFAC88] transition-colors cursor-pointer">
+                Semi-Classical &amp; Bollywood Expressions
+              </li>
+              <li onClick={() => navigateTo("courses")} className="hover:text-[#DFAC88] transition-colors cursor-pointer">
+                Physician-Led Dance Physiology
+              </li>
             </ul>
           </div>
 
-          {/* Col 4: Studio Notes & Contact */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-[#B99A63] mb-4">
-              Studio Notes
+          {/* Column 4: Clean Studio Contact (Direct & Non-repetitive) */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#DFAC88] mb-4">
+              Direct Contact
             </h4>
-            <p className="text-xs text-slate-400 mb-3">
-              Receive updates on workshop dates, recital invitations, and musical musings.
-            </p>
-            <form onSubmit={handleSubscribe} className="space-y-2 mb-4">
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(e) => setNewsletterEmail(e.target.value)}
-                placeholder="Your email address"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#1f1f1f] border border-[#A9A49D]/20 text-xs text-[#F5F0E8] placeholder-slate-500 focus:outline-none focus:border-[#B99A63]"
-              />
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-full bg-[#B99A63] hover:bg-[#cca86d] text-[#151515] text-xs font-bold transition-all cursor-pointer"
-              >
-                Subscribe
-              </button>
-            </form>
 
-            <div className="space-y-2 text-xs text-slate-400">
-              {/* WhatsApp */}
-              <a
-                href={`https://wa.me/${academyInfo.whatsappNumber.replace(/[^0-9]/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
-              >
-                <WhatsAppIcon className="w-4 h-4 shrink-0 text-[#25D366]" />
-                <span className="font-semibold text-stone-300">WhatsApp: +91 90745 85672</span>
-              </a>
-
-              {/* Instagram */}
-              <a
-                href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 hover:text-pink-400 transition-colors"
-              >
-                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center shrink-0 text-[8px] text-white font-bold">
-                  ig
-                </span>
-                <span className="font-semibold text-stone-300">Instagram: @dancingragasbymalavika</span>
-              </a>
-
-              {/* YouTube */}
-              <a
-                href="https://www.youtube.com/@dancingragasbymalavika"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 hover:text-rose-400 transition-colors"
-              >
-                <YouTubeIcon className="w-4 h-4 shrink-0" />
-                <span className="font-semibold text-stone-300">YouTube: @dancingragasbymalavika</span>
-              </a>
-              <div className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#B99A63] shrink-0" />
-                <span>{academyInfo.directPhone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#B99A63] shrink-0" />
-                <span>{academyInfo.email}</span>
-              </div>
-              <a
-                href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 hover:text-[#D4AF37] transition-colors pt-0.5"
-              >
-                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center shrink-0 text-[8px] text-white font-bold">
-                  ig
-                </span>
-                <span>@dancingragasbymalavika</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Strip */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <div>
-            © {CURRENT_YEAR} Dr. Malavika M. Sunil. All rights reserved. Private Dance & Music Coaching.
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-            {/* Social Icons Strip */}
-            <div className="flex items-center gap-3">
+            <div className="space-y-2.5 text-xs text-stone-300">
               <a
                 href="https://wa.me/919074585672"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-stone-400 hover:text-[#25D366] transition-colors p-1"
-                title="WhatsApp"
+                className="flex items-center gap-2 hover:text-[#25D366] transition-colors"
               >
-                <WhatsAppIcon className="w-4 h-4" />
+                <Phone className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
+                <span className="font-semibold">+91 90745 85672</span>
               </a>
+
               <a
-                href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-stone-400 hover:text-pink-400 transition-colors p-1"
-                title="Instagram"
+                href="mailto:info@malavikasunil.com"
+                className="flex items-center gap-2 hover:text-[#DFAC88] transition-colors"
               >
-                <span className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] inline-flex items-center justify-center text-[8px] text-white font-bold">
-                  ig
-                </span>
+                <Mail className="w-3.5 h-3.5 text-[#DFAC88] shrink-0" />
+                <span>info@malavikasunil.com</span>
               </a>
-              <a
-                href="https://www.youtube.com/@dancingragasbymalavika"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-stone-400 hover:text-rose-500 transition-colors p-1"
-                title="YouTube"
-              >
-                <YouTubeIcon className="w-4 h-4" />
-              </a>
+
+              <div className="flex items-start gap-2 text-stone-400">
+                <MapPin className="w-3.5 h-3.5 text-[#DFAC88] shrink-0 mt-0.5" />
+                <span>Global Interactive Online Classes &bull; Kerala Studio</span>
+              </div>
             </div>
 
-            <span className="flex items-center gap-1 text-slate-400">
-              Move. Learn. Master. with <Heart className="w-3 h-3 text-[#B99A63] fill-[#B99A63]" />
-            </span>
+            <div className="pt-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-[11px] text-stone-400">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Verified Faculty Direct Desk</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Clean Bottom Copyright Strip */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 pt-2">
+          <p>
+            &copy; {CURRENT_YEAR} Dr. Malavika M. Sunil. All rights reserved. DancingRagas Classical Arts Academy.
+          </p>
+
+          <div className="flex items-center gap-4 text-xs">
+            <button
+              type="button"
+              onClick={() => handleNavClick("top", "home")}
+              className="hover:text-stone-300 transition-colors cursor-pointer"
+            >
+              Back to Top &uarr;
+            </button>
           </div>
         </div>
       </div>

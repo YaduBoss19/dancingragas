@@ -230,7 +230,7 @@ export default function AdminDashboard() {
     sessionTitle: "Bharatanatyam Diploma: Margam Jathiswaram Precision",
     scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
     targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/new",
+    meetUrl: "https://meet.google.com/home",
     meetingId: "ragas-live-room",
     passcode: "RAGAS2026",
     instructor: "Dr. Malavika M. Sunil (MBBS)",
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
     instructor: "Dr. Malavika M. Sunil (MBBS)",
     scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
     targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/new",
+    meetUrl: "https://meet.google.com/home",
     meetingId: "ragas-live-room",
     passcode: "RAGAS2026",
     status: "Confirmed",
@@ -2962,7 +2962,7 @@ export default function AdminDashboard() {
                       instructor: "Dr. Malavika M. Sunil (MBBS)",
                       scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
                       targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-                      meetUrl: "https://meet.google.com/new",
+                      meetUrl: "https://meet.google.com/home",
                       meetingId: "ragas-live-room",
                       passcode: "RAGAS2026",
                       status: "Confirmed",
@@ -3329,7 +3329,7 @@ export default function AdminDashboard() {
                               meetingId: idMatch ? idMatch[1] : batchScheduleForm.meetingId
                             });
                           }}
-                          placeholder="https://meet.google.com/new"
+                          placeholder="https://meet.google.com/abc-defg-hij"
                           className="w-full p-2.5 rounded-xl border border-stone-300 font-mono text-emerald-800"
                           required
                         />

@@ -1494,7 +1494,7 @@ export const INITIAL_LIVE_CLASS = {
   sessionTitle: "Bharatanatyam Diploma: Margam & Adavu Precision",
   scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
   targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-  meetUrl: "https://meet.google.com/new",
+  meetUrl: "https://meet.google.com/home",
   platform: "Google Meet",
   meetingId: "ragas-live-room",
   passcode: "RAGAS2026",
