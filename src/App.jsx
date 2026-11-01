@@ -17,7 +17,6 @@ import ContactUs from "./pages/ContactUs";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudentPortal from "./pages/StudentPortal";
 
-import CustomCursor from "./components/CustomCursor";
 import FloatingConciergePill from "./components/FloatingConciergePill";
 import AuthModal from "./components/AuthModal";
 import "./App.css";
@@ -130,7 +129,6 @@ function AppContent() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F0E8] text-[#151515] font-sans selection:bg-[#B99A63]/30 selection:text-[#151515]">
       {/* Luxury Magnetic Follower Cursor (Desktop) */}
-      <CustomCursor />
 
       {/* Sticky Navigation (Hidden inside portals) */}
       {!isPortal && isAdminLoggedIn && (

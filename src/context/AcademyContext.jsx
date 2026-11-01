@@ -393,10 +393,11 @@ export function AcademyProvider({ children }) {
     }
   });
 
-  // Supabase Auth State (Admin vs Student)
+  // 🛡️ High-Security Tab-Scoped Authentication Session (sessionStorage)
+  // Ensures copied portal URLs NEVER work when opened in another tab, browser, or device!
   const [authUser, setAuthUser] = useState(() => {
     try {
-      const saved = localStorage.getItem("dancingragas_auth_user_v1");
+      const saved = sessionStorage.getItem("dancingragas_auth_user_v2") || localStorage.getItem("dancingragas_auth_user_v1");
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
@@ -405,7 +406,7 @@ export function AcademyProvider({ children }) {
 
   const [userRole, setUserRole] = useState(() => {
     try {
-      return localStorage.getItem("dancingragas_auth_role_v1") || "guest";
+      return sessionStorage.getItem("dancingragas_auth_role_v2") || localStorage.getItem("dancingragas_auth_role_v1") || "guest";
     } catch {
       return "guest";
     }
@@ -416,13 +417,15 @@ export function AcademyProvider({ children }) {
   useEffect(() => {
     try {
       if (authUser) {
-        localStorage.setItem("dancingragas_auth_user_v1", JSON.stringify(authUser));
+        sessionStorage.setItem("dancingragas_auth_user_v2", JSON.stringify(authUser));
       } else {
+        sessionStorage.removeItem("dancingragas_auth_user_v2");
         localStorage.removeItem("dancingragas_auth_user_v1");
       }
-      if (userRole) {
-        localStorage.setItem("dancingragas_auth_role_v1", userRole);
+      if (userRole && userRole !== "guest") {
+        sessionStorage.setItem("dancingragas_auth_role_v2", userRole);
       } else {
+        sessionStorage.removeItem("dancingragas_auth_role_v2");
         localStorage.removeItem("dancingragas_auth_role_v1");
       }
     } catch (e) {
@@ -444,6 +447,7 @@ export function AcademyProvider({ children }) {
     setActiveStudentId(null);
     setIsAuthModalOpen(false);
     try {
+      sessionStorage.clear();
       localStorage.removeItem(STORAGE_KEYS.AUTH);
       localStorage.removeItem("dancingragas_auth_user_v1");
       localStorage.removeItem("dancingragas_auth_role_v1");
