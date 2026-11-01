@@ -172,7 +172,12 @@ export function AcademyProvider({ children }) {
   const [enquiries, setEnquiries] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ENQUIRIES);
-      return saved ? JSON.parse(saved) : INITIAL_ENQUIRIES;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const hasOldTemplate = parsed.some((e) => e.course && (e.course.includes("Ballet") || e.course.includes("Guitar")));
+        if (!hasOldTemplate && parsed.length > 0) return parsed;
+      }
+      return INITIAL_ENQUIRIES;
     } catch {
       return INITIAL_ENQUIRIES;
     }
@@ -290,12 +295,25 @@ export function AcademyProvider({ children }) {
   
   const [youtubeShorts, setYoutubeShorts] = useState(() => {
     try {
-      const saved = localStorage.getItem("dancingragas_youtube_shorts");
-      return saved ? JSON.parse(saved) : INITIAL_YOUTUBE_SHORTS;
+      const saved = localStorage.getItem("dancingragas_youtube_shorts_v2") || localStorage.getItem("dancingragas_youtube_shorts");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // If saved list has old fake dummy IDs, heal and replace with working videos
+        const hasDummy = parsed.some((s) => s.embedUrl && (s.embedUrl.includes("3jz_K3MvV1M") || s.embedUrl.includes("5v0gL1oP6Xw")));
+        if (!hasDummy && parsed.length > 0) return parsed;
+      }
+      return INITIAL_YOUTUBE_SHORTS;
     } catch {
       return INITIAL_YOUTUBE_SHORTS;
     }
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("dancingragas_youtube_shorts_v2", JSON.stringify(youtubeShorts));
+      localStorage.setItem("dancingragas_youtube_shorts", JSON.stringify(youtubeShorts));
+    } catch {}
+  }, [youtubeShorts]);
 
   useEffect(() => {
     try {
@@ -1161,6 +1179,38 @@ export function AcademyProvider({ children }) {
     showToast("Enquiry entry deleted.", "info");
   };
 
+  const convertEnquiryToStudent = (enquiryId) => {
+    const enq = (enquiries || []).find((e) => e.id === enquiryId);
+    if (!enq) return;
+
+    const studentName = enq.studentName || enq.name || "New Disciple";
+    const course = enq.course || enq.discipline || "Bharatanatyam Diploma";
+    const cleanKeyBase = studentName.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
+    const generatedAccessKey = (cleanKeyBase || "disciple") + "2026";
+
+    const newStudent = {
+      id: "std-" + Date.now(),
+      name: studentName,
+      email: enq.email || (cleanKeyBase + "@dancingragas.com"),
+      phone: enq.phone || "",
+      parentName: enq.parentName || "",
+      accessKey: generatedAccessKey,
+      enrollmentDate: new Date().toISOString().split("T")[0],
+      enrolledCourses: [course],
+      overallProgress: 0,
+      certificateEnabled: false,
+      wellnessAdvice: "Practice 15 minutes of Aramandi posture with elongated spine daily. Stay well hydrated before recital practice.",
+      attendanceRate: 100
+    };
+
+    setStudentsList((prev) => [newStudent, ...prev]);
+    setEnquiries((prev) =>
+      prev.map((e) => (e.id === enquiryId ? { ...e, status: "Enrolled" } : e))
+    );
+    showToast(`🎉 ${studentName} enrolled successfully! Student Key: "${generatedAccessKey}"`, "success");
+    return newStudent;
+  };
+
   // Courses Operations
   const addCourse = (courseData) => {
     const newCourse = {
@@ -1343,6 +1393,7 @@ export function AcademyProvider({ children }) {
         addEnquiry,
         updateEnquiryStatus,
         deleteEnquiry,
+        convertEnquiryToStudent,
         addCourse,
         updateCourse,
         deleteCourse,

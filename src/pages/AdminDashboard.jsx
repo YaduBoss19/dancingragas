@@ -16,11 +16,12 @@ import {
   Download,
   RotateCcw,
   MessageCircle,
+  Mail,
+  Phone,
+  CheckCircle,
   Eye,
   LogOut,
   X,
-  Phone,
-  Mail,
   UploadCloud,
   FileText,
   GraduationCap,
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
     enquiries,
     updateEnquiryStatus,
     deleteEnquiry,
+    convertEnquiryToStudent,
     courses,
     addCourse,
     updateCourse,
@@ -158,6 +160,7 @@ export default function AdminDashboard() {
     { id: "live_studio", label: "Live Classes & Google Meet", count: null, icon: Video, desc: "Schedule Google Meet classes by batch" },
     { id: "course_areas", label: "Course Videos & Lessons", count: (recordings || []).length, icon: Film, desc: "Class recordings & video access" },
     { id: "students_dir", label: "Students Directory & Courses", count: (studentsList || []).length, icon: Users, desc: "Student list & course enrollments" },
+    { id: "enquiries", label: "Student Inquiries & Leads", count: (enquiries || []).length, icon: MessageSquare, desc: "Admissions CRM, trial bookings & 1-click disciple enrollment" },
     { id: "materials_cms", label: "Study Materials & PDFs", count: (studyMaterials || []).length, icon: FileText, desc: "Upload slokas, theory notes & PDFs" },
     { id: "assessments", label: "Student Submissions & Grading", count: (studentAssessments || []).length, icon: Award, desc: "Review practice videos & provide grades" }
   ];
@@ -178,6 +181,20 @@ export default function AdminDashboard() {
     "Bollywood & Semi-Classical"
   ];
   const [selectedCourseArea, setSelectedCourseArea] = useState("Bharatanatyam Diploma");
+  const [crmStatusFilter, setCrmStatusFilter] = useState("all");
+  const [crmSearchQuery, setCrmSearchQuery] = useState("");
+  const [isAddingLeadModal, setIsAddingLeadModal] = useState(false);
+  const [newLeadForm, setNewLeadForm] = useState({
+    studentName: "",
+    studentAge: "",
+    parentName: "",
+    phone: "",
+    email: "",
+    course: "Bharatanatyam Diploma",
+    skillLevel: "Absolute Beginner",
+    preferredTime: "Sunday Morning (10:00 AM IST)",
+    notes: ""
+  });
 
   // Add Unlisted Video Modal State
   const [isAddingVideoModal, setIsAddingVideoModal] = useState(false);
