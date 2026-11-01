@@ -1,3 +1,4 @@
+import { parseVideoUrl } from "../utils/videoUtils";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   INITIAL_COURSES,
