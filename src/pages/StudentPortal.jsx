@@ -39,7 +39,11 @@ import {
   CreditCard,
   Eye,
   X,
-  KeyRound
+  KeyRound,
+  Sparkles,
+  MessageCircle,
+  Camera,
+  Edit2
 } from "lucide-react";
 import WhatsAppIcon from "../components/WhatsAppIcon";
 import UniversalVideoPlayer from "../components/UniversalVideoPlayer";
@@ -57,7 +61,6 @@ import StudentProfileModal from "../components/StudentProfileModal";
 import FloatingTanpuraBar from "../components/FloatingTanpuraBar";
 import MobileStudentNavBar from "../components/MobileStudentNavBar";
 import StickyLiveMeetPill from "../components/StickyLiveMeetPill";
-import { MessageCircle, Camera, Edit2 } from "lucide-react";
 import { formatVideoEmbedUrl } from "../utils/videoUtils";
 
 export default function StudentPortal({ onOpenAuth }) {
