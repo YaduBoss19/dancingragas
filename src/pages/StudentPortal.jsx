@@ -737,21 +737,22 @@ export default function StudentPortal({ onOpenAuth }) {
                 href={activeLiveSession.meetUrl || "https://meet.google.com/home"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="silk-zari-btn px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2 cursor-pointer tap-bounce"
+                className="silk-zari-btn px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-xl shadow-emerald-900/40 flex items-center gap-2.5 cursor-pointer tap-bounce"
+                title="Direct 1-Click Launch into Dr. Malavika's Live Google Meet Room"
               >
-                <Video className="w-4 h-4 text-white" />
-                <span>Join Google Meet</span>
+                <Video className="w-4 h-4 text-white animate-pulse" />
+                <span>Join Google Meet (1-Click)</span>
                 <ExternalLink className="w-3.5 h-3.5 opacity-80" />
               </a>
 
               <button
                 type="button"
                 onClick={() => setIsEmbeddedClassroomOpen(true)}
-                className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
-                title="Launch Google Meet directly inside this window"
+                className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[#E8B896] hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
+                title="View classroom instructions, passcode, and launch hub"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#E8B896]" />
-                <span>In-App Classroom</span>
+                <span>Classroom Hub &amp; Passcode</span>
               </button>
 
 
