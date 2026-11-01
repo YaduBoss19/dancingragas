@@ -5,7 +5,6 @@ import CinematicReelsShowcase from "../components/CinematicReelsShowcase";
 import GoldParticlesCanvas from "../components/GoldParticlesCanvas";
 import CuratorMasterProfile from "../components/CuratorMasterProfile";
 import InteractiveServiceCards from "../components/InteractiveServiceCards";
-import YouTubeShortsReel from "../components/YouTubeShortsReel";
 import SacredMandalaScroll from "../components/SacredMandalaScroll";
 import StageSpotlightOverlay from "../components/StageSpotlightOverlay";
 import AnnouncementsTicker from "../components/AnnouncementsTicker";
@@ -232,8 +231,7 @@ export default function Home() {
       ───────────────────────────────────────────────────────────── */}
       <InteractiveServiceCards onSelectServiceForBooking={selectServiceForBooking} />
 
-      {/* ── YOUTUBE SHORTS & RECITAL SHOWCASE REEL (RIGHT BELOW COURSES) ── */}
-      <YouTubeShortsReel className="bg-[#FAF7F2] border-y border-[#DFAC88]/20 my-6 sm:my-10" />
+      
 
       {/* ─────────────────────────────────────────────────────────────
           4B. UPCOMING EVENTS & MASTERCLASSES
@@ -358,7 +356,15 @@ export default function Home() {
                   />
                   <div>
                     <h4 className="text-sm sm:text-base font-bold text-[#151515] font-serif-luxury">{t.name}</h4>
-                    <p className="text-xs text-[#B99A63] font-medium">{t.relation}</p>
+                    <p className="text-xs text-[#B99A63] font-medium flex items-center gap-1.5 flex-wrap">
+                      <span>{t.role || (t.relation ? t.relation.split('•')[0].trim() : "Disciple")}</span>
+                      {(t.location || (t.relation && t.relation.includes('•'))) && (
+                        <>
+                          <span className="text-stone-400 font-normal">&bull;</span>
+                          <span className="text-stone-600 font-normal">{t.location || t.relation.split('•')[1].trim()}</span>
+                        </>
+                      )}
+                    </p>
                   </div>
                 </div>
               </AnimatedSection>

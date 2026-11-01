@@ -3582,14 +3582,20 @@ export default function AdminDashboard() {
       ═══════════════════════════════════════════════════════════════ */}
       {isAddingStoryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-[#B99A63]/40 space-y-4 text-left font-sans my-auto">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
-                Add Student &amp; Parent Story
-              </h3>
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-[#D4AF37]" />
+                <h3 className="text-lg font-bold font-serif-luxury text-stone-900">
+                  {editingStory ? "Edit Student & Parent Story" : "Add Student & Parent Story"}
+                </h3>
+              </div>
               <button
                 type="button"
-                onClick={() => setIsAddingStoryModal(false)}
+                onClick={() => {
+                  setEditingStory(null);
+                  setIsAddingStoryModal(false);
+                }}
                 className="w-8 h-8 rounded-full bg-stone-100 text-stone-700 flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -3603,21 +3609,37 @@ export default function AdminDashboard() {
                   showToast("Name and quote are required.", "error");
                   return;
                 }
-                const newStory = {
-                  id: "story-" + Date.now(),
-                  ...storyForm
+                const formattedStory = {
+                  name: storyForm.name.trim(),
+                  role: storyForm.role.trim() || "Bharatanatyam Diploma Disciple",
+                  location: storyForm.location.trim() || "Online",
+                  relation: `${storyForm.role.trim() || "Bharatanatyam Diploma Disciple"} • ${storyForm.location.trim() || "Online"}`,
+                  quote: storyForm.quote.trim(),
+                  rating: Number(storyForm.rating) || 5,
+                  stars: Number(storyForm.rating) || 5,
+                  avatar: storyForm.avatar || "/images/testimonials/semmalar_dharman.jpg",
+                  tag: "Verified Student"
                 };
-                const updated = [newStory, ...storiesList];
+
+                let updated;
+                if (editingStory) {
+                  updated = storiesList.map((s) => (s.id === editingStory.id ? { ...s, ...formattedStory } : s));
+                  showToast(`Story for "${formattedStory.name}" updated successfully!`, "success");
+                } else {
+                  updated = [{ id: "story-" + Date.now(), ...formattedStory }, ...storiesList];
+                  showToast("New student story added successfully!", "success");
+                }
+
                 setStoriesList(updated);
                 updateTestimonials(updated);
+                setEditingStory(null);
                 setIsAddingStoryModal(false);
-                showToast("New student story added successfully!", "success");
               }}
-              className="space-y-3 text-xs"
+              className="space-y-3.5 text-xs"
             >
               {/* Photo / Avatar Uploader */}
-              <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <label className="font-bold text-stone-700 block text-xs">Student / Parent Photo (Avatar)</label>
+              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <label className="font-bold text-stone-800 block text-xs">Student / Parent Photo (Avatar)</label>
                 <div className="flex items-center gap-3">
                   <img
                     src={storyForm.avatar || "/images/testimonials/semmalar_dharman.jpg"}
@@ -3626,9 +3648,9 @@ export default function AdminDashboard() {
                     onError={(e) => { e.target.src = "/images/testimonials/semmalar_dharman.jpg"; }}
                   />
                   <div className="flex-1 space-y-1.5">
-                    <label className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#D4AF37] font-bold text-[11px] cursor-pointer shadow-xs">
                       <UploadCloud className="w-3.5 h-3.5" />
-                      <span>Upload Photo</span>
+                      <span>Upload Photo (Supabase)</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -3638,10 +3660,10 @@ export default function AdminDashboard() {
                     </label>
                     <input
                       type="text"
-                      placeholder="Or enter photo URL"
+                      placeholder="Or enter photo URL (e.g. /images/testimonials/semmalar_dharman.jpg)"
                       value={storyForm.avatar}
                       onChange={(e) => setStoryForm({ ...storyForm, avatar: e.target.value })}
-                      className="w-full px-2.5 py-1 rounded-xl border border-stone-200 bg-white text-xs"
+                      className="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs"
                     />
                   </div>
                 </div>
@@ -3655,69 +3677,76 @@ export default function AdminDashboard() {
                   placeholder="e.g. Radhika Sundaram"
                   value={storyForm.name}
                   onChange={(e) => setStoryForm({ ...storyForm, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Discipline / Role</label>
+                  <label className="font-bold text-stone-700 block mb-1">Discipline / Role (e.g. Dance Student) *</label>
                   <input
                     type="text"
+                    required
+                    placeholder="Dance Student"
                     value={storyForm.role}
                     onChange={(e) => setStoryForm({ ...storyForm, role: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Location</label>
+                  <label className="font-bold text-stone-700 block mb-1">Location (State / City) *</label>
                   <input
                     type="text"
+                    required
+                    placeholder="Tamil Nadu"
                     value={storyForm.location}
                     onChange={(e) => setStoryForm({ ...storyForm, location: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Rating</label>
+                <label className="font-bold text-stone-700 block mb-1">Rating (Stars) *</label>
                 <select
                   value={storyForm.rating}
                   onChange={(e) => setStoryForm({ ...storyForm, rating: Number(e.target.value) })}
                   className="w-full px-3 py-2 rounded-xl border border-stone-200 bg-white"
                 >
-                  <option value={5}>5 Stars (Exceptional)</option>
-                  <option value={4}>4 Stars (Very Good)</option>
-                  <option value={3}>3 Stars (Good)</option>
+                  <option value={5}>⭐⭐⭐⭐⭐ 5 Stars (Exceptional)</option>
+                  <option value={4}>⭐⭐⭐⭐ 4 Stars (Very Good)</option>
+                  <option value={3}>⭐⭐⭐ 3 Stars (Good)</option>
                 </select>
               </div>
 
               <div>
                 <label className="font-bold text-stone-700 block mb-1">Testimonial Quote *</label>
                 <textarea
-                  rows={3}
+                  rows={4}
                   required
                   placeholder="Share the disciple's genuine experience with Dr. Malavika's coaching..."
                   value={storyForm.quote}
                   onChange={(e) => setStoryForm({ ...storyForm, quote: e.target.value })}
-                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs"
+                  className="w-full p-2.5 rounded-xl border border-stone-200 text-xs bg-white"
                 />
               </div>
 
               <div className="pt-3 border-t border-stone-200 flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setIsAddingStoryModal(false)}
+                  onClick={() => {
+                    setEditingStory(null);
+                    setIsAddingStoryModal(false);
+                  }}
                   className="px-4 py-2 rounded-xl border border-stone-200 text-stone-600 font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs"
+                  className="silk-zari-btn px-6 py-2 rounded-xl bg-[#0F172A] text-[#D4AF37] font-bold text-xs shadow-md tap-bounce cursor-pointer"
                 >
-                  Add Story
+                  {editingStory ? "Save Changes" : "Add Story"}
                 </button>
               </div>
             </form>

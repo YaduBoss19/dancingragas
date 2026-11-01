@@ -65,6 +65,7 @@ export default function StudentPortal({ onOpenAuth }) {
   const [isCertLockedNoticeOpen, setIsCertLockedNoticeOpen] = useState(false);
   const [isWellnessModalOpen, setIsWellnessModalOpen] = useState(false);
   const [isAbsenceModalOpen, setIsAbsenceModalOpen] = useState(false);
+  const [isEmbeddedClassroomOpen, setIsEmbeddedClassroomOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [previewPdfDoc, setPreviewPdfDoc] = useState(null);
@@ -730,19 +731,30 @@ export default function StudentPortal({ onOpenAuth }) {
             {/* Google Meet & Instant Classroom Direct Launch */}
             <div className="flex flex-wrap items-center gap-2.5 shrink-0">
               <a
-                href={(activeLiveSession.meetUrl && !activeLiveSession.meetUrl.includes("dnc-") && !activeLiveSession.meetUrl.includes("ragas-live-room")) ? activeLiveSession.meetUrl : "https://meet.google.com/new"}
+                href={activeLiveSession.meetUrl || "https://meet.google.com/home"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="silk-zari-btn px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2 cursor-pointer tap-bounce"
+                className="silk-zari-btn px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-900/40 flex items-center gap-2 cursor-pointer tap-bounce"
               >
                 <Video className="w-4 h-4 text-white" />
-                <span>Join Google Meet Now</span>
+                <span>Join Google Meet</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
               </a>
+
+              <button
+                type="button"
+                onClick={() => setIsEmbeddedClassroomOpen(true)}
+                className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer tap-bounce"
+                title="Launch Google Meet directly inside this window"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#E8B896]" />
+                <span>In-App Classroom</span>
+              </button>
 
 
 
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`🌸 DancingRagas Live Classroom\n\nClass: ${activeLiveSession.sessionTitle}\nBatch: ${selectedCourseArea}\nTime: ${activeLiveSession.scheduledDayTime}\n\nJoin Google Meet:\n${activeLiveSession.meetUrl || "https://meet.google.com/new"}`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`🌸 DancingRagas Live Classroom\n\nClass: ${activeLiveSession.sessionTitle}\nBatch: ${selectedCourseArea}\nTime: ${activeLiveSession.scheduledDayTime}\n\nJoin Google Meet:\n${activeLiveSession.meetUrl || "https://meet.google.com/home"}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-3 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-emerald-300 transition-all cursor-pointer shadow-xs"
@@ -1257,7 +1269,7 @@ export default function StudentPortal({ onOpenAuth }) {
 
                 <div className="flex flex-col gap-2 shrink-0">
                   <a
-                    href={activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "https://meet.google.com/new"}
+                    href={activeLiveSession?.meetUrl || liveClassConfig?.meetUrl || "https://meet.google.com/home"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="silk-zari-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-[#C9956A] via-[#F3E5AB] to-[#DFAC88] text-[#151515] font-bold text-sm shadow-xl shadow-[#C9956A]/20 hover:brightness-105 transition-all flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto shrink-0 tap-bounce"
@@ -1848,6 +1860,76 @@ export default function StudentPortal({ onOpenAuth }) {
           feedback: (studentAssessments || []).length
         }}
       />
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL: IN-APP EMBEDDED GOOGLE MEET CLASSROOM (ZERO JOIN ISSUES)
+      ═══════════════════════════════════════════════════════════════ */}
+      {isEmbeddedClassroomOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-5xl h-[92vh] flex flex-col rounded-3xl bg-[#151515] border border-[#DFAC88]/40 shadow-2xl overflow-hidden font-sans">
+            {/* Classroom Top Bar */}
+            <div className="p-4 bg-gradient-to-r from-[#260A22] via-[#3D1035] to-[#260A22] text-white flex items-center justify-between border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center font-bold">
+                  <Video className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-sm sm:text-base font-serif-luxury text-white truncate">
+                    DancingRagas Live Classroom &bull; {currentStudent.name}
+                  </h4>
+                  <p className="text-[11px] text-[#E8B896] truncate">
+                    Academy Persistent Room &bull; Google Meet (https://meet.google.com/home)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={activeLiveSession?.meetUrl || "https://meet.google.com/home"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Open in Full Tab</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setIsEmbeddedClassroomOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Embedded Google Meet Frame */}
+            <div className="flex-1 bg-black relative">
+              <iframe
+                src={activeLiveSession?.meetUrl || "https://meet.google.com/home"}
+                title="Google Meet Classroom"
+                className="w-full h-full border-0"
+                allow="camera; microphone; fullscreen; display-capture; autoplay"
+              />
+            </div>
+
+            {/* Bottom Tip Bar */}
+            <div className="p-3 bg-[#1e0a1c] border-t border-white/10 flex items-center justify-between text-xs text-stone-300 shrink-0">
+              <span>💡 Tip: If your browser blocks camera/microphone inside embedded views, click <strong>"Open in Full Tab"</strong> above.</span>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(activeLiveSession?.meetUrl || "https://meet.google.com/home");
+                  showToast("Classroom link copied to clipboard!", "success");
+                }}
+                className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-[11px] cursor-pointer"
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

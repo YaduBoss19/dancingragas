@@ -53,7 +53,7 @@ export const INITIAL_LIVE_SCHEDULES = [
     instructor: "Dr. Malavika M. Sunil (MBBS)",
     scheduledDayTime: "Sunday, 05:00 PM IST / 07:30 AM EST",
     targetTimestamp: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/new",
+    meetUrl: "https://meet.google.com/home",
     meetingId: "ragas-live-room",
     passcode: "RAGAS2026",
     status: "Confirmed",
@@ -69,7 +69,7 @@ export const INITIAL_LIVE_SCHEDULES = [
     instructor: "Dr. Malavika & Guru Faculty",
     scheduledDayTime: "Saturday, 06:30 PM IST / 09:00 AM EST",
     targetTimestamp: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/new",
+    meetUrl: "https://meet.google.com/home",
     meetingId: "carnatic-live-room",
     passcode: "VOCAL2026",
     status: "Confirmed",
@@ -85,7 +85,7 @@ export const INITIAL_LIVE_SCHEDULES = [
     instructor: "Faculty Choreographer",
     scheduledDayTime: "Wednesday, 07:00 PM IST / 09:30 AM EST",
     targetTimestamp: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    meetUrl: "https://meet.google.com/new",
+    meetUrl: "https://meet.google.com/home",
     meetingId: "semi-classical-live-room",
     passcode: "DANCE2026",
     status: "Confirmed",
@@ -221,7 +221,7 @@ export function AcademyProvider({ children }) {
       // Sanitize any stale dummy/broken meet URLs that Google Meet rejects
       return parsed.map((item) => {
         if (!item.meetUrl || item.meetUrl.includes("dnc-") || item.meetUrl.includes("ragas-live-room")) {
-          return { ...item, meetUrl: "https://meet.google.com/new" };
+          return { ...item, meetUrl: "https://meet.google.com/home" };
         }
         return item;
       });
@@ -243,7 +243,7 @@ export function AcademyProvider({ children }) {
       const saved = localStorage.getItem(STORAGE_KEYS.LIVE_CLASS);
       const parsed = saved ? JSON.parse(saved) : INITIAL_LIVE_CLASS;
       if (!parsed.meetUrl || parsed.meetUrl.includes("dnc-") || parsed.meetUrl.includes("ragas-live")) {
-        return { ...parsed, meetUrl: "https://meet.google.com/new" };
+        return { ...parsed, meetUrl: "https://meet.google.com/home" };
       }
       return parsed;
     } catch {
@@ -304,19 +304,42 @@ export function AcademyProvider({ children }) {
   }, [youtubeShorts]);
 
   const addYouTubeShort = (shortData) => {
+    const parsed = parseVideoUrl(shortData.embedUrl);
+    const videoId = parsed.videoId;
+    const autoThumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : "/images/stage_shows/stage_01.jpg";
     const newShort = {
       id: "yt-short-" + Date.now(),
       title: shortData.title.trim(),
       performer: shortData.performer?.trim() || "DancingRagas Disciple",
       batch: shortData.batch || "Bharatanatyam Diploma",
       embedUrl: shortData.embedUrl?.trim() || "",
-      thumbnail: shortData.thumbnail || "/images/stage_shows/stage_01.jpg",
+      thumbnail: shortData.thumbnail || autoThumb,
       views: "1.2k",
       date: "New Recital"
     };
     setYoutubeShorts((prev) => [newShort, ...prev]);
     showToast(`YouTube Short "${newShort.title}" added to showcase reel!`, "success");
     return newShort;
+  };
+
+  const updateYouTubeShort = (id, updatedData) => {
+    setYoutubeShorts((prev) =>
+      prev.map((s) => {
+        if (s.id === id) {
+          const parsed = parseVideoUrl(updatedData.embedUrl || s.embedUrl);
+          const videoId = parsed.videoId || s.videoId;
+          const thumbnail = updatedData.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : s.thumbnail);
+          return {
+            ...s,
+            ...updatedData,
+            thumbnail,
+            embedUrl: updatedData.embedUrl || s.embedUrl
+          };
+        }
+        return s;
+      })
+    );
+    showToast("YouTube Short updated successfully!", "success");
   };
 
   const deleteYouTubeShort = (id) => {
@@ -780,7 +803,7 @@ export function AcademyProvider({ children }) {
       instructor: scheduleData.instructor || "Dr. Malavika M. Sunil (MBBS)",
       scheduledDayTime: scheduleData.scheduledDayTime || "Upcoming Weekend",
       targetTimestamp: scheduleData.targetTimestamp || new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-      meetUrl: scheduleData.meetUrl || "https://meet.google.com/new",
+      meetUrl: scheduleData.meetUrl || "https://meet.google.com/home",
       meetingId: scheduleData.meetingId || "ragas-live-room",
       passcode: scheduleData.passcode || "RAGAS2026",
       status: "Confirmed",
@@ -1270,6 +1293,7 @@ export function AcademyProvider({ children }) {
         setYoutubeShorts,
         addYouTubeShort,
         deleteYouTubeShort,
+        updateYouTubeShort,
         toggleLessonCompletion,
         addCurriculumModule,
         updateCurriculumModule,

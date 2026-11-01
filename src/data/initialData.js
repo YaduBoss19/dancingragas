@@ -839,49 +839,57 @@ export const TESTIMONIALS = [
   {
     id: "t-1",
     name: "Semmalar Dharman",
-    relation: "Dance Student • Tamil Nadu",
+    role: "Dance Student",
     location: "Tamil Nadu",
+    relation: "Dance Student • Tamil Nadu",
+    stars: 5,
+    rating: 5,
     avatar: "/images/testimonials/semmalar_dharman.jpg",
     avatarPosition: "object-center",
     quote:
-      "About my guru Malavika chechi ,she’s honestly so sweet, talented and friendly 🥹💗 Her choreographies are sooo good, and I love how she makes them according to our level so everyone can enjoy and learn comfortably. She’s super patient, supportive and makes every class such a fun vibe. Had such a great experience learning from her, literally amazing at what she does 💃🏻✨💕",
-    stars: 5,
+      "About my guru Malavika chechi ,she's honestly so sweet, talented and friendly Her choreographies are sooo good, and I love how she makes them according to our level so everyone can enjoy and learn comfortably. She's super patient, supportive and makes every class such a fun vibe. Had such a great experience learning from her, literally amazing at what she does",
     tag: "Verified Student"
   },
   {
     id: "t-2",
     name: "Jyothirmai",
-    relation: "Dance Student • Tamil Nadu",
+    role: "Dance Student",
     location: "Tamil Nadu",
+    relation: "Dance Student • Tamil Nadu",
+    stars: 5,
+    rating: 5,
     avatar: "/images/testimonials/jyothirmai.jpg",
     avatarPosition: "object-center",
     quote:
       "It was a wonderful journey. Patience of our guide is what made me think I could try dancing in the first place. We had a wonderful moments in weekends ..from crying to smile on my face. It was challenging, it still is but I trust my mentor, in the hope of finding joy through dancing.\n\nThank you, It is my pleasure learning from you.",
-    stars: 5,
     tag: "Verified Student"
   },
   {
     id: "t-3",
     name: "Praveshika",
-    relation: "Dance Student • Andhra Pradesh",
+    role: "Dance Student",
     location: "Andhra Pradesh",
+    relation: "Dance Student • Andhra Pradesh",
+    stars: 5,
+    rating: 5,
     avatar: "/images/testimonials/praveshika.jpg",
     avatarPosition: "object-top",
     quote:
-      "My dance journey with the Dancing Ragas was such a great experience! Their workshops helped me reconnect with a part of myself I hadn’t been in touch with for a long time. I love how inclusive the dance styles are, from classical and semi-classical to Bollywood, fusion and hip-hop. Getting the opportunity to perform at the NGO Diwali program and later at the ARJN n KDS concert was amazing! The fun practice sessions and getting to dance alongside such a talented group of girls made it even more special. It’s definitely one of my favourite memories from Georgia! ✨",
-    stars: 5,
+      "My dance journey with the Dancing Ragas was such a great experience! Their workshops helped me reconnect with a part of myself I hadn't been in touch with for a long time. I love how inclusive the dance styles are, from classical and semi-classical to Bollywood, fusion and hip-hop. Getting the opportunity to perform at the NGO Diwali program and later at the ARJN n KDS concert was amazing! The fun practice sessions and getting to dance alongside such a talented group of girls made it even more special. It's definitely one of my favourite memories from Georgia!",
     tag: "Verified Student"
   },
   {
     id: "t-4",
     name: "Krishna Rajesh",
-    relation: "Dance Student • Kerala",
+    role: "Dance Student",
     location: "Kerala",
+    relation: "Dance Student • Kerala",
+    stars: 5,
+    rating: 5,
     avatar: "/images/testimonials/krishna_rajesh.jpg",
     avatarPosition: "object-top",
     quote:
-      "Even though my time learning from Malavika Chechi has been short, it has been a lovely experience! ❤️ She’s not only a talented dancer but also a passionate teacher who truly understands her art and shares her knowledge so beautifully. Her classes have such a positive and welcoming vibe that makes learning enjoyable and fun. Such a dedicated artist and a wonderful teacher!",
-    stars: 5,
+      "Even though my time learning from Malavika Chechi has been short, it has been a lovely experience! She's not only a talented dancer but also a passionate teacher who truly understands her art and shares her knowledge so beautifully. Her classes have such a positive and welcoming vibe that makes learning enjoyable and fun. Such a dedicated artist and a wonderful teacher!",
     tag: "Verified Student"
   }
 ];
