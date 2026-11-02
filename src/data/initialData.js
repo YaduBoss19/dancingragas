@@ -1069,6 +1069,8 @@ export const ACADEMY_INFO = {
   websiteUrl: "https://dancingragas.vercel.app/",
   instagramUrl: "https://www.instagram.com/dancingragasbymalavika/",
   instagramHandle: "@dancingragasbymalavika",
+  youtubeUrl: "https://www.youtube.com/@dancingragasmalavikamsunil",
+  youtubeHandle: "@dancingragasmalavikamsunil",
   hours: {
     weekdays: "Monday – Friday: Flexible Online Slots",
     saturday: "Saturday: Dedicated Masterclasses",
@@ -1730,6 +1732,8 @@ export const INITIAL_SITE_CONTENT = {
     email: "info@malavikasunil.com",
     instagramUrl: "https://www.instagram.com/dancingragasbymalavika/",
     instagramHandle: "@dancingragasbymalavika",
+  youtubeUrl: "https://www.youtube.com/@dancingragasmalavikamsunil",
+  youtubeHandle: "@dancingragasmalavikamsunil",
     address: "Worldwide Online & Kerala / Bangalore, India"
   },
   hero: {

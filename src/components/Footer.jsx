@@ -3,6 +3,7 @@ import { useAcademy } from "../context/AcademyContext";
 import { playGhungrooChime } from "../utils/talamAudio";
 import WhatsAppIcon from "./WhatsAppIcon";
 import YouTubeIcon from "./YouTubeIcon";
+import InstagramIcon from "./InstagramIcon";
 import {
   Phone,
   Mail,
@@ -128,20 +129,18 @@ export default function Footer() {
               </a>
 
               <a
-                href={academyInfo.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
+                href={academyInfo?.instagramUrl || "https://www.instagram.com/dancingragasbymalavika/"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E1306C]/15 hover:bg-[#E1306C]/25 border border-[#E1306C]/40 text-[#f56040] text-xs font-bold transition-all"
                 title="Follow on Instagram"
               >
-                <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] flex items-center justify-center text-[7px] text-white font-bold">
-                  ig
-                </span>
+                <InstagramIcon className="w-4 h-4 rounded-xs" />
                 <span>Instagram</span>
               </a>
 
               <a
-                href="https://www.youtube.com/@dancingragasbymalavika"
+                href="https://www.youtube.com/@dancingragasmalavikamsunil"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF0000]/15 hover:bg-[#FF0000]/25 border border-[#FF0000]/40 text-rose-400 text-xs font-bold transition-all"

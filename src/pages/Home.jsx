@@ -14,6 +14,7 @@ import { playGhungrooChime } from "../utils/talamAudio";
 import { EditableText, EditableMedia } from "../components/LiveVisualEditor";
 import { FAQS, TESTIMONIALS } from "../data/initialData";
 import WhatsAppIcon from "../components/WhatsAppIcon";
+import InstagramIcon from "../components/InstagramIcon";
 import {
   ArrowRight,
   Star,
@@ -37,6 +38,12 @@ export default function Home() {
   const activeTestimonials = testimonials || TESTIMONIALS;
   const activeFaqs = faqs || FAQS;
 
+  const col1Stories = (activeTestimonials || []).filter((_, idx) => idx % 2 === 0);
+  const col2Stories = (activeTestimonials || []).filter((_, idx) => idx % 2 !== 0);
+  const col1Loop = [...col1Stories, ...col1Stories];
+  const col2Loop = col2Stories.length > 0 ? [...col2Stories, ...col2Stories] : [...col1Stories, ...col1Stories];
+  const mobileStoriesLoop = [...(activeTestimonials || []), ...(activeTestimonials || [])];
+
   // Booking Form State
   const [formData, setFormData] = useState({
     name: "",
@@ -53,6 +60,7 @@ export default function Home() {
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const [showAllFaqs, setShowAllFaqs] = useState(false);
 
 
   const handleFormChange = (e) => {
@@ -74,10 +82,17 @@ export default function Home() {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        type: "trial",
+        studentName: formData.name,
+        type: "Audition & Consultation",
+        course: formData.discipline,
+        discipline: formData.discipline,
+        skillLevel: formData.level,
+        preferredTime: `${formData.preferredTime} (${formData.timezone})`,
+        branch: "Online Video Audition & Consultation",
         courseInterest: formData.discipline,
         notes: `Level: ${formData.level} | Preferred Time: ${formData.preferredTime} (${formData.timezone}) | Goals: ${formData.notes || "None specified"}`,
-        status: "New"
+        status: "New Lead",
+        date: new Date().toISOString().split("T")[0]
       });
 
       setIsSubmitting(false);
@@ -321,54 +336,176 @@ export default function Home() {
             </p>
           </AnimatedSection>
 
-          <div className={activeTestimonials.length === 1 ? "max-w-2xl mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto"}>
-            {activeTestimonials.map((t, idx) => (
-              <AnimatedSection
-                key={t.id}
-                delay={idx * 80}
-                className="bg-white p-7 sm:p-9 rounded-3xl border border-[#B99A63]/30 hover:border-[#B99A63] shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between text-left relative overflow-hidden h-full"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <div className="flex items-center gap-1 text-[#B99A63]">
-                      {[...Array(t.stars)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-[#B99A63]" />
-                      ))}
+          {/* Vertical Scrolling Stories Showcase */}
+          <div className="stories-vertical-container relative max-w-6xl mx-auto h-[560px] sm:h-[620px] overflow-hidden rounded-3xl border border-[#B99A63]/30 bg-white/40 shadow-sm backdrop-blur-xs">
+            {/* Top & Bottom Ambient Fade Gradients */}
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#FAF7F2] via-[#FAF7F2]/80 to-transparent z-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#FAF7F2] via-[#FAF7F2]/90 to-transparent z-20 pointer-events-none" />
+
+            {/* Desktop View: Dual Vertical Scrolling Columns */}
+            <div className="hidden md:grid md:grid-cols-2 gap-6 sm:gap-8 px-6 h-full">
+              {/* Column 1: Smooth Upward Scroll */}
+              <div className="overflow-hidden h-full">
+                <div className="animate-vertical-scroll space-y-6 pt-4 pb-12">
+                  {col1Loop.map((t, idx) => (
+                    <div
+                      key={`c1-${t.id}-${idx}`}
+                      className="bg-white p-7 sm:p-8 rounded-3xl border border-[#B99A63]/30 hover:border-[#B99A63] shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between text-left relative overflow-hidden"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-1 text-[#B99A63]">
+                            {[...Array(t.stars || 5)].map((_, i) => (
+                              <Star key={i} className="w-4 h-4 fill-[#B99A63]" />
+                            ))}
+                          </div>
+                          {t.tag && (
+                            <span className="px-3 py-1 rounded-full bg-[#B99A63]/15 text-[#B99A63] border border-[#B99A63]/30 text-[10px] font-bold tracking-wider uppercase">
+                              {t.tag}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-sm sm:text-base text-slate-800 italic leading-relaxed mb-6 font-serif-luxury whitespace-pre-line">
+                          "{t.quote}"
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-3.5 pt-4 border-t border-slate-100">
+                        <img
+                          src={t.avatar}
+                          alt={t.name}
+                          className={`w-14 h-14 rounded-full object-cover ${t.avatarPosition || "object-top"} border-2 border-[#B99A63]/50 shadow-md shrink-0`}
+                          loading="lazy"
+                        />
+                        <div>
+                          <h4 className="text-sm sm:text-base font-bold text-[#151515] font-serif-luxury">{t.name}</h4>
+                          <p className="text-xs text-[#B99A63] font-medium flex items-center gap-1.5 flex-wrap">
+                            <span>{t.role || (t.relation ? t.relation.split('•')[0].trim() : "Disciple")}</span>
+                            {(t.location || (t.relation && t.relation.includes('•'))) && (
+                              <>
+                                <span className="text-stone-400 font-normal">&bull;</span>
+                                <span className="text-stone-600 font-normal">{t.location || t.relation.split('•')[1].trim()}</span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    {t.tag && (
-                      <span className="px-3 py-1 rounded-full bg-[#B99A63]/15 text-[#B99A63] border border-[#B99A63]/30 text-[10px] font-bold tracking-wider uppercase">
-                        {t.tag}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-sm sm:text-base text-slate-800 italic leading-relaxed mb-6 font-serif-luxury whitespace-pre-line">
-                    "{t.quote}"
-                  </p>
+                  ))}
                 </div>
+              </div>
 
-                <div className="flex items-center gap-3.5 pt-4 border-t border-slate-100">
-                  <img
-                    src={t.avatar}
-                    alt={t.name}
-                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ${t.avatarPosition || "object-top"} border-2 border-[#B99A63]/50 shadow-md shrink-0`}
-                    loading="lazy"
-                  />
-                  <div>
-                    <h4 className="text-sm sm:text-base font-bold text-[#151515] font-serif-luxury">{t.name}</h4>
-                    <p className="text-xs text-[#B99A63] font-medium flex items-center gap-1.5 flex-wrap">
-                      <span>{t.role || (t.relation ? t.relation.split('•')[0].trim() : "Disciple")}</span>
-                      {(t.location || (t.relation && t.relation.includes('•'))) && (
-                        <>
-                          <span className="text-stone-400 font-normal">&bull;</span>
-                          <span className="text-stone-600 font-normal">{t.location || t.relation.split('•')[1].trim()}</span>
-                        </>
-                      )}
-                    </p>
-                  </div>
+              {/* Column 2: Slightly Offset Upward Scroll */}
+              <div className="overflow-hidden h-full">
+                <div className="animate-vertical-scroll-delayed space-y-6 pt-4 pb-12">
+                  {col2Loop.map((t, idx) => (
+                    <div
+                      key={`c2-${t.id}-${idx}`}
+                      className="bg-white p-7 sm:p-8 rounded-3xl border border-[#B99A63]/30 hover:border-[#B99A63] shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between text-left relative overflow-hidden"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-1 text-[#B99A63]">
+                            {[...Array(t.stars || 5)].map((_, i) => (
+                              <Star key={i} className="w-4 h-4 fill-[#B99A63]" />
+                            ))}
+                          </div>
+                          {t.tag && (
+                            <span className="px-3 py-1 rounded-full bg-[#B99A63]/15 text-[#B99A63] border border-[#B99A63]/30 text-[10px] font-bold tracking-wider uppercase">
+                              {t.tag}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-sm sm:text-base text-slate-800 italic leading-relaxed mb-6 font-serif-luxury whitespace-pre-line">
+                          "{t.quote}"
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-3.5 pt-4 border-t border-slate-100">
+                        <img
+                          src={t.avatar}
+                          alt={t.name}
+                          className={`w-14 h-14 rounded-full object-cover ${t.avatarPosition || "object-top"} border-2 border-[#B99A63]/50 shadow-md shrink-0`}
+                          loading="lazy"
+                        />
+                        <div>
+                          <h4 className="text-sm sm:text-base font-bold text-[#151515] font-serif-luxury">{t.name}</h4>
+                          <p className="text-xs text-[#B99A63] font-medium flex items-center gap-1.5 flex-wrap">
+                            <span>{t.role || (t.relation ? t.relation.split('•')[0].trim() : "Disciple")}</span>
+                            {(t.location || (t.relation && t.relation.includes('•'))) && (
+                              <>
+                                <span className="text-stone-400 font-normal">&bull;</span>
+                                <span className="text-stone-600 font-normal">{t.location || t.relation.split('•')[1].trim()}</span>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </AnimatedSection>
-            ))}
+              </div>
+            </div>
+
+            {/* Mobile View: Single Seamless Vertical Scrolling Track */}
+            <div className="md:hidden overflow-hidden h-full px-4">
+              <div className="animate-vertical-scroll space-y-5 pt-4 pb-12">
+                {mobileStoriesLoop.map((t, idx) => (
+                  <div
+                    key={`m-${t.id}-${idx}`}
+                    className="bg-white p-6 rounded-3xl border border-[#B99A63]/30 shadow-md flex flex-col justify-between text-left relative overflow-hidden"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-1 text-[#B99A63]">
+                          {[...Array(t.stars || 5)].map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5 fill-[#B99A63]" />
+                          ))}
+                        </div>
+                        {t.tag && (
+                          <span className="px-2.5 py-0.5 rounded-full bg-[#B99A63]/15 text-[#B99A63] border border-[#B99A63]/30 text-[9px] font-bold tracking-wider uppercase">
+                            {t.tag}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs sm:text-sm text-slate-800 italic leading-relaxed mb-4 font-serif-luxury whitespace-pre-line">
+                        "{t.quote}"
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+                      <img
+                        src={t.avatar}
+                        alt={t.name}
+                        className={`w-12 h-12 rounded-full object-cover ${t.avatarPosition || "object-top"} border-2 border-[#B99A63]/50 shadow-md shrink-0`}
+                        loading="lazy"
+                      />
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-[#151515] font-serif-luxury">{t.name}</h4>
+                        <p className="text-[11px] text-[#B99A63] font-medium flex items-center gap-1 flex-wrap">
+                          <span>{t.role || (t.relation ? t.relation.split('•')[0].trim() : "Disciple")}</span>
+                          {(t.location || (t.relation && t.relation.includes('•'))) && (
+                            <>
+                              <span className="text-stone-400 font-normal">&bull;</span>
+                              <span className="text-stone-600 font-normal">{t.location || t.relation.split('•')[1].trim()}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Hint Indicator */}
+          <div className="text-center pt-1 text-xs text-stone-500 flex items-center justify-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Auto-scrolling stories &bull; Hover or touch any card to pause</span>
           </div>
         </div>
       </section>
@@ -608,7 +745,7 @@ export default function Home() {
           </AnimatedSection>
 
           <div className="space-y-4 text-left">
-            {activeFaqs.map((faq, idx) => {
+            {(showAllFaqs ? activeFaqs : activeFaqs.slice(0, 5)).map((faq, idx) => {
               const isOpen = openFaqIndex === idx;
               const faqNum = faq.number || String(idx + 1).padStart(2, "0");
               return (
@@ -643,6 +780,27 @@ export default function Home() {
               );
             })}
           </div>
+          {activeFaqs.length > 5 && (
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAllFaqs((prev) => !prev)}
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-white hover:bg-[#FAF5EC] border-2 border-[#B99A63]/40 text-[#151515] font-serif-luxury font-bold text-xs sm:text-sm shadow-sm hover:shadow transition-all cursor-pointer tap-bounce"
+              >
+                <span>
+                  {showAllFaqs
+                    ? "Show Top 5 Questions Only"
+                    : `Click Here for More Questions (${activeFaqs.length - 5} More)`}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-[#B99A63] transition-transform duration-300 ${
+                    showAllFaqs ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+            </div>
+          )}
+
 
           {/* Ending note card in quotes */}
           <AnimatedSection animation="fade-up" className="pt-2">
@@ -668,9 +826,7 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white text-xs sm:text-sm font-semibold hover:opacity-90 transition-all shadow-xs"
                 >
-                  <span className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[9px] font-bold">
-                    ig
-                  </span>
+                  <InstagramIcon className="w-4 h-4 rounded-xs shrink-0" />
                   <span>Enquire on Instagram</span>
                 </a>
               </div>

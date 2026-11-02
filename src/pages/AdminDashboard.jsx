@@ -2832,54 +2832,448 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ADMISSIONS CRM & LEADS */}
+        {/* ADMISSIONS CRM & LEADS PIPELINE */}
         {activeTab === "enquiries" && (
           <div className="space-y-6 text-left">
-            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm">
-              <h3 className="text-xl font-bold font-serif-luxury text-stone-900">
-                Admissions CRM &amp; Leads Pipeline
-              </h3>
-              <p className="text-xs text-stone-500 mt-1">
-                Prospective disciples who submitted the website booking audition or trial form.
-              </p>
+            {/* CRM Header with Quick Action */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span className="px-3 py-1 rounded-full bg-[#DFAC88]/15 text-[#1E0D1B] border border-[#DFAC88]/30 text-[10px] font-bold tracking-wider uppercase inline-block mb-1.5">
+                  Admissions Desk &bull; Faculty Direct
+                </span>
+                <h3 className="text-2xl font-bold font-serif-luxury text-stone-900">
+                  Admissions CRM &amp; Leads Pipeline
+                </h3>
+                <p className="text-xs text-stone-500 mt-1 max-w-2xl">
+                  Prospective disciples who requested an Admissions Consultation, Audition, or Free Trial Class. Track communication status, review student goals, and enroll with 1-click credentials.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAddingLeadModal(true)}
+                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#DFAC88] to-[#C9956A] text-[#151515] font-bold text-xs shadow-md hover:brightness-105 transition-all flex items-center gap-2 cursor-pointer self-start md:self-auto shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add Manual Inquiry / Walk-in</span>
+              </button>
             </div>
 
-            <div className="space-y-3">
-              {(enquiries || []).map((enq) => (
-                <div key={enq.id} className="p-5 rounded-2xl bg-white border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-stone-900 text-sm">{enq.name}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#0F172A] font-bold text-[10px]">
-                        {enq.discipline || enq.course}
-                      </span>
+            {/* KPI Metric Summary Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="p-4 rounded-2xl bg-white border border-stone-200 shadow-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">Total Inquiries</span>
+                <span className="text-2xl font-bold font-serif-luxury text-stone-900 mt-0.5 block">{(enquiries || []).length}</span>
+                <span className="text-[10px] text-stone-500">All registered leads</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 shadow-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block">New Leads</span>
+                <span className="text-2xl font-bold font-serif-luxury text-amber-800 mt-0.5 block">
+                  {(enquiries || []).filter((e) => e.status === "New Lead" || e.status === "New").length}
+                </span>
+                <span className="text-[10px] text-amber-700">Awaiting contact</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 shadow-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">Trial / Scheduled</span>
+                <span className="text-2xl font-bold font-serif-luxury text-blue-800 mt-0.5 block">
+                  {(enquiries || []).filter((e) => e.status === "Trial Scheduled" || e.status === "Contacted").length}
+                </span>
+                <span className="text-[10px] text-blue-700">In consultation</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Enrolled Disciples</span>
+                <span className="text-2xl font-bold font-serif-luxury text-emerald-800 mt-0.5 block">
+                  {(enquiries || []).filter((e) => e.status === "Enrolled").length}
+                </span>
+                <span className="text-[10px] text-emerald-700">Active students</span>
+              </div>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="p-4 rounded-2xl bg-white border border-stone-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="relative w-full sm:w-80">
+                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by student, phone, email, course..."
+                  value={crmSearchQuery}
+                  onChange={(e) => setCrmSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs focus:outline-none focus:border-[#C9956A]"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                {["all", "New Lead", "Contacted", "Trial Scheduled", "Enrolled", "Archived"].map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => setCrmStatusFilter(st)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      crmStatusFilter === st
+                        ? "bg-[#1E0D1B] text-[#DFAC88] shadow-xs"
+                        : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                    }`}
+                  >
+                    {st === "all" ? "All Leads" : st}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Comprehensive Leads List */}
+            <div className="space-y-4">
+              {(() => {
+                const list = (enquiries || []).filter((enq) => {
+                  const studentName = (enq.studentName || enq.name || "").toLowerCase();
+                  const course = (enq.course || enq.discipline || "").toLowerCase();
+                  const phone = (enq.phone || "").toLowerCase();
+                  const email = (enq.email || "").toLowerCase();
+                  const notes = (enq.notes || enq.message || "").toLowerCase();
+                  const q = (crmSearchQuery || "").toLowerCase();
+
+                  const matchesSearch =
+                    !q ||
+                    studentName.includes(q) ||
+                    course.includes(q) ||
+                    phone.includes(q) ||
+                    email.includes(q) ||
+                    notes.includes(q);
+
+                  if (!matchesSearch) return false;
+                  if (crmStatusFilter === "all") return true;
+                  if (crmStatusFilter === "New Lead") return enq.status === "New Lead" || enq.status === "New";
+                  return (enq.status || "").toLowerCase() === crmStatusFilter.toLowerCase();
+                });
+
+                if (list.length === 0) {
+                  return (
+                    <div className="p-12 text-center rounded-3xl bg-white border border-stone-200 space-y-2">
+                      <p className="font-serif-luxury font-bold text-stone-800 text-lg">No inquiries match the current filter</p>
+                      <p className="text-xs text-stone-500">Try searching for a different name, or clear the status filter.</p>
                     </div>
-                    <p className="text-stone-600">{enq.email} &bull; {enq.phone}</p>
-                    {enq.message && <p className="text-stone-500 italic">&ldquo;{enq.message}&rdquo;</p>}
+                  );
+                }
+
+                return list.map((enq) => (
+                  <div key={enq.id} className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm hover:shadow-md transition-all space-y-4">
+                    {/* Card Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-[#DFAC88]/20 border border-[#DFAC88]/40 flex items-center justify-center font-bold text-[#1E0D1B] font-serif-luxury text-base shrink-0">
+                          {(enq.studentName || enq.name || "D").charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-bold text-stone-900 text-base font-serif-luxury">
+                              {enq.studentName || enq.name || "Prospective Disciple"}
+                            </h4>
+                            {enq.studentAge && (
+                              <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[10px] font-bold">
+                                Age {enq.studentAge}
+                              </span>
+                            )}
+                            {enq.parentName && (
+                              <span className="text-[11px] text-stone-500">
+                                (Parent: <strong className="text-stone-700">{enq.parentName}</strong>)
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-stone-400 mt-0.5">
+                            Dossier Ref: <span className="font-mono">{enq.id}</span> &bull; Submitted: {enq.date || "Recent"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Status Selector */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Status:</span>
+                        <select
+                          value={enq.status || "New Lead"}
+                          onChange={(e) => updateEnquiryStatus(enq.id, e.target.value)}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-xs border cursor-pointer focus:outline-none transition-all ${
+                            enq.status === "Enrolled"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                              : enq.status === "Trial Scheduled"
+                              ? "bg-blue-50 text-blue-800 border-blue-300"
+                              : enq.status === "Contacted"
+                              ? "bg-purple-50 text-purple-800 border-purple-300"
+                              : enq.status === "Archived"
+                              ? "bg-stone-100 text-stone-600 border-stone-300"
+                              : "bg-amber-50 text-amber-800 border-amber-300"
+                          }`}
+                        >
+                          <option value="New Lead">✦ New Lead</option>
+                          <option value="Contacted">Contacted</option>
+                          <option value="Trial Scheduled">📅 Trial Scheduled</option>
+                          <option value="Enrolled">🎉 Enrolled</option>
+                          <option value="Archived">Archived</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Card Details Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs bg-stone-50/80 p-3.5 rounded-2xl border border-stone-200/60">
+                      <div>
+                        <span className="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Course / Discipline</span>
+                        <span className="font-bold text-[#1E0D1B] block mt-0.5">
+                          {enq.course || enq.discipline || "Bharatanatyam Diploma"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <span className="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Skill Level</span>
+                        <span className="font-semibold text-stone-700 block mt-0.5">
+                          {enq.skillLevel || "Beginner"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <span className="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Preferred Schedule</span>
+                        <span className="font-semibold text-stone-700 block mt-0.5">
+                          {enq.preferredTime || "Flexible Online Slot"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <span className="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Cohort / Mode</span>
+                        <span className="font-semibold text-stone-700 block mt-0.5">
+                          {enq.branch || "Online Video Audition (Global)"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Notes / Message */}
+                    {(enq.notes || enq.message) && (
+                      <div className="p-3.5 rounded-2xl bg-amber-50/40 border border-amber-200/50 text-xs text-stone-700">
+                        <span className="font-bold text-amber-900 block text-[10px] uppercase tracking-wider mb-1">
+                          Audition / Learning Goals &amp; Inquiry Notes:
+                        </span>
+                        <p className="italic leading-relaxed">{enq.notes || enq.message}</p>
+                      </div>
+                    )}
+
+                    {/* Action Footer */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs">
+                      {/* Contact Links */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <a
+                          href={`https://wa.me/${(enq.phone || "").replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(enq.studentName || enq.name || "there")}%2C%20Dr.%20Malavika%20from%20DancingRagas%20Classical%20Arts%20Academy%20following%20up%20on%20your%20admissions%20audition.`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                        >
+                          <WhatsAppIcon className="w-3.5 h-3.5" />
+                          <span>WhatsApp ({enq.phone || "Direct"})</span>
+                        </a>
+
+                        {enq.email && (
+                          <a
+                            href={`mailto:${enq.email}?subject=DancingRagas%20Admissions%20Audition%20-%20Dr.%20Malavika%20Sunil`}
+                            className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center gap-1.5 transition-all"
+                          >
+                            <Mail className="w-3.5 h-3.5 text-stone-500" />
+                            <span>{enq.email}</span>
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Lead Conversion to Student & Deletion */}
+                      <div className="flex items-center gap-2">
+                        {enq.status !== "Enrolled" ? (
+                          <button
+                            type="button"
+                            onClick={() => convertEnquiryToStudent(enq.id)}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm hover:shadow cursor-pointer transition-all"
+                            title="Generate login key & add to student directory"
+                          >
+                            <UserCheck className="w-3.5 h-3.5" />
+                            <span>Enroll as Disciple (1-Click)</span>
+                          </button>
+                        ) : (
+                          <span className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Enrolled in Academy</span>
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Delete inquiry for "${enq.studentName || enq.name}"?`)) {
+                              deleteEnquiry(enq.id);
+                            }
+                          }}
+                          className="p-2 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer transition-all"
+                          title="Delete lead record"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
+                ));
+              })()}
+            </div>
 
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={`https://wa.me/${(enq.phone || "").replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(enq.name)}%2C%20Dr.%20Malavika%20from%20DancingRagas.`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3.5 py-1.5 rounded-xl bg-[#25D366] text-white font-bold text-xs flex items-center gap-1.5"
-                    >
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      <span>WhatsApp</span>
-                    </a>
-
+            {/* Modal: Add Manual Lead / Walk-in */}
+            {isAddingLeadModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto space-y-5 border border-stone-200 shadow-2xl text-left">
+                  <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+                    <div>
+                      <h4 className="text-xl font-bold font-serif-luxury text-stone-900">Add Walk-in / Phone Lead</h4>
+                      <p className="text-xs text-stone-500">Record a new prospective disciple from phone or direct inquiry</p>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => deleteEnquiry(enq.id)}
-                      className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 cursor-pointer"
+                      onClick={() => setIsAddingLeadModal(false)}
+                      className="p-1 rounded-xl text-stone-400 hover:text-stone-700"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <X className="w-5 h-5" />
                     </button>
                   </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!newLeadForm.studentName || !newLeadForm.phone) {
+                        alert("Please provide the student name and contact number.");
+                        return;
+                      }
+                      addEnquiry({
+                        studentName: newLeadForm.studentName,
+                        name: newLeadForm.studentName,
+                        studentAge: newLeadForm.studentAge,
+                        parentName: newLeadForm.parentName,
+                        phone: newLeadForm.phone,
+                        email: newLeadForm.email,
+                        course: newLeadForm.course,
+                        discipline: newLeadForm.course,
+                        skillLevel: newLeadForm.skillLevel,
+                        preferredTime: newLeadForm.preferredTime,
+                        notes: newLeadForm.notes || "Manual inquiry added by faculty",
+                        status: "New Lead",
+                        date: new Date().toISOString().split("T")[0]
+                      });
+                      setIsAddingLeadModal(false);
+                      setNewLeadForm({
+                        studentName: "",
+                        studentAge: "",
+                        parentName: "",
+                        phone: "",
+                        email: "",
+                        course: "Bharatanatyam Diploma",
+                        skillLevel: "Absolute Beginner",
+                        preferredTime: "Sunday Morning (10:00 AM IST)",
+                        notes: ""
+                      });
+                    }}
+                    className="space-y-4 text-xs"
+                  >
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Student Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={newLeadForm.studentName}
+                        onChange={(e) => setNewLeadForm({ ...newLeadForm, studentName: e.target.value })}
+                        placeholder="e.g. Maya Sundaram"
+                        className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-[#C9956A]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="font-bold text-stone-700 block mb-1">Student Age</label>
+                        <input
+                          type="text"
+                          value={newLeadForm.studentAge}
+                          onChange={(e) => setNewLeadForm({ ...newLeadForm, studentAge: e.target.value })}
+                          placeholder="e.g. 10"
+                          className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-[#C9956A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-bold text-stone-700 block mb-1">Parent Name</label>
+                        <input
+                          type="text"
+                          value={newLeadForm.parentName}
+                          onChange={(e) => setNewLeadForm({ ...newLeadForm, parentName: e.target.value })}
+                          placeholder="e.g. Smt. Radhika"
+                          className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-[#C9956A]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="font-bold text-stone-700 block mb-1">Phone / WhatsApp *</label>
+                        <input
+                          type="tel"
+                          required
+                          value={newLeadForm.phone}
+                          onChange={(e) => setNewLeadForm({ ...newLeadForm, phone: e.target.value })}
+                          placeholder="+91 90000 00000"
+                          className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-[#C9956A]"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-bold text-stone-700 block mb-1">Email</label>
+                        <input
+                          type="email"
+                          value={newLeadForm.email}
+                          onChange={(e) => setNewLeadForm({ ...newLeadForm, email: e.target.value })}
+                          placeholder="parent@example.com"
+                          className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-[#C9956A]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Course of Interest</label>
+                      <select
+                        value={newLeadForm.course}
+                        onChange={(e) => setNewLeadForm({ ...newLeadForm, course: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-[#C9956A]"
+                      >
+                        <option value="Bharatanatyam Diploma">Bharatanatyam Diploma (Govt Sanad)</option>
+                        <option value="Bharatanatyam Non-Diploma">Bharatanatyam Non-Diploma (Repertoire)</option>
+                        <option value="Carnatic Vocal Music">Carnatic Vocal Music</option>
+                        <option value="Semi-Classical & Bollywood">Semi-Classical &amp; Bollywood</option>
+                        <option value="60-Day Fitness Program">60-Day Fitness Program</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-stone-700 block mb-1">Notes &amp; Background</label>
+                      <textarea
+                        rows={3}
+                        value={newLeadForm.notes}
+                        onChange={(e) => setNewLeadForm({ ...newLeadForm, notes: e.target.value })}
+                        placeholder="Previous experience, audition notes, preferred schedule..."
+                        className="w-full px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-[#C9956A]"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingLeadModal(false)}
+                        className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl bg-[#1E0D1B] text-[#DFAC88] font-bold hover:brightness-110"
+                      >
+                        Save Lead Entry
+                      </button>
+                    </div>
+                  </form>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         )}
 

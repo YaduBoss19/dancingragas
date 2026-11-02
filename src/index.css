@@ -566,6 +566,39 @@
   animation-play-state: paused !important;
 }
 
+/* ─── VERTICAL TESTIMONIALS & STORIES SCROLLER ─────────────── */
+@keyframes vertical-scroll-track {
+  0% {
+    transform: translate3d(0, 0%, 0);
+  }
+  100% {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+.animate-vertical-scroll {
+  display: flex;
+  flex-direction: column;
+  animation: vertical-scroll-track 42s linear infinite;
+  will-change: transform;
+}
+
+.animate-vertical-scroll-delayed {
+  display: flex;
+  flex-direction: column;
+  animation: vertical-scroll-track 50s linear infinite;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .animate-vertical-scroll:hover,
+  .animate-vertical-scroll-delayed:hover,
+  .stories-vertical-container:hover .animate-vertical-scroll,
+  .stories-vertical-container:hover .animate-vertical-scroll-delayed {
+    animation-play-state: paused !important;
+  }
+}
+
 /* ─── SILK ZARI METALLIC SHEEN SWEEP ──────────────────────── */
 @keyframes zari-sheen {
   0% {
